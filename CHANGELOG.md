@@ -15,6 +15,8 @@ breaking changes; they will always be listed here.
 
 ### Fixed
 
+- Golems never save player data on the server (their `PlayerDataSaveEvent` is cancelled), so
+  `/golem spawn` can refuse every name with saved data or op status, without exceptions.
 - After a test, golems only lose the op status they did not have before spawning, so a name that
   is a real operator keeps its rights.
 

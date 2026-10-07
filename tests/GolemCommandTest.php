@@ -8,6 +8,8 @@ use Generator;
 use Golem\Golem;
 use Golem\TestCase;
 use pocketmine\console\ConsoleCommandSender;
+use pocketmine\event\player\PlayerDataSaveEvent;
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\player\Player;
 
 /**
@@ -61,6 +63,18 @@ final class GolemCommandTest extends TestCase
         } finally {
             $this->server()->removeOp('Notch');
         }
+    }
+
+    public function testGolemsLeaveNoPlayerData(): Generator
+    {
+        yield from $this->spawnBob();
+        $bob = $this->server()->getPlayerExact('Bob');
+        $this->assertNotNull($bob);
+
+        $event = new PlayerDataSaveEvent(new CompoundTag(), 'Bob', $bob);
+        $event->call();
+
+        $this->assertTrue($event->isCancelled(), 'saving a golem must be cancelled');
     }
 
     public function testRemovingAGolemRevokesTheOpItWasGiven(): Generator
