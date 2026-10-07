@@ -301,6 +301,42 @@ trait Assertions
         $this->check($golem->form() === null, $message ?: "{$golem->name()} has a form open", null, Exporter::export($golem->form() !== null ? $golem->formData() : null));
     }
 
+    /**
+     * Checks that the server sent the golem at least one packet of the given class,
+     * optionally one for which `$filter` returns true.
+     *
+     * @template P of \pocketmine\network\mcpe\protocol\ClientboundPacket
+     * @param class-string<P> $class
+     * @param (\Closure(P): bool)|null $filter
+     */
+    final protected function assertPacketSent(Golem $golem, string $class, ?\Closure $filter = null, string $message = ''): void
+    {
+        $packets = $golem->packets($class);
+        $matching = $filter === null ? $packets : array_filter($packets, $filter);
+        $short = substr($class, (int) strrpos($class, '\\') + 1);
+
+        $this->check(
+            $matching !== [],
+            $message ?: ($packets === []
+                ? "{$golem->name()} never received a $short"
+                : "{$golem->name()} received " . count($packets) . " $short, none matching the filter"),
+        );
+    }
+
+    /**
+     * Checks that the golem heard a sound: a PlaySoundPacket name such as "random.levelup",
+     * or a sound event such as "levelup" (see {@see Golem::sounds()}).
+     */
+    final protected function assertSoundPlayed(Golem $golem, string $sound, string $message = ''): void
+    {
+        $this->check(
+            in_array($sound, $golem->sounds(), true),
+            $message ?: "{$golem->name()} never heard the sound \"$sound\"",
+            Exporter::export($sound),
+            Exporter::export($golem->sounds()),
+        );
+    }
+
     final protected function assertOnline(Golem $golem, string $message = ''): void
     {
         $this->check($golem->isOnline(), $message ?: "{$golem->name()} is not connected");

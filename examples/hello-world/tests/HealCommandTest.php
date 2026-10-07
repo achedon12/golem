@@ -19,6 +19,10 @@ final class HealCommandTest extends TestCase
 
         $this->assertHealth($steve, 20);
         $this->assertReceivedMessage($steve, 'You have been healed.');
+
+        // played in the world, so every nearby player hears it once the tick ends
+        yield $this->wait(1);
+        $this->assertSoundPlayed($steve, 'levelup');
     }
 
     public function testRegularPlayersCannot(): Generator

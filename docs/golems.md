@@ -49,8 +49,19 @@ Everything the server sends to a golem is recorded:
 | `lastMessage()` | the latest chat message, or `null` |
 | `titles()`, `subtitles()`, `actionBars()` | what was shown on screen |
 | `tips()`, `popups()`, `toasts()` | the small texts above the hotbar, and toast notifications (`"title\nbody"`) |
-| `packets(?string $class = null)` | every packet sent to the golem, optionally only one class, e.g. `packets(PlaySoundPacket::class)` |
+| `sounds()` | sounds heard: named sounds (`random.levelup`) and sound events played in the world (`levelup`, `break`) |
+| `packets(?string $class = null)` | every packet sent to the golem, including world broadcasts, optionally only one class, e.g. `packets(PlaySoundPacket::class)` |
 | `clearInbox()` | forgets everything received so far, to focus on what happens next |
+
+Sounds, particles and animations played in the world (`World::addSound()`, `World::addParticle()`…)
+are buffered by PocketMine and sent at the end of the tick. Let one tick pass before checking them:
+
+```php
+$steve->chat('/heal');
+
+yield $this->wait(1);
+$this->assertSoundPlayed($steve, 'levelup');
+```
 
 ## Forms
 

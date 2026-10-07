@@ -12,6 +12,8 @@ use pocketmine\item\Item;
 use pocketmine\math\Facing;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\ClientboundPacket;
+use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
+use pocketmine\network\mcpe\protocol\PlaySoundPacket;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
@@ -268,6 +270,27 @@ final class Golem
     public function toasts(): array
     {
         return $this->cleanTexts(Inbox::TOAST);
+    }
+
+    /**
+     * Sounds the golem heard, in order: named sounds sent with a PlaySoundPacket
+     * ("random.levelup", "mob.cat.meow") and built-in sound events played in the world
+     * ("levelup", "break", "place"), like those of {@see \pocketmine\world\World::addSound()}.
+     *
+     * @return list<string>
+     */
+    public function sounds(): array
+    {
+        $sounds = [];
+        foreach ($this->session->inbox()->packets() as $packet) {
+            if ($packet instanceof PlaySoundPacket) {
+                $sounds[] = $packet->soundName;
+            } elseif ($packet instanceof LevelSoundEventPacket) {
+                $sounds[] = $packet->sound;
+            }
+        }
+
+        return $sounds;
     }
 
     /**

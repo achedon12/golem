@@ -38,6 +38,8 @@ Text comparisons ignore colour codes on both sides and match substrings.
 | `assertActionBar(Golem $golem, string $text)` | an action bar message containing `$text` was shown |
 | `assertFormOpen(Golem $golem, ?string $titleContains = null)` | the golem has a form open (whose title contains the text) |
 | `assertNoFormOpen(Golem $golem)` | no form is waiting for an answer |
+| `assertSoundPlayed(Golem $golem, string $sound)` | the golem heard the sound: a named sound like `random.levelup`, or a sound event like `levelup` |
+| `assertPacketSent(Golem $golem, string $class, ?Closure $filter = null)` | the server sent at least one packet of that class (matching the filter) |
 | `assertOnline(Golem $golem)` / `assertOffline(Golem $golem)` | still connected / was kicked or quit |
 | `assertHasItem(Golem $golem, Item $item, ?int $count = null)` | the inventory holds at least `$count` matching items (defaults to the item's own count) |
 | `assertNotHasItem(Golem $golem, Item $item)` | the inventory holds none |

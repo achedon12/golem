@@ -9,7 +9,13 @@ breaking changes; they will always be listed here.
 
 ### Added
 
+- `assertSoundPlayed()`, `assertPacketSent()` and `Golem::sounds()` (#5).
 - Documentation website at https://achedon12.github.io/golem/ and a wiki, both generated from `docs/`.
+
+### Fixed
+
+- Golems now receive packets broadcast by the world (sounds, particles, entity animations), which
+  previously bypassed their inbox.
 
 ## [0.1.1] - 2026-10-07
 
