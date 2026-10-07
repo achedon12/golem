@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  example:
+    name: Example plugin (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.1', '8.4']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+
+      - name: Run the example tests with the action
+        uses: ./
+        with:
+          path: examples/hello-world
+
+      - name: Upload the JUnit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-php-${{ matrix.php }}
+          path: golem-junit.xml
+          if-no-files-found: ignore
+
+  analyse:
+    name: PHPStan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress --ignore-platform-reqs
+
+      - name: Download the PocketMine PHP build
+        # PHPStan needs PocketMine's extensions (encoding, pmmpthread...) to know their classes.
+        # Running the tests once is the simplest way to get that PHP build.
+        run: php bin/golem --path=examples/hello-world
+
+      - name: Analyse
+        run: ~/.cache/golem/php/8.4-Linux-x86_64/bin/php7/bin/php vendor/bin/phpstan analyse --memory-limit=1G --no-progress

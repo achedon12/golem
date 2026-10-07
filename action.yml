@@ -1,0 +1,51 @@
+name: Golem
+description: Run integration tests for a PocketMine-MP plugin on a real server, with simulated players.
+author: Achedon12
+
+branding:
+  icon: check-square
+  color: green
+
+inputs:
+  path:
+    description: Folder of the plugin to test (the one containing plugin.yml).
+    default: .
+  tests:
+    description: Tests folder, relative to the plugin. Defaults to composer.json extra.golem.tests, then "tests".
+    default: ''
+  pocketmine:
+    description: PocketMine-MP version to test against, e.g. 5.44.3. Defaults to composer.json extra.golem.pocketmine, then the latest release.
+    default: ''
+  filter:
+    description: Only run tests whose Class::method contains this text.
+    default: ''
+  junit:
+    description: Where to write the JUnit XML report. Empty to skip it.
+    default: golem-junit.xml
+
+runs:
+  using: composite
+  steps:
+    - name: Cache PocketMine-MP and its PHP build
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/golem
+        key: golem-v1-${{ runner.os }}-${{ runner.arch }}-${{ inputs.pocketmine || 'latest' }}
+        restore-keys: |
+          golem-v1-${{ runner.os }}-${{ runner.arch }}-
+
+    - name: Run Golem
+      shell: bash
+      env:
+        GOLEM_PATH: ${{ inputs.path }}
+        GOLEM_TESTS: ${{ inputs.tests }}
+        GOLEM_POCKETMINE: ${{ inputs.pocketmine }}
+        GOLEM_FILTER: ${{ inputs.filter }}
+        GOLEM_JUNIT: ${{ inputs.junit }}
+      run: |
+        args=(run --path="$GOLEM_PATH")
+        [ -n "$GOLEM_TESTS" ] && args+=(--tests="$GOLEM_TESTS")
+        [ -n "$GOLEM_POCKETMINE" ] && args+=(--pocketmine="$GOLEM_POCKETMINE")
+        [ -n "$GOLEM_FILTER" ] && args+=(--filter="$GOLEM_FILTER")
+        [ -n "$GOLEM_JUNIT" ] && args+=(--log-junit="$GOLEM_JUNIT")
+        php "$GITHUB_ACTION_PATH/bin/golem" "${args[@]}"
