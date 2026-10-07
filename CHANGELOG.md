@@ -11,6 +11,7 @@ breaking changes; they will always be listed here.
 
 - `assertSoundPlayed()`, `assertPacketSent()` and `Golem::sounds()` (#5).
 - `#[FreshWorld]` and `$this->freshWorld()` to run a test in its own throwaway world (#8).
+- `#[DataProvider]` to run a test once per data set (#19).
 - `assertKicked()` and `Golem::disconnectReason()` (#18).
 - Golems move: `walkTo()`, `walk()`, `jump()`, `sneak()` and `sprint()`, with collisions, step-up,
   gravity and fall damage (#6).

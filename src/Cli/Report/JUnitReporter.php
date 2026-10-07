@@ -63,7 +63,7 @@ final class JUnitReporter
     private function testCase(\DOMDocument $document, TestResult $result): \DOMElement
     {
         $case = $document->createElement('testcase');
-        $case->setAttribute('name', $result->method);
+        $case->setAttribute('name', $result->name());
         $case->setAttribute('class', $result->class);
         $case->setAttribute('classname', $result->class);
         $case->setAttribute('file', $result->file);

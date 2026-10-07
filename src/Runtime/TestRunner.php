@@ -93,7 +93,7 @@ final class TestRunner
         $run = new RunningTest(
             $test,
             $instance,
-            Coroutine::run(self::body($instance, $test->method)),
+            Coroutine::run(self::body($instance, $test->method, $test->arguments)),
             $generation,
             $startedAt,
             $startTick,
@@ -151,16 +151,17 @@ final class TestRunner
     /**
      * setUp() and the test method as a single coroutine.
      *
+     * @param list<mixed> $arguments
      * @return \Generator<mixed, mixed, mixed, mixed>
      */
-    private static function body(TestCase $instance, string $method): \Generator
+    private static function body(TestCase $instance, string $method, array $arguments): \Generator
     {
         $setUp = $instance->runSetUp();
         if ($setUp !== null) {
             yield from $setUp;
         }
 
-        $result = $instance->{$method}();
+        $result = $instance->{$method}(...$arguments);
         if ($result instanceof \Generator) {
             yield from $result;
         }
@@ -182,6 +183,7 @@ final class TestRunner
         $this->events->write('test', [
             'class' => $test->class,
             'method' => $test->method,
+            'data' => $test->dataName,
             'file' => $test->file,
             'line' => $test->line,
             'status' => $status,

@@ -145,6 +145,35 @@ final class BossFightTest extends TestCase
 The default timeout is 200 ticks (10 seconds) per test. You can also skip from inside a test with
 `$this->skip('reason')`.
 
+## Data providers
+
+Run the same test with several inputs: point `#[DataProvider]` at a public static method that
+returns one array of arguments per data set. Each data set runs, and is reported, as its own test.
+
+```php
+use Golem\Attribute\DataProvider;
+
+#[DataProvider('buttons')]
+public function testEveryMenuButtonAnswers(string $button, string $reply): Generator
+{
+    $steve = yield $this->golem('Steve');
+    $steve->chat('/menu');
+
+    $steve->clickButton($button);
+
+    $this->assertSame($reply, $steve->lastMessage());
+}
+
+public static function buttons(): iterable
+{
+    yield 'spawn' => ['Spawn', 'Teleported to spawn.'];
+    yield 'daytime' => ['Daytime', 'Good morning!'];
+}
+```
+
+The output reads `every menu button answers (spawn)`, and `--filter=spawn` runs just that data set.
+Unnamed data sets are numbered `#0`, `#1`…
+
 ## Useful helpers
 
 | Method | Returns |
