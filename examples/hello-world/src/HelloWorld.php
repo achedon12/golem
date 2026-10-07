@@ -26,10 +26,19 @@ use pocketmine\world\sound\XpLevelUpSound;
 
 final class HelloWorld extends PluginBase implements Listener
 {
+    private KitMenu $kits;
+
     protected function onEnable(): void
     {
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
         $this->spawnGuide();
+
+        $this->kits = new KitMenu($this);
+        $world = $this->getServer()->getWorldManager()->getDefaultWorld();
+        if ($world !== null) {
+            $this->kits->install($world);
+        }
+        $this->getServer()->getPluginManager()->registerEvents($this->kits, $this);
     }
 
     /**
@@ -131,6 +140,10 @@ final class HelloWorld extends PluginBase implements Listener
                 return true;
             case 'menu':
                 $sender->sendForm(new MenuForm());
+
+                return true;
+            case 'kits':
+                $this->kits->open($sender);
 
                 return true;
         }

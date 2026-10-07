@@ -99,6 +99,30 @@ yield $this->wait(1);
 $this->assertSoundPlayed($steve, 'levelup');
 ```
 
+## Inventory menus
+
+Chest menus (kit selectors, shops, InvMenu menus) are inventory windows. Golems click them through
+real inventory transactions, so `InventoryTransactionEvent` and menu listeners fire as for a player.
+
+| Method | What it does |
+| --- | --- |
+| `window()` | the inventory window open on screen, or `null` |
+| `waitForWindow(int $timeoutTicks = 60)` | yield it to wait until a window is open and settled (InvMenu sends a menu several times before accepting clicks) |
+| `clickSlot(int $slot)` | picks up the item in that slot, swapping with the cursor. Returns `false` when the click is refused, which is what read-only menus do |
+| `closeWindow()` | closes the window, like pressing Escape |
+
+```php
+$steve->chat('/shop');
+yield $steve->waitForWindow();
+
+$steve->clickSlot(0);              // InvMenu::readonly() listeners run, the item stays in the menu
+
+$this->assertReceivedMessage($steve, 'Bought Diamond');
+```
+
+Golems answer the client-side handshakes menu libraries rely on (latency pings, the warning a
+client sends when a container is re-opened), so InvMenu works without any special setup.
+
 ## Forms
 
 Forms sent with `Player::sendForm()` work with any form library (FormAPI, pmforms, your own

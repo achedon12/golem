@@ -73,7 +73,7 @@ abstract class TestCase
      * Resolves with that value, or throws {@see WaitTimedOut}.
      *
      * @template T
-     * @param \Closure(): T $condition
+     * @param \Closure(): (T|null|false) $condition
      * @return Deferred<T>
      */
     final protected function waitUntil(\Closure $condition, int $timeoutTicks = 100, string $description = 'the condition'): Deferred

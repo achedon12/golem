@@ -317,6 +317,34 @@ trait Assertions
     }
 
     /**
+     * Checks that the golem has an inventory window open, optionally of a given class
+     * (ChestInventory, an InvMenu inventory...).
+     *
+     * @param class-string<\pocketmine\inventory\Inventory>|null $class
+     */
+    final protected function assertWindowOpen(Golem $golem, ?string $class = null, string $message = ''): void
+    {
+        $window = $golem->window();
+        if ($window === null) {
+            $this->check(false, $message ?: "{$golem->name()} has no window open");
+
+            return;
+        }
+        $this->check(
+            $class === null || $window instanceof $class,
+            $message ?: "{$golem->name()} has another kind of window open",
+            $class,
+            $window::class,
+        );
+    }
+
+    final protected function assertNoWindowOpen(Golem $golem, string $message = ''): void
+    {
+        $window = $golem->window();
+        $this->check($window === null, $message ?: "{$golem->name()} still has a window open", null, $window === null ? null : $window::class);
+    }
+
+    /**
      * Checks that the golem has a form open, optionally one whose title contains the given text.
      */
     final protected function assertFormOpen(Golem $golem, ?string $titleContains = null, string $message = ''): void
