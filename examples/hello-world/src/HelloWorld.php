@@ -10,6 +10,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
+use pocketmine\event\player\PlayerMoveEvent;
 use pocketmine\item\VanillaItems;
 use pocketmine\network\mcpe\protocol\PlaySoundPacket;
 use pocketmine\player\Player;
@@ -42,6 +43,17 @@ final class HelloWorld extends PluginBase implements Listener
                 $player->sendTip('Need help? Type /menu');
             }
         }), 40);
+    }
+
+    /**
+     * Everything 20 blocks or more east of spawn is the arena.
+     */
+    public function onMove(PlayerMoveEvent $event): void
+    {
+        $arenaStart = $event->getPlayer()->getWorld()->getSpawnLocation()->x + 20;
+        if ($event->getFrom()->x < $arenaStart && $event->getTo()->x >= $arenaStart) {
+            $event->getPlayer()->sendMessage(TextFormat::GOLD . 'You entered the arena.');
+        }
     }
 
     /**

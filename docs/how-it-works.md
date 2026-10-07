@@ -54,6 +54,11 @@ A golem is a `Player` whose `NetworkSession` has no socket. Golem:
 - records what the server sends instead of compressing and sending it, and reads it back through
   PocketMine's own hooks (chat, titles, forms) or as packet objects.
 
+Movement is the one thing a client computes itself: PocketMine trusts players' positions and does
+not resolve their collisions. Golem plays that part with the same collision algorithm PocketMine
+uses for other entities, then reports each step through `Player::handleMovement()`, exactly where a
+real client's movement ends up.
+
 Because the player is real, everything else (events, permissions, inventories, damage, forms,
 `Player::kick()`) is PocketMine's own code, not a reimplementation.
 
@@ -62,8 +67,8 @@ Because the player is real, everything else (events, permissions, inventories, d
 Golem is young. Things it does not do yet:
 
 - **PocketMine-MP 5 only**, on Linux and macOS. Windows users can use WSL.
-- **No movement simulation.** Golems teleport; they do not walk, jump, fall or swim through client
-  movement packets, so anti-cheat and movement-based features cannot be tested yet.
+- **Simple physics.** Golems walk, jump, fall and step up blocks, but do not swim, climb ladders or
+  get pushed by entities and water.
 - **The login is shortcut.** `PlayerPreLoginEvent` and the Xbox Live handshake are skipped:
   golems arrive with a login that was already accepted. `PlayerLoginEvent`, `PlayerJoinEvent` and
   everything after fire normally.
