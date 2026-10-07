@@ -27,6 +27,7 @@ final class TestDefinition
         public readonly ?string $dataName = null,
         /** @var list<mixed> */
         public readonly array $arguments = [],
+        public readonly ?string $worldTemplate = null,
     ) {
     }
 
@@ -40,6 +41,6 @@ final class TestDefinition
      */
     public function withData(string $name, array $arguments): self
     {
-        return new self($this->class, $this->method, $this->file, $this->line, $this->timeoutTicks, $this->skipReason, $this->freshWorld, $name, $arguments);
+        return new self($this->class, $this->method, $this->file, $this->line, $this->timeoutTicks, $this->skipReason, $this->freshWorld, $name, $arguments, $this->worldTemplate);
     }
 }

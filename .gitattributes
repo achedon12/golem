@@ -13,3 +13,7 @@
 /SECURITY.md        export-ignore
 
 *.svg linguist-documentation
+
+# World folders (LevelDB) are binary, whatever their file names say
+**/worlds/** binary
+level.dat binary

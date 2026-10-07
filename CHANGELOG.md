@@ -11,6 +11,7 @@ breaking changes; they will always be listed here.
 
 - `assertSoundPlayed()`, `assertPacketSent()` and `Golem::sounds()` (#5).
 - `#[FreshWorld]` and `$this->freshWorld()` to run a test in its own throwaway world (#8).
+- `#[World('path')]` and `$this->loadWorld()` to run a test in a copy of a world folder (#22).
 - `Golem::interactEntity()`, `Golem::respawn()`, `assertDead()` and `assertAlive()` (#21).
 - `Golem::scoreboard()`, `Golem::bossBar()`, `assertScoreboardContains()` and `assertBossBar()` (#20).
 - `#[DataProvider]` to run a test once per data set (#19).
@@ -23,6 +24,7 @@ breaking changes; they will always be listed here.
 
 ### Fixed
 
+- `assertBlockAt()` loads the chunk it checks, which used to read as air when no golem was nearby.
 - Virion downloads verify the TLS certificate (PocketMine's `Internet` helper does not), only
   follow HTTPS redirects, and are rejected unless they are virion phars.
 - `.poggit.yml` is only looked up in the plugin folder and its parents inside the same git
