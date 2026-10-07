@@ -21,6 +21,7 @@ golem init [--no-workflow]
 | `--pocketmine=<version>` | `latest` | The PocketMine-MP version to run, e.g. `5.44.3` |
 | `--log-junit=<file>` | | Also write a JUnit XML report (needs `ext-dom`) |
 | `--timeout=<seconds>` | `600` | Stop a run that takes longer than this |
+| `--watch` | | Keep running: re-run the tests whenever `src/`, `tests/`, `resources/` or `plugin.yml` change |
 | `--verbose` | | Print the server console while the tests run |
 | `--keep` | | Keep the temporary server folder, to inspect its world or logs |
 | `--php=<binary>` | downloaded | Use your own PocketMine PHP build |
