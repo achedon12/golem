@@ -79,7 +79,7 @@ final class Golem
         $packets = $this->packets(DisconnectPacket::class);
         $last = $packets === [] ? null : $packets[array_key_last($packets)];
 
-        return $last === null ? null : TextFormat::clean($last->message);
+        return $last === null ? null : TextFormat::clean($last->message ?? '');
     }
 
     // ---------------------------------------------------------------- acting
