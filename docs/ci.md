@@ -11,7 +11,7 @@ jobs:
   golem:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: achedon12/golem@v0
 ```
 
@@ -39,7 +39,7 @@ jobs:
       matrix:
         pocketmine: ['5.40.0', '5.44.3']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: achedon12/golem@v0
         with:
           pocketmine: ${{ matrix.pocketmine }}
@@ -49,7 +49,7 @@ jobs:
 
 ```yaml
       - uses: achedon12/golem@v0
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: always()
         with:
           name: golem-report

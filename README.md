@@ -133,7 +133,7 @@ jobs:
   golem:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: achedon12/golem@v0
 ```
 
