@@ -114,6 +114,16 @@ abstract class TestCase
     }
 
     /**
+     * Switches to a copy of a world folder (relative to the plugin folder) for the rest
+     * of the test, like {@see freshWorld()}. The template itself is never modified.
+     * Call it before spawning golems, or use #[World('path')].
+     */
+    final protected function loadWorld(string $path): World
+    {
+        return Runtime::get()->worlds->fromTemplate($path);
+    }
+
+    /**
      * Where new players appear in the default world.
      */
     final protected function spawn(): Position

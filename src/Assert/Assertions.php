@@ -508,7 +508,10 @@ trait Assertions
      */
     final protected function assertBlockAt(Vector3 $position, Block $expected, string $message = ''): void
     {
-        $actual = Server::getInstance()->getWorldManager()->getDefaultWorld()?->getBlock($position);
+        $world = Server::getInstance()->getWorldManager()->getDefaultWorld();
+        // a chunk nobody stands in may not be loaded, and would read as air
+        $world?->loadChunk($position->getFloorX() >> 4, $position->getFloorZ() >> 4);
+        $actual = $world?->getBlock($position);
         $this->check(
             $actual !== null && $actual->isSameState($expected),
             $message ?: 'Unexpected block at ' . Exporter::export($position),

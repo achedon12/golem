@@ -9,6 +9,7 @@ use Golem\Attribute\FreshWorld;
 use Golem\Attribute\Skip;
 use Golem\Attribute\Test;
 use Golem\Attribute\Timeout;
+use Golem\Attribute\World;
 use Golem\TestCase;
 
 /**
@@ -73,6 +74,7 @@ final class TestDiscovery
                     self::timeout($method, $reflection),
                     self::skipReason($method, $reflection),
                     $method->getAttributes(FreshWorld::class) !== [] || $reflection->getAttributes(FreshWorld::class) !== [],
+                    worldTemplate: ($method->getAttributes(World::class)[0] ?? $reflection->getAttributes(World::class)[0] ?? null)?->newInstance()->path,
                 );
                 foreach (self::expand($definition, $method, $reflection) as $test) {
                     if ($filter !== null && $filter !== '' && stripos($test->id(), $filter) === false) {

@@ -120,6 +120,28 @@ public function testExplosionsDestroyBlocks(): Generator
 The same thing from code is `$this->freshWorld()`, to call before spawning golems, usually in
 `setUp()`. Plugin state is yours to reset in `setUp()`.
 
+### Worlds from a template
+
+Minigames need their map. Put a world folder (the one PocketMine saves, with `level.dat`) in your
+repository and run tests in a copy of it:
+
+```php
+use Golem\Attribute\World;
+
+#[World('tests/worlds/arena')]
+final class ArenaTest extends TestCase
+{
+    public function testTeamsSpawnOnTheirSide(): Generator { /* ... */ }
+}
+```
+
+Each test gets its own copy, set as the default world and deleted afterwards: the template is
+never modified. The chunks around its spawn are loaded right away, so a test can read or change
+blocks before any golem joins. From code: `$this->loadWorld('tests/worlds/arena')`.
+
+Mark world folders as binary in `.gitattributes` (`**/worlds/** binary`), or git may rewrite the
+line endings of LevelDB files and corrupt them.
+
 ## Attributes
 
 ```php
@@ -127,6 +149,7 @@ use Golem\Attribute\FreshWorld;
 use Golem\Attribute\Skip;
 use Golem\Attribute\Test;
 use Golem\Attribute\Timeout;
+use Golem\Attribute\World;
 
 #[Timeout(ticks: 600)]                   // every test of the class may take 30 seconds
 final class BossFightTest extends TestCase
@@ -136,6 +159,9 @@ final class BossFightTest extends TestCase
 
     #[FreshWorld]                        // runs in its own world, deleted afterwards
     public function testArenaCollapses(): Generator { /* ... */ }
+
+    #[World('tests/worlds/arena')]       // runs in a copy of a world folder
+    public function testTeamsSpawnApart(): Generator { /* ... */ }
 
     #[Skip('waiting for the 2.0 loot tables')]
     public function testLoot(): void { /* ... */ }
@@ -183,3 +209,4 @@ Unnamed data sets are numbered `#0`, `#1`…
 | `$this->world()` | the default world, a superflat world created fresh for each run |
 | `$this->spawn()` | the default world's spawn position |
 | `$this->freshWorld()` | switches the test to a brand new world (see [Isolation](#isolation)) |
+| `$this->loadWorld($path)` | switches the test to a copy of a world folder (see [Worlds from a template](#worlds-from-a-template)) |

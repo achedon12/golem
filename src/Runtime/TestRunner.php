@@ -75,7 +75,9 @@ final class TestRunner
 
         try {
             $instance = new ($test->class)();
-            if ($test->freshWorld) {
+            if ($test->worldTemplate !== null) {
+                $this->runtime->worlds->fromTemplate($test->worldTemplate);
+            } elseif ($test->freshWorld) {
                 $this->runtime->worlds->fresh();
             }
         } catch (\Throwable $e) {
