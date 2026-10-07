@@ -1,0 +1,13 @@
+name: Golem
+main: Golem\DevTools\DevToolsPlugin
+src-namespace-prefix: Golem
+version: 0.3.0
+api: 5.0.0
+author: Achedon12
+website: https://achedon12.github.io/golem/
+description: Spawn simulated players on your development server to test multiplayer plugins alone.
+
+permissions:
+  golem.command:
+    description: Spawn and control golems with /golem
+    default: op

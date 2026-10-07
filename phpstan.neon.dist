@@ -4,6 +4,7 @@ parameters:
         - src
         - examples/hello-world/src
         - examples/hello-world/tests
+        - tests
     scanFiles:
         - bin/golem
     scanDirectories:

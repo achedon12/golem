@@ -97,7 +97,7 @@ final class Workspace
             <?php
 
             /**
-             * @name Golem
+             * @name GolemTestRunner
              * @main Golem\\Runtime\\GolemPlugin
              * @version 1.0.0
              * @api 5.0.0

@@ -31,12 +31,18 @@ jobs:
         with:
           path: examples/hello-world
 
+      - name: Test the /golem server plugin with Golem itself
+        uses: ./
+        with:
+          path: .
+          junit: golem-self-junit.xml
+
       - name: Upload the JUnit report
         if: always()
         uses: actions/upload-artifact@v6
         with:
           name: junit-php-${{ matrix.php }}
-          path: golem-junit.xml
+          path: golem-*junit.xml
           if-no-files-found: ignore
 
   analyse:
