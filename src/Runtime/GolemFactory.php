@@ -141,6 +141,15 @@ final class GolemFactory
                     $deferred->reject($e);
                 }
             }
+            foreach ($this->golems as $golem) {
+                try {
+                    $golem->movement()->tick();
+                } catch (\Throwable $e) {
+                    if (!$golem->movement()->abort($e)) {
+                        $this->plugin->getLogger()->logException($e);
+                    }
+                }
+            }
         }), 1);
     }
 }

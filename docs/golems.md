@@ -31,6 +31,37 @@ and `PlayerJoinEvent` has already fired.
 | `attack(Entity\|Golem $target)` | Hits an entity or another golem with the held item. |
 | `quit(string $reason = 'Golem left')` | Disconnects, as if the game was closed. |
 
+## Moving
+
+Golems move like players: one step per tick, stopped by walls, able to step up slabs and stairs,
+falling off ledges and taking fall damage. `PlayerMoveEvent` fires along the way, so region,
+pressure plate and anti-cheat logic all run.
+
+| Method | What it does |
+| --- | --- |
+| `walkTo(Vector3 $target, float $speed = Golem::WALK_SPEED)` | Walks to a position (its height is ignored, golems follow the ground). Yield it to wait for the arrival. |
+| `walk(float $x, float $z)` | Walks a number of blocks from where the golem stands. |
+| `jump()` | Jumps, firing `PlayerJumpEvent`. Returns `false` when not on the ground. |
+| `sneak(bool $sneaking = true)` / `sprint(bool $sprinting = true)` | Toggles sneaking or sprinting, firing the matching events. |
+
+```php
+$steve = yield $this->golem('Steve');
+
+yield $steve->walk(25, 0);                 // ~6 seconds at walking speed
+$this->assertReceivedMessage($steve, 'You entered the arena.');
+
+yield $steve->walkTo($shop, Golem::SPRINT_SPEED);
+```
+
+A walk fails (and so does the test, unless it catches the exception) when the golem is stuck for a
+second: a wall in the way, a hole too deep, or a plugin cancelling `PlayerMoveEvent`. Teleported
+into the air, a golem falls.
+
+Like any player, a golem cannot be hurt during its first 3 seconds (60 ticks) on the server. Tests
+about damage should `yield $this->wait(60)` first.
+
+## Facing and reach
+
 Golems turn to face their target before `breakBlock()`, `interactBlock()` and `attack()`, because
 PocketMine checks that players look at what they interact with. They still need to be within
 reach: teleport them next to the target first.

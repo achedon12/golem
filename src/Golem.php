@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Golem;
 
+use Golem\Runtime\Coroutine\Deferred;
+use Golem\Runtime\Movement;
 use Golem\Runtime\Network\GolemSession;
 use Golem\Runtime\Network\Inbox;
 use pocketmine\entity\Entity;
@@ -30,6 +32,14 @@ use pocketmine\world\Position;
  */
 final class Golem
 {
+    /** Walking speed of a player, in blocks per second. */
+    public const WALK_SPEED = 4.317;
+
+    /** Sprinting speed of a player, in blocks per second. */
+    public const SPRINT_SPEED = 5.612;
+
+    private readonly Movement $movement;
+
     /**
      * @internal golems are created with {@see TestCase::golem()}
      */
@@ -38,6 +48,7 @@ final class Golem
         private readonly GolemSession $session,
         private readonly Plugin $owner,
     ) {
+        $this->movement = new Movement($player, $this);
     }
 
     public function name(): string
@@ -128,6 +139,54 @@ final class Golem
     public function position(): Position
     {
         return $this->player->getPosition();
+    }
+
+    /**
+     * Walks to a position, one step per tick like a real player: walls stop the golem,
+     * it falls off ledges (and takes fall damage), and PlayerMoveEvent fires along the way.
+     * The target's height is ignored; golems walk on whatever ground there is.
+     *
+     *     yield $steve->walkTo($this->spawn()->add(10, 0, 0));
+     *
+     * @return Deferred<Golem> resolves on arrival; fails if the golem stays stuck for a second
+     */
+    public function walkTo(Vector3 $target, float $blocksPerSecond = self::WALK_SPEED): Deferred
+    {
+        return $this->movement->walkTo($target, $blocksPerSecond);
+    }
+
+    /**
+     * Walks a number of blocks from where the golem stands.
+     *
+     * @return Deferred<Golem>
+     */
+    public function walk(float $x, float $z, float $blocksPerSecond = self::WALK_SPEED): Deferred
+    {
+        return $this->walkTo($this->position()->add($x, 0, $z), $blocksPerSecond);
+    }
+
+    /**
+     * Jumps (firing PlayerJumpEvent); the golem lands a few ticks later.
+     *
+     * @return bool false when the golem is not standing on the ground
+     */
+    public function jump(): bool
+    {
+        return $this->movement->jump();
+    }
+
+    public function sneak(bool $sneaking = true): self
+    {
+        $this->player->toggleSneak($sneaking);
+
+        return $this;
+    }
+
+    public function sprint(bool $sprinting = true): self
+    {
+        $this->player->toggleSprint($sprinting);
+
+        return $this;
     }
 
     /**
@@ -388,6 +447,14 @@ final class Golem
     public function closeForm(): self
     {
         return $this->submitForm(null);
+    }
+
+    /**
+     * @internal
+     */
+    public function movement(): Movement
+    {
+        return $this->movement;
     }
 
     /**
