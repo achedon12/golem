@@ -7,6 +7,12 @@ breaking changes; they will always be listed here.
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-10-07
+
+### Changed
+
+- The GitHub Action is now named "Golem PocketMine-MP Tests", a unique name for the GitHub Marketplace. `uses: achedon12/golem@v0` is unchanged.
+
 ## [0.1.0] - 2026-10-07
 
 First public release.
@@ -28,4 +34,5 @@ First public release.
 - `golem init` to scaffold a first test and a workflow.
 - A composite GitHub Action, `achedon12/golem@v0`.
 
+[0.1.1]: https://github.com/achedon12/golem/releases/tag/v0.1.1
 [0.1.0]: https://github.com/achedon12/golem/releases/tag/v0.1.0

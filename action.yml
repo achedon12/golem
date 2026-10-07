@@ -1,4 +1,4 @@
-name: Golem
+name: Golem PocketMine-MP Tests
 description: Run integration tests for a PocketMine-MP plugin on a real server, with simulated players.
 author: Achedon12
 
