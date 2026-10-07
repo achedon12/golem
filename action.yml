@@ -27,7 +27,7 @@ runs:
   using: composite
   steps:
     - name: Cache PocketMine-MP and its PHP build
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: ~/.cache/golem
         key: golem-v1-${{ runner.os }}-${{ runner.arch }}-${{ inputs.pocketmine || 'latest' }}
