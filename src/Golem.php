@@ -14,6 +14,7 @@ use pocketmine\item\Item;
 use pocketmine\math\Facing;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\ClientboundPacket;
+use pocketmine\network\mcpe\protocol\DisconnectPacket;
 use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
 use pocketmine\network\mcpe\protocol\PlaySoundPacket;
 use pocketmine\player\GameMode;
@@ -67,6 +68,18 @@ final class Golem
     public function isOnline(): bool
     {
         return $this->player->isConnected();
+    }
+
+    /**
+     * What the disconnection screen said (colour codes removed), or null while the
+     * golem is still connected. Covers kicks, bans and {@see quit()}.
+     */
+    public function disconnectReason(): ?string
+    {
+        $packets = $this->packets(DisconnectPacket::class);
+        $last = $packets === [] ? null : $packets[array_key_last($packets)];
+
+        return $last === null ? null : TextFormat::clean($last->message ?? '');
     }
 
     // ---------------------------------------------------------------- acting

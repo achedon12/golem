@@ -82,6 +82,7 @@ Everything the server sends to a golem is recorded:
 | `tips()`, `popups()`, `toasts()` | the small texts above the hotbar, and toast notifications (`"title\nbody"`) |
 | `sounds()` | sounds heard: named sounds (`random.levelup`) and sound events played in the world (`levelup`, `break`) |
 | `packets(?string $class = null)` | every packet sent to the golem, including world broadcasts, optionally only one class, e.g. `packets(PlaySoundPacket::class)` |
+| `disconnectReason()` | what the disconnection screen said after a kick, a ban or `quit()`; `null` while connected |
 | `clearInbox()` | forgets everything received so far, to focus on what happens next |
 
 Sounds, particles and animations played in the world (`World::addSound()`, `World::addParticle()`…)

@@ -11,6 +11,7 @@ breaking changes; they will always be listed here.
 
 - `assertSoundPlayed()`, `assertPacketSent()` and `Golem::sounds()` (#5).
 - `#[FreshWorld]` and `$this->freshWorld()` to run a test in its own throwaway world (#8).
+- `assertKicked()` and `Golem::disconnectReason()` (#18).
 - Golems move: `walkTo()`, `walk()`, `jump()`, `sneak()` and `sprint()`, with collisions, step-up,
   gravity and fall damage (#6).
 - Virions: the libraries listed in `.poggit.yml` are loaded (and downloaded from Poggit when

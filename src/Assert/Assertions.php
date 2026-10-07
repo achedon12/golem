@@ -342,6 +342,26 @@ trait Assertions
         $this->check($golem->isOnline(), $message ?: "{$golem->name()} is not connected");
     }
 
+    /**
+     * Checks that the golem was disconnected by the server, optionally with a
+     * disconnection screen containing the given text.
+     */
+    final protected function assertKicked(Golem $golem, ?string $reasonContains = null, string $message = ''): void
+    {
+        $reason = $golem->disconnectReason();
+        if ($golem->isOnline() || $reason === null) {
+            $this->check(false, $message ?: "{$golem->name()} was not kicked");
+
+            return;
+        }
+        $this->check(
+            $reasonContains === null || str_contains($reason, self::clean($reasonContains)),
+            $message ?: "{$golem->name()} was kicked for another reason",
+            $reasonContains === null ? null : Exporter::export($reasonContains),
+            Exporter::export($reason),
+        );
+    }
+
     final protected function assertOffline(Golem $golem, string $message = ''): void
     {
         $this->check(!$golem->isOnline(), $message ?: "{$golem->name()} is still connected");
