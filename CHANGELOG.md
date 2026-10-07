@@ -7,6 +7,10 @@ breaking changes; they will always be listed here.
 
 ## [Unreleased]
 
+### Added
+
+- Documentation website at https://achedon12.github.io/golem/ and a wiki, both generated from `docs/`.
+
 ## [0.1.1] - 2026-10-07
 
 ### Changed
