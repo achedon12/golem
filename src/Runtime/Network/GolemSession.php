@@ -16,6 +16,10 @@ use pocketmine\network\mcpe\handler\ResourcePacksPacketHandler;
 use pocketmine\network\mcpe\handler\SpawnResponsePacketHandler;
 use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\network\mcpe\protocol\ClientboundPacket;
+use pocketmine\network\mcpe\protocol\ContainerClosePacket;
+use pocketmine\network\mcpe\protocol\ContainerOpenPacket;
+use pocketmine\network\mcpe\protocol\PacketViolationWarningPacket;
+use pocketmine\network\mcpe\protocol\NetworkStackLatencyPacket;
 use pocketmine\network\mcpe\protocol\PacketPool;
 use pocketmine\network\mcpe\protocol\RequestChunkRadiusPacket;
 use pocketmine\network\mcpe\protocol\ResourcePackClientResponsePacket;
@@ -47,6 +51,11 @@ final class GolemSession extends NetworkSession
 
     /** @var (\Closure(): void)|null */
     private ?\Closure $onSpawned;
+
+    /** the container window shown on the client side, as the client sees it */
+    private ?int $clientWindow = null;
+
+    private int $lastContainerOpenTick = -1;
 
     /**
      * @param \Closure(): void $onSpawned
@@ -88,6 +97,14 @@ final class GolemSession extends NetworkSession
     public function inbox(): Inbox
     {
         return $this->inbox;
+    }
+
+    /**
+     * The server tick of the latest container window the server sent, -1 if none.
+     */
+    public function lastContainerOpenTick(): int
+    {
+        return $this->lastContainerOpenTick;
     }
 
     /**
@@ -134,6 +151,13 @@ final class GolemSession extends NetworkSession
     public function sendDataPacket(ClientboundPacket $packet, bool $immediate = false): bool
     {
         $this->inbox->recordPacket($packet);
+
+        // Plugins (InvMenu, anti-cheats) ping the client and wait for the echo before going
+        // on. Bedrock clients answer with the timestamp divided by 1,000,000; do the same.
+        if ($packet instanceof NetworkStackLatencyPacket && $packet->needResponse) {
+            $this->queue(NetworkStackLatencyPacket::response(intdiv($packet->timestamp, 1_000_000)));
+        }
+        $this->trackClientWindow($packet);
 
         return parent::sendDataPacket($packet, $immediate);
     }
@@ -197,6 +221,30 @@ final class GolemSession extends NetworkSession
     {
         $this->inbox->clearForms();
         parent::onCloseAllForms();
+    }
+
+    /**
+     * A Bedrock client that receives a container while another is already on screen
+     * answers with a packet violation warning. Menu libraries (InvMenu) rely on that
+     * warning to know the menu was displayed, so golems reproduce it.
+     */
+    private function trackClientWindow(ClientboundPacket $packet): void
+    {
+        if ($packet instanceof ContainerOpenPacket) {
+            if ($this->clientWindow !== null) {
+                // the fields are what the client actually sends, odd as they look
+                $this->queue(PacketViolationWarningPacket::create(
+                    -1,
+                    PacketViolationWarningPacket::SEVERITY_WARNING,
+                    PacketViolationWarningPacket::NETWORK_ID,
+                    '',
+                ));
+            }
+            $this->clientWindow = $packet->windowId;
+            $this->lastContainerOpenTick = $this->getPlayer()?->getServer()->getTick() ?? -1;
+        } elseif ($packet instanceof ContainerClosePacket && $packet->server) {
+            $this->clientWindow = null;
+        }
     }
 
     private function queue(ServerboundPacket $packet): void

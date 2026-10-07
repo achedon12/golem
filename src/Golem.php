@@ -6,11 +6,16 @@ namespace Golem;
 
 use Golem\Runtime\Coroutine\Deferred;
 use Golem\Runtime\Movement;
+use Golem\Runtime\Runtime;
 use Golem\Runtime\Network\GolemSession;
 use Golem\Runtime\Network\Hud;
 use Golem\Runtime\Network\Inbox;
 use pocketmine\entity\Entity;
 use pocketmine\form\Form;
+use pocketmine\inventory\Inventory;
+use pocketmine\inventory\transaction\action\SlotChangeAction;
+use pocketmine\inventory\transaction\InventoryTransaction;
+use pocketmine\inventory\transaction\TransactionException;
 use pocketmine\item\Item;
 use pocketmine\math\Facing;
 use pocketmine\math\Vector3;
@@ -446,6 +451,82 @@ final class Golem
     public function clearInbox(): self
     {
         $this->session->inbox()->clear();
+
+        return $this;
+    }
+
+    // ---------------------------------------------------------- inventories
+
+    /**
+     * The inventory window open on the golem's screen (a chest, a menu), or null.
+     */
+    public function window(): ?Inventory
+    {
+        return $this->player->getCurrentWindow();
+    }
+
+    /**
+     * Waits until a window is open and settled: menu libraries such as InvMenu send the
+     * window several times while it is being displayed, and ignore clicks until then.
+     *
+     *     $steve->chat('/shop');
+     *     $shop = yield $steve->waitForWindow();
+     *
+     * @return Deferred<Inventory>
+     */
+    public function waitForWindow(int $timeoutTicks = 60): Deferred
+    {
+        $server = $this->player->getServer();
+
+        return Runtime::get()->clock->until(
+            fn () => $this->window() !== null && $server->getTick() - $this->session->lastContainerOpenTick() >= 2 ? $this->window() : null,
+            $timeoutTicks,
+            "a window to open for {$this->name()}",
+        );
+    }
+
+    /**
+     * Clicks a slot of the open window: picks up its item, swapping with whatever the
+     * cursor holds. This is a real inventory transaction, so InventoryTransactionEvent
+     * fires and menu libraries such as InvMenu react exactly as for a player.
+     *
+     * @return bool false when the click was refused (cancelled by a plugin, or nothing
+     *              to pick up with an empty cursor)
+     */
+    public function clickSlot(int $slot): bool
+    {
+        $window = $this->window() ?? throw new \LogicException("{$this->name()} has no window open");
+        if (!$window->slotExists($slot)) {
+            throw new \LogicException("The open window of {$this->name()} has no slot $slot");
+        }
+
+        $cursor = $this->player->getCursorInventory();
+        $inSlot = $window->getItem($slot);
+        $held = $cursor->getItem(0);
+        if ($inSlot->isNull() && $held->isNull()) {
+            return false;
+        }
+
+        $transaction = new InventoryTransaction($this->player, [
+            new SlotChangeAction($window, $slot, $inSlot, $held),
+            new SlotChangeAction($cursor, 0, $held, $inSlot),
+        ]);
+        try {
+            $transaction->execute();
+        } catch (TransactionException) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Closes the open window, like pressing Escape. Whatever the cursor held goes back
+     * to the inventory, as for a player.
+     */
+    public function closeWindow(): self
+    {
+        $this->player->removeCurrentWindow();
 
         return $this;
     }

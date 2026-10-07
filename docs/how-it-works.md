@@ -51,6 +51,9 @@ A golem is a `Player` whose `NetworkSession` has no socket. Golem:
   to forge);
 - answers each step of the spawn handshake the way a client would: accepting resource packs,
   requesting chunks, and confirming the spawn;
+- replies to the probes some plugins send to the client, like a real one: `NetworkStackLatencyPacket`
+  pings, and the packet violation warning a client sends when a container is opened twice (InvMenu
+  relies on both);
 - records what the server sends instead of compressing and sending it, and reads it back through
   PocketMine's own hooks (chat, titles, forms) or as packet objects.
 

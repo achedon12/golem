@@ -12,6 +12,9 @@ commands:
   menu:
     description: Opens the server menu
     permission: hello.menu
+  kits:
+    description: Opens the kit selector
+    permission: hello.menu
 
 permissions:
   hello.heal:

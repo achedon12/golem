@@ -41,7 +41,7 @@ final class Clock
 
     /**
      * @template T
-     * @param \Closure(): T $condition checked once per tick until it returns something truthy
+     * @param \Closure(): (T|null|false) $condition checked once per tick until it returns something truthy
      * @return Deferred<T>
      */
     public function until(\Closure $condition, int $timeoutTicks, string $description): Deferred

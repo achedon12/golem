@@ -38,6 +38,7 @@ Text comparisons ignore colour codes on both sides and match substrings.
 | `assertActionBar(Golem $golem, string $text)` | an action bar message containing `$text` was shown |
 | `assertScoreboardContains(Golem $golem, string $text)` | the sidebar scoreboard shows that text, in its title or a line |
 | `assertBossBar(Golem $golem, string $titleContains, ?float $progress = null)` | a boss bar with that title (and progress, from 0.0 to 1.0) is on screen |
+| `assertWindowOpen(Golem $golem, ?string $class = null)` / `assertNoWindowOpen(Golem $golem)` | an inventory window (optionally of that class, e.g. `ChestInventory::class`) is open / none is |
 | `assertFormOpen(Golem $golem, ?string $titleContains = null)` | the golem has a form open (whose title contains the text) |
 | `assertNoFormOpen(Golem $golem)` | no form is waiting for an answer |
 | `assertSoundPlayed(Golem $golem, string $sound)` | the golem heard the sound: a named sound like `random.levelup`, or a sound event like `levelup` |
