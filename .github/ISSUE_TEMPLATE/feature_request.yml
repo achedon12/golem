@@ -1,0 +1,17 @@
+name: Feature request
+description: Something you would like to test but cannot (yet)
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What would you like to test?
+      description: Describe the plugin behaviour you want to cover. Real examples help a lot.
+    validations:
+      required: true
+  - type: textarea
+    id: api
+    attributes:
+      label: How would the test look?
+      description: Write the test you wish you could write.
+      render: php

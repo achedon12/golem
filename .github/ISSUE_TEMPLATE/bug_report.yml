@@ -1,0 +1,46 @@
+name: Bug report
+description: Something does not work as documented
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for reporting! The more precise, the faster it gets fixed.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: test
+    attributes:
+      label: Test code
+      description: The smallest test (and plugin code, if relevant) that shows the problem.
+      render: php
+  - type: textarea
+    id: output
+    attributes:
+      label: Output of `vendor/bin/golem --verbose`
+      render: text
+  - type: input
+    id: golem
+    attributes:
+      label: Golem version
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: input
+    id: pocketmine
+    attributes:
+      label: PocketMine-MP version
+      placeholder: "5.44.3"
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options: [Linux, macOS, Windows (WSL), GitHub Actions, Other CI]
+    validations:
+      required: true
