@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Golem\Runtime;
 
+use Golem\Attribute\DataProvider;
 use Golem\Attribute\FreshWorld;
 use Golem\Attribute\Skip;
 use Golem\Attribute\Test;
@@ -73,14 +74,61 @@ final class TestDiscovery
                     self::skipReason($method, $reflection),
                     $method->getAttributes(FreshWorld::class) !== [] || $reflection->getAttributes(FreshWorld::class) !== [],
                 );
-                if ($filter !== null && $filter !== '' && stripos($definition->id(), $filter) === false) {
-                    continue;
+                foreach (self::expand($definition, $method, $reflection) as $test) {
+                    if ($filter !== null && $filter !== '' && stripos($test->id(), $filter) === false) {
+                        continue;
+                    }
+                    $tests[] = $test;
                 }
-                $tests[] = $definition;
             }
         }
 
         usort($tests, static fn (TestDefinition $a, TestDefinition $b) => [$a->file, $a->line] <=> [$b->file, $b->line]);
+
+        return $tests;
+    }
+
+    /**
+     * One definition per data set of the method's #[DataProvider], or the method alone.
+     *
+     * @param \ReflectionClass<TestCase> $class
+     * @return list<TestDefinition>
+     */
+    private static function expand(TestDefinition $definition, \ReflectionMethod $method, \ReflectionClass $class): array
+    {
+        $attribute = $method->getAttributes(DataProvider::class)[0] ?? null;
+        if ($attribute === null) {
+            return [$definition];
+        }
+
+        $providerName = $attribute->newInstance()->method;
+        $where = $class->getShortName() . '::' . $method->getName();
+        if (!$class->hasMethod($providerName)) {
+            throw new \RuntimeException("The data provider $providerName() of $where does not exist");
+        }
+        $provider = $class->getMethod($providerName);
+        if (!$provider->isPublic() || !$provider->isStatic()) {
+            throw new \RuntimeException("The data provider $providerName() of $where must be public and static");
+        }
+
+        $data = $provider->invoke(null);
+        if (!is_iterable($data)) {
+            throw new \RuntimeException("The data provider $providerName() of $where must return an iterable");
+        }
+
+        $tests = [];
+        $index = 0;
+        foreach ($data as $key => $arguments) {
+            if (!is_array($arguments)) {
+                throw new \RuntimeException("Data set " . var_export($key, true) . " of $providerName() must be an array of arguments");
+            }
+            $name = is_string($key) ? $key : '#' . $index;
+            $tests[] = $definition->withData($name, array_values($arguments));
+            $index++;
+        }
+        if ($tests === []) {
+            throw new \RuntimeException("The data provider $providerName() of $where returned no data");
+        }
 
         return $tests;
     }

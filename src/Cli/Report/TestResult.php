@@ -20,6 +20,7 @@ final class TestResult
     public function __construct(
         public readonly string $class,
         public readonly string $method,
+        public readonly ?string $dataName,
         public readonly string $file,
         public readonly int $line,
         public readonly string $status,
@@ -47,6 +48,7 @@ final class TestResult
         return new self(
             (string) $string('class'),
             (string) $string('method'),
+            $string('data'),
             (string) $string('file'),
             (int) ($event['line'] ?? 0),
             (string) $string('status'),
@@ -87,6 +89,16 @@ final class TestResult
         $name = str_replace('_', ' ', $name);
         $name = (string) preg_replace('/(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])/', ' ', $name);
 
-        return strtolower(trim($name));
+        $description = strtolower(trim($name));
+
+        return $this->dataName !== null ? "$description ($this->dataName)" : $description;
+    }
+
+    /**
+     * The test's name in reports, PHPUnit style: "testRank with data set \"admin\"".
+     */
+    public function name(): string
+    {
+        return $this->dataName !== null ? sprintf('%s with data set "%s"', $this->method, $this->dataName) : $this->method;
     }
 }
