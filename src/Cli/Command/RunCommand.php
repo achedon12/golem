@@ -47,7 +47,8 @@ final class RunCommand
             throw new UserError('--log-junit needs the dom extension in the PHP running Golem.');
         }
 
-        $toolchain = new Toolchain(Toolchain::defaultCacheDirectory(), new Downloader(), $this->output);
+        $cacheDirectory = Toolchain::defaultCacheDirectory();
+        $toolchain = new Toolchain($cacheDirectory, new Downloader(), $this->output);
         $php = $options->get('php') ?? $toolchain->php();
         [$version, $phar] = $options->get('phar') !== null
             ? ['custom', (string) $options->get('phar')]
@@ -56,7 +57,7 @@ final class RunCommand
         $this->output->writeln();
         $this->output->writeln(sprintf('  <bold>Golem</> <gray>is starting PocketMine-MP %s…</>', Output::escape($version)));
 
-        $workspace = Workspace::create($project, $this->golemSource, $options->get('filter'));
+        $workspace = Workspace::create($project, $this->golemSource, $options->get('filter'), $cacheDirectory);
         $process = new ServerProcess($php, $phar, $workspace, $options->has('verbose'));
         $reporter = new ConsoleReporter($this->output, $project->root);
         $report = new RunReport();

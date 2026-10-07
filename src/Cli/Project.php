@@ -11,7 +11,8 @@ namespace Golem\Cli;
  *         "golem": {
  *             "tests": "tests",
  *             "pocketmine": "5.44.3",
- *             "plugins": ["libs/SomeDependency.phar"]
+ *             "plugins": ["libs/SomeDependency.phar"],
+ *             "virions": ["libs/SomeVirion"]
  *         }
  *     }
  */
@@ -19,6 +20,7 @@ final class Project
 {
     /**
      * @param list<string> $extraPlugins absolute paths
+     * @param list<string> $virions absolute paths
      */
     private function __construct(
         public readonly string $root,
@@ -27,6 +29,8 @@ final class Project
         public readonly string $testsDirectory,
         public readonly string $pocketmineVersion,
         public readonly array $extraPlugins,
+        public readonly array $virions,
+        public readonly ?string $poggitManifest,
     ) {
     }
 
@@ -66,6 +70,18 @@ final class Project
             $extraPlugins[] = $absolute;
         }
 
+        $virions = [];
+        foreach ((array) ($settings['virions'] ?? []) as $virion) {
+            if (!is_string($virion)) {
+                continue;
+            }
+            $absolute = self::absolute($root, $virion);
+            if (!file_exists($absolute)) {
+                throw new UserError("The virion \"$virion\" listed in composer.json does not exist.");
+            }
+            $virions[] = $absolute;
+        }
+
         return new self(
             $root,
             $name,
@@ -73,7 +89,33 @@ final class Project
             $testsPath,
             $pocketmine ?? (is_string($settings['pocketmine'] ?? null) ? $settings['pocketmine'] : 'latest'),
             $extraPlugins,
+            $virions,
+            self::findPoggitManifest($root),
         );
+    }
+
+    /**
+     * The .poggit.yml of the plugin: in its folder, or in a parent folder when the
+     * repository holds several plugins.
+     */
+    private static function findPoggitManifest(string $root): ?string
+    {
+        $directory = $root;
+        for ($depth = 0; $depth < 5; $depth++) {
+            if (is_file($directory . '/.poggit.yml')) {
+                return $directory . '/.poggit.yml';
+            }
+            if (is_dir($directory . '/.git')) {
+                return null;
+            }
+            $parent = dirname($directory);
+            if ($parent === $directory) {
+                return null;
+            }
+            $directory = $parent;
+        }
+
+        return null;
     }
 
     /**

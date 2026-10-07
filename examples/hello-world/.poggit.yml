@@ -1,0 +1,6 @@
+projects:
+  HelloWorld:
+    path: ""
+    libs:
+      - src: virions/libGreeting
+        vendor: raw

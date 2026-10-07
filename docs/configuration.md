@@ -53,6 +53,27 @@ Project-wide defaults go in `extra.golem`. Command line options win over them.
 - `pocketmine`: pin a PocketMine-MP version so every machine tests against the same one.
 - `plugins`: other plugins to load alongside yours, typically the ones listed in your `depend`.
   `.phar` files and source folders (with `plugin.yml` and `src/`) both work.
+- `virions`: virions to load that are not in your `.poggit.yml` (folders with `virion.yml` and `src/`,
+  or virion phars).
+
+## Virions
+
+Golem reads your plugin's `.poggit.yml` (in its folder, or a parent folder for repositories with
+several plugins) and loads the virions it lists before your plugin:
+
+```yaml
+projects:
+  MyPlugin:
+    libs:
+      - src: muqsit/InvMenu/InvMenu    # downloaded from Poggit, cached for a day
+        version: ^4.6.0
+      - src: libs/MyLocalVirion        # a virion folder or phar in the repository
+        vendor: raw
+```
+
+Your source code uses each virion's own namespace (its `antigen`), and that is the namespace Golem
+registers: the shading Poggit applies when building the phar is not needed when running from
+source. Nothing to configure if your plugin already builds on Poggit.
 
 ## Environment variables
 
