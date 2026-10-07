@@ -1,0 +1,24 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{namespace}};
+
+use Generator;
+use Golem\TestCase;
+
+final class ExampleTest extends TestCase
+{
+    public function testThePluginIsEnabled(): void
+    {
+        $this->assertTrue($this->plugin()->isEnabled());
+    }
+
+    public function testAPlayerCanJoin(): Generator
+    {
+        $steve = yield $this->golem('Steve');
+
+        $this->assertOnline($steve);
+        $this->assertReceivedMessage($steve, 'joined the game');
+    }
+}

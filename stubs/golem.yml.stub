@@ -1,0 +1,13 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  golem:
+    name: Golem
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: achedon12/golem@v0
