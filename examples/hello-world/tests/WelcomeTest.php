@@ -6,6 +6,7 @@ namespace Example\HelloWorld\Tests;
 
 use Generator;
 use Golem\TestCase;
+use pocketmine\network\mcpe\protocol\PlaySoundPacket;
 use pocketmine\item\VanillaItems;
 
 final class WelcomeTest extends TestCase
@@ -16,6 +17,14 @@ final class WelcomeTest extends TestCase
 
         $this->assertReceivedMessage($steve, 'Welcome, Steve!');
         $this->assertTitle($steve, 'Hello!');
+    }
+
+    public function testPlaysAWelcomeSound(): Generator
+    {
+        $steve = yield $this->golem('Steve');
+
+        $this->assertSoundPlayed($steve, 'random.orb');
+        $this->assertPacketSent($steve, PlaySoundPacket::class, fn (PlaySoundPacket $p) => $p->volume === 1.0);
     }
 
     public function testGivesAStarterKit(): Generator

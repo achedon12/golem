@@ -38,6 +38,8 @@ final class GolemSession extends NetworkSession
 {
     private const VIEW_DISTANCE = 4;
 
+    private static ?RecordingBroadcaster $broadcaster = null;
+
     private readonly Inbox $inbox;
 
     /** @var list<ServerboundPacket> client packets waiting to be handled on the next tick */
@@ -56,7 +58,8 @@ final class GolemSession extends NetworkSession
 
         $network = $server->getNetwork();
         $typeConverter = TypeConverter::getInstance();
-        $broadcaster = new StandardPacketBroadcaster($server);
+        // Shared by every golem, so a broadcast to several golems is still encoded once.
+        $broadcaster = self::$broadcaster ??= new RecordingBroadcaster(new StandardPacketBroadcaster($server));
 
         parent::__construct(
             $server,
