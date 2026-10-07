@@ -13,6 +13,11 @@ breaking changes; they will always be listed here.
   development server (#33).
 - Golems wear a visible stone-grey skin instead of a transparent one.
 
+### Fixed
+
+- After a test, golems only lose the op status they did not have before spawning, so a name that
+  is a real operator keeps its rights.
+
 ### Changed
 
 - The plugin Golem injects into test servers is now named `GolemTestRunner`.

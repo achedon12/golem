@@ -50,6 +50,29 @@ final class GolemCommandTest extends TestCase
         $this->assertOnline($this->admin);
     }
 
+    public function testRefusesTheNameOfARealPlayer(): void
+    {
+        $this->server()->addOp('Notch');
+        try {
+            $this->admin->command('golem spawn Notch');
+
+            $this->assertReceivedMessage($this->admin, 'Notch is a real player of this server');
+            $this->assertNull($this->server()->getPlayerExact('Notch'));
+        } finally {
+            $this->server()->removeOp('Notch');
+        }
+    }
+
+    public function testRemovingAGolemRevokesTheOpItWasGiven(): Generator
+    {
+        yield from $this->spawnBob();
+        $this->admin->command('op Bob');
+
+        $this->admin->command('golem remove all');
+
+        $this->assertFalse($this->server()->isOp('Bob'), 'Bob was not op before spawning, so it should not stay op');
+    }
+
     public function testWalksAndRemovesGolems(): Generator
     {
         yield from $this->spawnBob();

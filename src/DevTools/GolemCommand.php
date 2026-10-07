@@ -33,7 +33,7 @@ final class GolemCommand extends Command implements PluginOwned
     ];
 
     public function __construct(
-        private readonly Plugin $plugin,
+        private readonly DevToolsPlugin $plugin,
         private readonly GolemFactory $golems,
     ) {
         parent::__construct('golem', 'Spawn and control simulated players', '/golem help');
@@ -92,7 +92,14 @@ final class GolemCommand extends Command implements PluginOwned
 
             return;
         }
+        // and with the name of a known player, the golem would get their op status and data
+        if ($this->plugin->isRealPlayer($name)) {
+            $this->error($sender, "$name is a real player of this server: pick another name for the golem");
 
+            return;
+        }
+
+        $this->plugin->rememberGolem($name);
         $this->golems->spawn($name)->then(
             fn (Golem $golem) => $this->reply($sender, "{$golem->name()} joined the server"),
             fn (\Throwable $e) => $this->error($sender, "$name could not join: {$e->getMessage()}"),
