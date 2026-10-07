@@ -99,7 +99,6 @@ final class GolemCommand extends Command implements PluginOwned
             return;
         }
 
-        $this->plugin->rememberGolem($name);
         $this->golems->spawn($name)->then(
             fn (Golem $golem) => $this->reply($sender, "{$golem->name()} joined the server"),
             fn (\Throwable $e) => $this->error($sender, "$name could not join: {$e->getMessage()}"),
