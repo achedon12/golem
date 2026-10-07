@@ -95,18 +95,37 @@ final class Project
     }
 
     /**
-     * The .poggit.yml of the plugin: in its folder, or in a parent folder when the
-     * repository holds several plugins.
+     * The .poggit.yml of the plugin: in its folder or, for repositories holding several
+     * plugins, in a parent folder of the same git repository. Never outside of it, since
+     * the virions it lists get downloaded and run.
      */
     private static function findPoggitManifest(string $root): ?string
     {
-        $directory = $root;
-        for ($depth = 0; $depth < 5; $depth++) {
+        if (is_file($root . '/.poggit.yml')) {
+            return $root . '/.poggit.yml';
+        }
+
+        $repository = self::gitRoot($root);
+        if ($repository === null) {
+            return null;
+        }
+        for ($directory = dirname($root); str_starts_with($directory, $repository); $directory = dirname($directory)) {
             if (is_file($directory . '/.poggit.yml')) {
                 return $directory . '/.poggit.yml';
             }
-            if (is_dir($directory . '/.git')) {
-                return null;
+            if ($directory === $repository) {
+                break;
+            }
+        }
+
+        return null;
+    }
+
+    private static function gitRoot(string $directory): ?string
+    {
+        for ($depth = 0; $depth < 6; $depth++) {
+            if (file_exists($directory . '/.git')) {
+                return $directory;
             }
             $parent = dirname($directory);
             if ($parent === $directory) {
