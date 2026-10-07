@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Golem\Runtime;
 
+use Golem\Attribute\FreshWorld;
 use Golem\Attribute\Skip;
 use Golem\Attribute\Test;
 use Golem\Attribute\Timeout;
@@ -70,6 +71,7 @@ final class TestDiscovery
                     $method->getStartLine() ?: 0,
                     self::timeout($method, $reflection),
                     self::skipReason($method, $reflection),
+                    $method->getAttributes(FreshWorld::class) !== [] || $reflection->getAttributes(FreshWorld::class) !== [],
                 );
                 if ($filter !== null && $filter !== '' && stripos($definition->id(), $filter) === false) {
                     continue;

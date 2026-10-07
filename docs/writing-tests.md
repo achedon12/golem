@@ -99,14 +99,31 @@ test spawned and revokes their op status, so each test starts with an empty serv
 
 ## Isolation
 
-Golems are cleaned up between tests, but the world and your plugin's state are not: a block broken
-in one test stays broken in the next, and data your plugin keeps in memory survives. Give each test
-its own spot (teleport golems to different coordinates) or reset the state you rely on in
-`setUp()`.
+Golems are cleaned up between tests, but the shared world and your plugin's state are not: a block
+broken in one test stays broken in the next, and data your plugin keeps in memory survives.
+
+When a test changes the world, give it a world of its own with `#[FreshWorld]`: it runs in a brand
+new superflat world, which becomes the default world (golems spawn there, `$this->world()` returns
+it) and is deleted afterwards.
+
+```php
+use Golem\Attribute\FreshWorld;
+
+#[FreshWorld]
+public function testExplosionsDestroyBlocks(): Generator
+{
+    $steve = yield $this->golem('Steve');
+    // ...
+}
+```
+
+The same thing from code is `$this->freshWorld()`, to call before spawning golems, usually in
+`setUp()`. Plugin state is yours to reset in `setUp()`.
 
 ## Attributes
 
 ```php
+use Golem\Attribute\FreshWorld;
 use Golem\Attribute\Skip;
 use Golem\Attribute\Test;
 use Golem\Attribute\Timeout;
@@ -116,6 +133,9 @@ final class BossFightTest extends TestCase
 {
     #[Test]                              // runs although the name does not start with "test"
     public function bossSpawnsAtNight(): Generator { /* ... */ }
+
+    #[FreshWorld]                        // runs in its own world, deleted afterwards
+    public function testArenaCollapses(): Generator { /* ... */ }
 
     #[Skip('waiting for the 2.0 loot tables')]
     public function testLoot(): void { /* ... */ }
@@ -133,3 +153,4 @@ The default timeout is 200 ticks (10 seconds) per test. You can also skip from i
 | `$this->plugin()` | your plugin instance (or `plugin('Other')` for another one) |
 | `$this->world()` | the default world, a superflat world created fresh for each run |
 | `$this->spawn()` | the default world's spawn position |
+| `$this->freshWorld()` | switches the test to a brand new world (see [Isolation](#isolation)) |

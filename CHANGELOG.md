@@ -10,6 +10,7 @@ breaking changes; they will always be listed here.
 ### Added
 
 - `assertSoundPlayed()`, `assertPacketSent()` and `Golem::sounds()` (#5).
+- `#[FreshWorld]` and `$this->freshWorld()` to run a test in its own throwaway world (#8).
 - Documentation website at https://achedon12.github.io/golem/ and a wiki, both generated from `docs/`.
 
 ### Fixed

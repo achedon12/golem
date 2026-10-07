@@ -17,6 +17,7 @@ final class Runtime
         public readonly GolemPlugin $plugin,
         public readonly GolemFactory $golems,
         public readonly Clock $clock,
+        public readonly Worlds $worlds,
         public readonly string $subject,
     ) {
     }

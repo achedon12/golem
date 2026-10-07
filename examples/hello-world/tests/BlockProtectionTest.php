@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Example\HelloWorld\Tests;
 
 use Generator;
+use Golem\Attribute\FreshWorld;
 use Golem\Golem;
 use Golem\TestCase;
 use pocketmine\block\VanillaBlocks;
@@ -25,6 +26,7 @@ final class BlockProtectionTest extends TestCase
         $this->assertReceivedMessage($steve, 'You cannot build here.');
     }
 
+    #[FreshWorld] // this test digs a hole: keep it out of the shared world
     public function testBuildersCan(): Generator
     {
         $steve = yield $this->golem('Steve');

@@ -65,7 +65,6 @@ Golem is young. Things it does not do yet:
 - **The login is shortcut.** `PlayerPreLoginEvent` and the Xbox Live handshake are skipped:
   golems arrive with a login that was already accepted. `PlayerLoginEvent`, `PlayerJoinEvent` and
   everything after fire normally.
-- **One world, shared by all tests.** Golems are cleaned up between tests, the world is not.
 - **Virions are not injected yet.** A plugin that relies on virions will not find their classes
   when loaded from source.
 - **Tests run sequentially**, in a single server.
