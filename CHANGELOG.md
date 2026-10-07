@@ -7,6 +7,16 @@ breaking changes; they will always be listed here.
 
 ## [Unreleased]
 
+### Added
+
+- Golem is also a PocketMine-MP plugin, built by Poggit: `/golem` spawns and controls golems on a
+  development server (#33).
+- Golems wear a visible stone-grey skin instead of a transparent one.
+
+### Changed
+
+- The plugin Golem injects into test servers is now named `GolemTestRunner`.
+
 ## [0.2.0] - 2026-10-07
 
 ### Added

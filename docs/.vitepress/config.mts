@@ -83,7 +83,7 @@ export default defineConfig({
     siteTitle: 'golem',
 
     nav: [
-      { text: 'Guide', link: '/getting-started', activeMatch: '^/(getting-started|writing-tests|golems|assertions)' },
+      { text: 'Guide', link: '/getting-started', activeMatch: '^/(getting-started|writing-tests|golems|assertions|server-plugin)' },
       { text: 'Reference', link: '/configuration', activeMatch: '^/(configuration|ci|how-it-works)' },
       {
         text: 'v0.2.0',
@@ -104,6 +104,7 @@ export default defineConfig({
           { text: 'Writing tests', link: '/writing-tests' },
           { text: 'Golems', link: '/golems' },
           { text: 'Assertions', link: '/assertions' },
+          { text: 'Server plugin', link: '/server-plugin' },
         ],
       },
       {

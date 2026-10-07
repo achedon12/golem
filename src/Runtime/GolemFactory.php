@@ -70,7 +70,7 @@ final class GolemFactory
         $session->login(new PlayerInfo(
             $name,
             Uuid::uuid4(),
-            new Skin('Standard_Custom', str_repeat("\x00", 64 * 64 * 4)),
+            new Skin('Standard_Custom', self::skin()),
             'en_US',
             [],
         ));
@@ -84,6 +84,16 @@ final class GolemFactory
         }), self::SPAWN_TIMEOUT_TICKS);
 
         return $deferred;
+    }
+
+    /**
+     * Golems spawned and still connected.
+     *
+     * @return list<Golem>
+     */
+    public function online(): array
+    {
+        return array_values(array_filter($this->golems, static fn (Golem $golem) => $golem->isOnline()));
     }
 
     /**
@@ -108,6 +118,14 @@ final class GolemFactory
         $this->sessions = [];
         $this->joining = [];
         $this->golems = [];
+    }
+
+    /**
+     * A plain stone-grey skin, so golems are visible to real players on the server.
+     */
+    private static function skin(): string
+    {
+        return str_repeat("\x7c\x87\x94\xff", 64 * 64);
     }
 
     private function startPumping(): void

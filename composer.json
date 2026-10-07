@@ -47,7 +47,10 @@
     },
     "scripts": {
         "analyse": "phpstan analyse --memory-limit=1G",
-        "test": "@php bin/golem --path=examples/hello-world"
+        "test": [
+            "@php bin/golem --path=examples/hello-world",
+            "@php bin/golem --path=."
+        ]
     },
     "minimum-stability": "stable"
 }

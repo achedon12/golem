@@ -19,11 +19,12 @@ PAGES = {
     'writing-tests.md': ('Writing-Tests', 'Writing tests'),
     'golems.md': ('Golems', 'Golems'),
     'assertions.md': ('Assertions', 'Assertions'),
+    'server-plugin.md': ('Server-Plugin', 'Server plugin'),
     'configuration.md': ('Configuration', 'Configuration'),
     'ci.md': ('Continuous-Integration', 'Continuous integration'),
     'how-it-works.md': ('How-It-Works', 'How it works'),
 }
-GUIDE = ['getting-started.md', 'writing-tests.md', 'golems.md', 'assertions.md']
+GUIDE = ['getting-started.md', 'writing-tests.md', 'golems.md', 'assertions.md', 'server-plugin.md']
 REFERENCE = ['configuration.md', 'ci.md', 'how-it-works.md']
 
 LINK = re.compile(r'\]\(([^)\s]+)\)')
@@ -43,9 +44,26 @@ def rewrite_link(target: str) -> str:
     return f'{REPO}/blob/main/{clean}{suffix}'
 
 
+def containers(markdown: str) -> str:
+    """VitePress ::: warning blocks become blockquotes, which GitHub renders."""
+    out, inside = [], False
+    for line in markdown.split('\n'):
+        match = re.match(r'^::: *(\w+) *(.*)$', line)
+        if match and not inside:
+            inside = True
+            out.append(f'> **{match.group(2) or match.group(1).capitalize()}**')
+            out.append('>')
+        elif line.strip() == ':::' and inside:
+            inside = False
+        else:
+            out.append(f'> {line}' if inside else line)
+    return '\n'.join(out)
+
+
 def convert(markdown: str) -> str:
     markdown = re.sub(r'\A---\n.*?\n---\n+', '', markdown, flags=re.S)   # website-only metadata
     markdown = re.sub(r'\A# .*\n+', '', markdown)   # the wiki shows the page name as its title
+    markdown = containers(markdown)
     return LINK.sub(lambda m: f']({rewrite_link(m.group(1))})', markdown)
 
 

@@ -131,6 +131,19 @@ When something breaks, Golem tells you what it expected, what it got, and where:
   <img src=".github/assets/terminal-failure.svg" alt="A failing test with expected and actual values and the failing line" width="760">
 </p>
 
+## On a development server
+
+Golem is also a plugin: put [`Golem.phar`](https://poggit.pmmp.io/ci/achedon12/golem/Golem) in your dev server's
+`plugins/` folder and spawn simulated players by hand, to try a minigame or a duel alone:
+
+```text
+/golem spawn Rival
+/golem Rival chat /duel accept
+/golem Rival inbox
+```
+
+See [Server plugin](https://achedon12.github.io/golem/server-plugin) for every command.
+
 ## Continuous integration
 
 ```yaml
