@@ -23,6 +23,7 @@ final class TestDefinition
         public readonly int $line,
         public readonly int $timeoutTicks,
         public readonly ?string $skipReason,
+        public readonly bool $freshWorld = false,
     ) {
     }
 

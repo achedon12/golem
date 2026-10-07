@@ -65,7 +65,8 @@ Project-wide defaults go in `extra.golem`. Command line options win over them.
 
 Each run gets a brand new server in a temporary folder, deleted afterwards (unless `--keep`):
 
-- a superflat world named `golem`, survival mode, normal difficulty
+- a superflat world named `golem`, survival mode, normal difficulty, shared by the tests (tests marked
+  `#[FreshWorld]` get their own)
 - Xbox Live authentication off, so golems can log in
 - a random free port on 127.0.0.1, so several runs can happen in parallel
 - player data saving, auto-save, the auto-updater and crash reporting off

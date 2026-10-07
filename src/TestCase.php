@@ -104,6 +104,16 @@ abstract class TestCase
     }
 
     /**
+     * Switches to a brand new superflat world for the rest of the test: golems spawned
+     * afterwards appear there, and {@see world()} returns it. It is deleted after the test.
+     * Call it before spawning golems, typically in setUp(), or use #[FreshWorld].
+     */
+    final protected function freshWorld(): World
+    {
+        return Runtime::get()->worlds->fresh();
+    }
+
+    /**
      * Where new players appear in the default world.
      */
     final protected function spawn(): Position

@@ -43,6 +43,7 @@ final class GolemPlugin extends PluginBase
             $this,
             new GolemFactory($this),
             new Clock($this),
+            new Worlds($this),
             $config['subject'],
         ));
 

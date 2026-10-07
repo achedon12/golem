@@ -75,7 +75,15 @@ final class TestRunner
 
         try {
             $instance = new ($test->class)();
+            if ($test->freshWorld) {
+                $this->runtime->worlds->fresh();
+            }
         } catch (\Throwable $e) {
+            try {
+                $this->runtime->worlds->discard();
+            } catch (\Throwable) {
+                // the original error is the one worth reporting
+            }
             $this->report($test, self::ERRORED, 0.0, 0, 0, $this->describe($e, null));
             $this->scheduleNext();
 
@@ -116,6 +124,11 @@ final class TestRunner
             $error ??= $e;
         }
         $this->runtime->golems->despawnAll();
+        try {
+            $this->runtime->worlds->discard();
+        } catch (\Throwable $e) {
+            $error ??= $e;
+        }
 
         $stuckAt = $run->coroutine->suspendedAt();
         [$status, $details] = match (true) {
