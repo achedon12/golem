@@ -19,6 +19,21 @@ export default defineConfig({
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/golem/favicon.svg' }],
     ['meta', { name: 'theme-color', content: '#22c55e' }],
+    ['meta', { name: 'google-site-verification', content: 'sfpqyLks88mzFsBGPMgSJI0BO6-7PdtQX4uYTHtrcnw' }],
+    // Matomo, cookieless: no consent banner needed. Later page views are tracked from theme/index.ts.
+    ['script', {}, `
+      var _paq = window._paq = window._paq || [];
+      _paq.push(['disableCookies']);
+      _paq.push(['trackPageView']);
+      _paq.push(['enableLinkTracking']);
+      (function () {
+        var u = 'https://matomo.leoderoin.fr/';
+        _paq.push(['setTrackerUrl', u + 'matomo.php']);
+        _paq.push(['setSiteId', '14']);
+        var d = document, g = d.createElement('script'), s = d.getElementsByTagName('script')[0];
+        g.async = true; g.src = u + 'matomo.js'; s.parentNode.insertBefore(g, s);
+      })();
+    `],
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:site_name', content: 'Golem' }],
     ['meta', { property: 'og:image', content: site + 'og.png' }],
