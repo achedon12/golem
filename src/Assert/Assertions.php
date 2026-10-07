@@ -271,6 +271,52 @@ trait Assertions
     }
 
     /**
+     * Checks that the sidebar scoreboard shows a line (or the title) containing the text.
+     */
+    final protected function assertScoreboardContains(Golem $golem, string $text, string $message = ''): void
+    {
+        $scoreboard = $golem->scoreboard();
+        if ($scoreboard === null) {
+            $this->check(false, $message ?: "{$golem->name()} has no scoreboard on screen");
+
+            return;
+        }
+        $this->assertTextIn(
+            [$scoreboard['title'], ...$scoreboard['lines']],
+            $text,
+            $message ?: "The scoreboard of {$golem->name()} does not show \"$text\"",
+        );
+    }
+
+    /**
+     * Checks the boss bar on the golem's screen: its title contains the text and,
+     * if given, its progress (0.0 to 1.0) matches.
+     */
+    final protected function assertBossBar(Golem $golem, string $titleContains, ?float $progress = null, string $message = ''): void
+    {
+        $bar = $golem->bossBar();
+        if ($bar === null) {
+            $this->check(false, $message ?: "{$golem->name()} has no boss bar on screen");
+
+            return;
+        }
+        $this->check(
+            str_contains($bar['title'], self::clean($titleContains)),
+            $message ?: 'The boss bar has a different title',
+            Exporter::export($titleContains),
+            Exporter::export($bar['title']),
+        );
+        if ($progress !== null) {
+            $this->check(
+                abs($bar['progress'] - $progress) < 0.001,
+                $message ?: 'The boss bar has a different progress',
+                Exporter::export($progress),
+                Exporter::export($bar['progress']),
+            );
+        }
+    }
+
+    /**
      * Checks that the golem has a form open, optionally one whose title contains the given text.
      */
     final protected function assertFormOpen(Golem $golem, ?string $titleContains = null, string $message = ''): void

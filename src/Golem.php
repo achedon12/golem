@@ -7,6 +7,7 @@ namespace Golem;
 use Golem\Runtime\Coroutine\Deferred;
 use Golem\Runtime\Movement;
 use Golem\Runtime\Network\GolemSession;
+use Golem\Runtime\Network\Hud;
 use Golem\Runtime\Network\Inbox;
 use pocketmine\entity\Entity;
 use pocketmine\form\Form;
@@ -342,6 +343,28 @@ final class Golem
     public function toasts(): array
     {
         return $this->cleanTexts(Inbox::TOAST);
+    }
+
+    /**
+     * The sidebar scoreboard as the golem sees it: its title and lines from top to
+     * bottom, colour codes removed. Null when no sidebar is shown.
+     *
+     * @return array{title: string, lines: list<string>}|null
+     */
+    public function scoreboard(): ?array
+    {
+        return Hud::sidebar($this->session->inbox()->packets());
+    }
+
+    /**
+     * The boss bar on the golem's screen (the latest one shown, if several), with its
+     * progress from 0.0 to 1.0. Null when none is shown.
+     *
+     * @return array{title: string, progress: float}|null
+     */
+    public function bossBar(): ?array
+    {
+        return Hud::bossBar($this->session->inbox()->packets());
     }
 
     /**
