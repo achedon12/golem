@@ -1,0 +1,386 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Golem;
+
+use Golem\Runtime\Network\GolemSession;
+use Golem\Runtime\Network\Inbox;
+use pocketmine\entity\Entity;
+use pocketmine\form\Form;
+use pocketmine\item\Item;
+use pocketmine\math\Facing;
+use pocketmine\math\Vector3;
+use pocketmine\network\mcpe\protocol\ClientboundPacket;
+use pocketmine\player\GameMode;
+use pocketmine\player\Player;
+use pocketmine\plugin\Plugin;
+use pocketmine\utils\TextFormat;
+use pocketmine\world\Position;
+
+/**
+ * A simulated player.
+ *
+ * As far as PocketMine and your plugin are concerned, a golem is a real {@see Player}:
+ * it logs in, fires every join event, takes damage, owns an inventory and can be
+ * kicked. Golems act through methods like {@see chat()} or {@see breakBlock()}, and
+ * remember everything the server sends them so you can assert on it.
+ */
+final class Golem
+{
+    /**
+     * @internal golems are created with {@see TestCase::golem()}
+     */
+    public function __construct(
+        private readonly Player $player,
+        private readonly GolemSession $session,
+        private readonly Plugin $owner,
+    ) {
+    }
+
+    public function name(): string
+    {
+        return $this->player->getName();
+    }
+
+    /**
+     * The underlying PocketMine player, for anything this class does not wrap.
+     */
+    public function player(): Player
+    {
+        return $this->player;
+    }
+
+    public function isOnline(): bool
+    {
+        return $this->player->isConnected();
+    }
+
+    // ---------------------------------------------------------------- acting
+
+    /**
+     * Sends a chat message, exactly as if it was typed in the chat box.
+     * Messages starting with "/" run as commands.
+     */
+    public function chat(string $message): void
+    {
+        $this->player->chat($message);
+    }
+
+    /**
+     * Runs a command as this golem. The leading slash is optional.
+     *
+     * @return bool whether a command with that name exists
+     */
+    public function command(string $commandLine): bool
+    {
+        return $this->player->getServer()->dispatchCommand($this->player, ltrim($commandLine, '/'));
+    }
+
+    /**
+     * Makes this golem a server operator.
+     */
+    public function op(): self
+    {
+        $this->player->getServer()->addOp($this->name());
+
+        return $this;
+    }
+
+    public function deop(): self
+    {
+        $this->player->getServer()->removeOp($this->name());
+
+        return $this;
+    }
+
+    /**
+     * Grants (or explicitly denies) a single permission.
+     */
+    public function grant(string $permission, bool $value = true): self
+    {
+        $this->player->addAttachment($this->owner, $permission, $value);
+
+        return $this;
+    }
+
+    public function deny(string $permission): self
+    {
+        return $this->grant($permission, false);
+    }
+
+    public function gamemode(GameMode $mode): self
+    {
+        $this->player->setGamemode($mode);
+
+        return $this;
+    }
+
+    public function teleport(Vector3 $target): self
+    {
+        $this->player->teleport($target);
+
+        return $this;
+    }
+
+    public function position(): Position
+    {
+        return $this->player->getPosition();
+    }
+
+    /**
+     * Adds items to the inventory.
+     */
+    public function give(Item ...$items): self
+    {
+        $this->player->getInventory()->addItem(...$items);
+
+        return $this;
+    }
+
+    /**
+     * Puts an item in the main hand.
+     */
+    public function hold(Item $item): self
+    {
+        $this->player->getInventory()->setItemInHand($item);
+
+        return $this;
+    }
+
+    /**
+     * Breaks a block, going through the same checks and events as survival mining.
+     *
+     * @return bool false if the break was cancelled or out of reach
+     */
+    public function breakBlock(Vector3 $position): bool
+    {
+        $this->player->lookAt($position->add(0.5, 0.5, 0.5));
+
+        return $this->player->breakBlock($position);
+    }
+
+    /**
+     * Right-clicks a block face, which places the held block or uses the held item on it.
+     *
+     * @param int $face one of the {@see Facing} constants
+     */
+    public function interactBlock(Vector3 $position, int $face = Facing::UP): bool
+    {
+        $this->player->lookAt($position->add(0.5, 0.5, 0.5));
+
+        return $this->player->interactBlock($position, $face, new Vector3(0.5, 0.5, 0.5));
+    }
+
+    /**
+     * Uses the held item in the air (eating, throwing, drawing a bow...).
+     */
+    public function useItem(): bool
+    {
+        return $this->player->useHeldItem();
+    }
+
+    /**
+     * Hits an entity or another golem with the held item.
+     */
+    public function attack(Entity|self $target): bool
+    {
+        $entity = $target instanceof self ? $target->player() : $target;
+        $this->player->lookAt($entity->getEyePos());
+
+        return $this->player->attackEntity($entity);
+    }
+
+    /**
+     * Disconnects, as if the player closed the game.
+     */
+    public function quit(string $reason = 'Golem left'): void
+    {
+        if ($this->player->isConnected()) {
+            $this->player->disconnect($reason);
+        }
+    }
+
+    // ------------------------------------------------------------- receiving
+
+    /**
+     * Chat messages received, colour codes removed.
+     *
+     * @return list<string>
+     */
+    public function messages(): array
+    {
+        return array_map(TextFormat::clean(...), $this->session->inbox()->texts(Inbox::CHAT));
+    }
+
+    /**
+     * Chat messages received, colour codes kept.
+     *
+     * @return list<string>
+     */
+    public function rawMessages(): array
+    {
+        return $this->session->inbox()->texts(Inbox::CHAT);
+    }
+
+    public function lastMessage(): ?string
+    {
+        $messages = $this->messages();
+
+        return $messages === [] ? null : $messages[array_key_last($messages)];
+    }
+
+    /** @return list<string> */
+    public function titles(): array
+    {
+        return $this->cleanTexts(Inbox::TITLE);
+    }
+
+    /** @return list<string> */
+    public function subtitles(): array
+    {
+        return $this->cleanTexts(Inbox::SUBTITLE);
+    }
+
+    /** @return list<string> */
+    public function actionBars(): array
+    {
+        return $this->cleanTexts(Inbox::ACTION_BAR);
+    }
+
+    /** @return list<string> */
+    public function popups(): array
+    {
+        return $this->cleanTexts(Inbox::POPUP);
+    }
+
+    /** @return list<string> */
+    public function tips(): array
+    {
+        return $this->cleanTexts(Inbox::TIP);
+    }
+
+    /**
+     * Toast notifications, as "title\nbody".
+     *
+     * @return list<string>
+     */
+    public function toasts(): array
+    {
+        return $this->cleanTexts(Inbox::TOAST);
+    }
+
+    /**
+     * Every packet the server sent, optionally only those of one class.
+     *
+     * @template P of ClientboundPacket
+     * @param class-string<P>|null $class
+     * @return ($class is null ? list<ClientboundPacket> : list<P>)
+     */
+    public function packets(?string $class = null): array
+    {
+        $packets = $this->session->inbox()->packets();
+        if ($class === null) {
+            return $packets;
+        }
+
+        return array_values(array_filter($packets, static fn (ClientboundPacket $p) => $p instanceof $class));
+    }
+
+    /**
+     * Forgets every message, title and packet received so far. Open forms are kept.
+     */
+    public function clearInbox(): self
+    {
+        $this->session->inbox()->clear();
+
+        return $this;
+    }
+
+    // ----------------------------------------------------------------- forms
+
+    /**
+     * The most recent form still waiting for an answer.
+     */
+    public function form(): ?Form
+    {
+        $forms = $this->session->inbox()->forms();
+
+        return $forms === [] ? null : $forms[array_key_last($forms)];
+    }
+
+    /**
+     * The open form as the client receives it: title, content, buttons or elements.
+     *
+     * @return array<string, mixed>
+     */
+    public function formData(): array
+    {
+        $form = $this->form() ?? throw new \LogicException("{$this->name()} has no open form");
+        $data = json_decode(json_encode($form, JSON_THROW_ON_ERROR), true, flags: JSON_THROW_ON_ERROR);
+
+        return is_array($data) ? $data : [];
+    }
+
+    /**
+     * Answers the open form with raw response data: a button index for menu forms,
+     * a boolean for modal forms, a list of values for custom forms.
+     */
+    public function submitForm(mixed $data): self
+    {
+        $forms = $this->session->inbox()->forms();
+        if ($forms === []) {
+            throw new \LogicException("{$this->name()} has no open form to submit");
+        }
+        $id = array_key_last($forms);
+        $this->session->inbox()->forgetForm($id);
+        $this->player->onFormSubmit($id, $data);
+
+        return $this;
+    }
+
+    /**
+     * Clicks a button of the open menu form, by label (colour codes ignored) or index.
+     */
+    public function clickButton(string|int $button): self
+    {
+        if (is_int($button)) {
+            return $this->submitForm($button);
+        }
+
+        $buttons = $this->formData()['buttons'] ?? [];
+        foreach (is_array($buttons) ? $buttons : [] as $index => $candidate) {
+            $text = is_array($candidate) && is_string($candidate['text'] ?? null) ? $candidate['text'] : '';
+            if (TextFormat::clean($text) === TextFormat::clean($button)) {
+                return $this->submitForm($index);
+            }
+        }
+
+        throw new \LogicException("The open form of {$this->name()} has no button labelled \"$button\"");
+    }
+
+    /**
+     * Closes the open form without answering it, like pressing the cross.
+     */
+    public function closeForm(): self
+    {
+        return $this->submitForm(null);
+    }
+
+    /**
+     * @internal
+     */
+    public function session(): GolemSession
+    {
+        return $this->session;
+    }
+
+    /**
+     * @param Inbox::* $channel
+     * @return list<string>
+     */
+    private function cleanTexts(string $channel): array
+    {
+        return array_map(TextFormat::clean(...), $this->session->inbox()->texts($channel));
+    }
+}

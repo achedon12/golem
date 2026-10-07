@@ -1,0 +1,53 @@
+{
+    "name": "achedon12/golem",
+    "description": "Integration tests for PocketMine-MP plugins: a real server, simulated players, one command.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "pocketmine",
+        "pocketmine-mp",
+        "pmmp",
+        "minecraft",
+        "bedrock",
+        "testing",
+        "integration-testing",
+        "test-framework",
+        "fake-player"
+    ],
+    "homepage": "https://github.com/achedon12/golem",
+    "support": {
+        "issues": "https://github.com/achedon12/golem/issues",
+        "source": "https://github.com/achedon12/golem",
+        "docs": "https://github.com/achedon12/golem/tree/main/docs"
+    },
+    "authors": [
+        {
+            "name": "Achedon12",
+            "homepage": "https://github.com/achedon12"
+        }
+    ],
+    "require": {
+        "php": "^8.1"
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^2.1",
+        "pocketmine/pocketmine-mp": "^5.44"
+    },
+    "autoload": {
+        "psr-4": {
+            "Golem\\": "src/"
+        }
+    },
+    "bin": [
+        "bin/golem"
+    ],
+    "config": {
+        "sort-packages": true,
+        "platform-check": false
+    },
+    "scripts": {
+        "analyse": "phpstan analyse --memory-limit=1G",
+        "test": "@php bin/golem --path=examples/hello-world"
+    },
+    "minimum-stability": "stable"
+}

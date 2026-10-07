@@ -1,0 +1,9 @@
+parameters:
+    level: 8
+    paths:
+        - src
+        - examples/hello-world/src
+        - examples/hello-world/tests
+    scanFiles:
+        - bin/golem
+    treatPhpDocTypesAsCertain: false
