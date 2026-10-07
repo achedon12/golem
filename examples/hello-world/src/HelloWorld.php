@@ -34,6 +34,12 @@ final class HelloWorld extends PluginBase implements Listener
         $position = $player->getPosition();
         $player->getNetworkSession()->sendDataPacket(PlaySoundPacket::create('random.orb', $position->x, $position->y, $position->z, 1.0, 1.0, null));
 
+        LobbyHud::showBossBar($player);
+        $online = $this->getServer()->getOnlinePlayers();
+        foreach ($online as $viewer) {
+            LobbyHud::showSidebar($viewer, count($online));
+        }
+
         if (count($player->getInventory()->getContents()) === 0) {
             $player->getInventory()->addItem(VanillaItems::BREAD()->setCount(3));
         }

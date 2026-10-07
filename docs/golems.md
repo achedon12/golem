@@ -80,6 +80,8 @@ Everything the server sends to a golem is recorded:
 | `lastMessage()` | the latest chat message, or `null` |
 | `titles()`, `subtitles()`, `actionBars()` | what was shown on screen |
 | `tips()`, `popups()`, `toasts()` | the small texts above the hotbar, and toast notifications (`"title\nbody"`) |
+| `scoreboard()` | the sidebar as shown: `['title' => 'HelloWorld', 'lines' => ['Hi, Steve', 'Online: 1']]`, or `null` |
+| `bossBar()` | the boss bar on screen: `['title' => ..., 'progress' => 1.0]`, or `null` |
 | `sounds()` | sounds heard: named sounds (`random.levelup`) and sound events played in the world (`levelup`, `break`) |
 | `packets(?string $class = null)` | every packet sent to the golem, including world broadcasts, optionally only one class, e.g. `packets(PlaySoundPacket::class)` |
 | `disconnectReason()` | what the disconnection screen said after a kick, a ban or `quit()`; `null` while connected |
