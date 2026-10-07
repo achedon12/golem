@@ -41,6 +41,7 @@ Text comparisons ignore colour codes on both sides and match substrings.
 | `assertSoundPlayed(Golem $golem, string $sound)` | the golem heard the sound: a named sound like `random.levelup`, or a sound event like `levelup` |
 | `assertPacketSent(Golem $golem, string $class, ?Closure $filter = null)` | the server sent at least one packet of that class (matching the filter) |
 | `assertOnline(Golem $golem)` / `assertOffline(Golem $golem)` | still connected / was kicked or quit |
+| `assertKicked(Golem $golem, ?string $reasonContains = null)` | the server disconnected the golem (kick, ban, full server…), optionally with that text on the disconnection screen |
 | `assertHasItem(Golem $golem, Item $item, ?int $count = null)` | the inventory holds at least `$count` matching items (defaults to the item's own count) |
 | `assertNotHasItem(Golem $golem, Item $item)` | the inventory holds none |
 | `assertHealth(Golem $golem, float $health)` | the golem has exactly that much health (20 = ten hearts) |
