@@ -11,6 +11,7 @@ breaking changes; they will always be listed here.
 
 - `assertSoundPlayed()`, `assertPacketSent()` and `Golem::sounds()` (#5).
 - `#[FreshWorld]` and `$this->freshWorld()` to run a test in its own throwaway world (#8).
+- `--watch` re-runs the tests whenever the plugin or its tests change (#24).
 - Inventory menus: `window()`, `waitForWindow()`, `clickSlot()`, `closeWindow()`, `assertWindowOpen()`
   and `assertNoWindowOpen()`. Works with InvMenu (#23).
 - Golems answer `NetworkStackLatencyPacket` pings and acknowledge re-sent containers like a real

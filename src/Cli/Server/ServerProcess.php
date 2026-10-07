@@ -142,6 +142,14 @@ final class ServerProcess
         return $this->process !== null && proc_get_status($this->process)['running'];
     }
 
+    /**
+     * Stops the server if it is still running. Safe to call more than once.
+     */
+    public function stop(): void
+    {
+        $this->kill();
+    }
+
     private function kill(): void
     {
         if ($this->process === null) {

@@ -79,6 +79,8 @@ after every join event has fired. From there, read [Writing tests](writing-tests
 
 ## Tips
 
+- Keep `vendor/bin/golem --watch` open in a terminal while you code: the tests re-run on every save,
+  each time on a fresh server. Ctrl+C stops it.
 - Run a single test with `vendor/bin/golem --filter=JoinTest` (or any part of `Class::method`).
 - Add `--verbose` to see the server console while the tests run.
 - Add `"scripts": { "test": "golem" }` to your `composer.json` and run `composer test`.

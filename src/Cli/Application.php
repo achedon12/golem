@@ -72,6 +72,7 @@ final class Application
               --pocketmine=<version>    PocketMine-MP version, e.g. 5.44.3 (default: latest)
               --log-junit=<file>        Also write a JUnit XML report
               --timeout=<seconds>       Give up after this long (default: 600)
+              --watch                   Re-run the tests whenever src/ or tests/ change
               --verbose                 Show the server console
               --keep                    Keep the server folder after the run
               --php=<binary>            Use your own PocketMine PHP build
