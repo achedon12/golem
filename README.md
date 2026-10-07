@@ -41,7 +41,14 @@ final class WelcomeTest extends TestCase
 ```
 
 <p align="center">
-  <img src=".github/assets/terminal.svg" alt="Output of vendor/bin/golem: 9 tests passing" width="760">
+  <img src=".github/assets/terminal.svg" alt="Output of vendor/bin/golem: every test passing" width="760">
+</p>
+
+<p align="center">
+  <a href="https://github.com/achedon12/golem/releases/download/v0.1.0/golem-intro.mp4">
+    <img src=".github/assets/intro-poster.jpg" alt="Watch the 20-second intro video" width="560"><br>
+    <sub>▶ Watch the 20-second intro</sub>
+  </a>
 </p>
 
 ## Why Golem
