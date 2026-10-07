@@ -383,6 +383,16 @@ trait Assertions
         );
     }
 
+    final protected function assertDead(Golem $golem, string $message = ''): void
+    {
+        $this->check(!$golem->isAlive(), $message ?: "{$golem->name()} is still alive", null, Exporter::export($golem->player()->getHealth()) . ' health');
+    }
+
+    final protected function assertAlive(Golem $golem, string $message = ''): void
+    {
+        $this->check($golem->isAlive(), $message ?: "{$golem->name()} is dead");
+    }
+
     final protected function assertOnline(Golem $golem, string $message = ''): void
     {
         $this->check($golem->isOnline(), $message ?: "{$golem->name()} is not connected");

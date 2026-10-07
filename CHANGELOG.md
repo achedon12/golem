@@ -11,6 +11,7 @@ breaking changes; they will always be listed here.
 
 - `assertSoundPlayed()`, `assertPacketSent()` and `Golem::sounds()` (#5).
 - `#[FreshWorld]` and `$this->freshWorld()` to run a test in its own throwaway world (#8).
+- `Golem::interactEntity()`, `Golem::respawn()`, `assertDead()` and `assertAlive()` (#21).
 - `Golem::scoreboard()`, `Golem::bossBar()`, `assertScoreboardContains()` and `assertBossBar()` (#20).
 - `#[DataProvider]` to run a test once per data set (#19).
 - `assertKicked()` and `Golem::disconnectReason()` (#18).

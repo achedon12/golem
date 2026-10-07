@@ -29,6 +29,8 @@ and `PlayerJoinEvent` has already fired.
 | `interactBlock(Vector3 $pos, int $face = Facing::UP)` | Right-clicks a block face: places the held block or uses the held item on it. |
 | `useItem()` | Uses the held item in the air (eat, throw, draw a bow…). |
 | `attack(Entity\|Golem $target)` | Hits an entity or another golem with the held item. |
+| `interactEntity(Entity\|Golem $target)` | Right-clicks an entity (an NPC, a mob, another golem), firing `PlayerEntityInteractEvent`. |
+| `respawn()` | Leaves the death screen like the Respawn button, firing `PlayerRespawnEvent`. Returns `false` if the golem is alive. |
 | `quit(string $reason = 'Golem left')` | Disconnects, as if the game was closed. |
 
 ## Moving
@@ -62,7 +64,7 @@ about damage should `yield $this->wait(60)` first.
 
 ## Facing and reach
 
-Golems turn to face their target before `breakBlock()`, `interactBlock()` and `attack()`, because
+Golems turn to face their target before `breakBlock()`, `interactBlock()`, `attack()` and `interactEntity()`, because
 PocketMine checks that players look at what they interact with. They still need to be within
 reach: teleport them next to the target first.
 
