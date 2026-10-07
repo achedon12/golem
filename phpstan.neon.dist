@@ -6,4 +6,6 @@ parameters:
         - examples/hello-world/tests
     scanFiles:
         - bin/golem
+    scanDirectories:
+        - examples/hello-world/virions
     treatPhpDocTypesAsCertain: false

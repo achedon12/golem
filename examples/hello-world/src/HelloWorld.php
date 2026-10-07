@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Example\HelloWorld;
 
+use example\libgreeting\Greeting;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\event\block\BlockBreakEvent;
@@ -27,7 +28,7 @@ final class HelloWorld extends PluginBase implements Listener
     public function onJoin(PlayerJoinEvent $event): void
     {
         $player = $event->getPlayer();
-        $player->sendMessage(TextFormat::GREEN . "Welcome, {$player->getName()}!");
+        $player->sendMessage(TextFormat::GREEN . Greeting::welcome($player->getName()));
         $player->sendTitle(TextFormat::GOLD . 'Hello!');
         $position = $player->getPosition();
         $player->getNetworkSession()->sendDataPacket(PlaySoundPacket::create('random.orb', $position->x, $position->y, $position->z, 1.0, 1.0, null));

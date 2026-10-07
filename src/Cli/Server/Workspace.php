@@ -20,7 +20,7 @@ final class Workspace
     ) {
     }
 
-    public static function create(Project $project, string $golemSource, ?string $filter): self
+    public static function create(Project $project, string $golemSource, ?string $filter, string $cacheDirectory): self
     {
         $path = sys_get_temp_dir() . '/golem-' . bin2hex(random_bytes(6));
         foreach (['', '/plugins', '/subjects'] as $directory) {
@@ -33,7 +33,7 @@ final class Workspace
         $workspace->writeServerProperties();
         $workspace->writeBootstrapPlugin($golemSource);
         $workspace->linkPlugins($project);
-        $workspace->writeRuntimeConfig($project, $filter);
+        $workspace->writeRuntimeConfig($project, $filter, $cacheDirectory);
 
         return $workspace;
     }
@@ -123,7 +123,7 @@ final class Workspace
         }
     }
 
-    private function writeRuntimeConfig(Project $project, ?string $filter): void
+    private function writeRuntimeConfig(Project $project, ?string $filter, string $cacheDirectory): void
     {
         file_put_contents($this->runtimeConfig(), json_encode([
             'events' => $this->eventsFile(),
@@ -131,6 +131,10 @@ final class Workspace
             'subjects' => $this->path . '/subjects',
             'subject' => $project->name,
             'filter' => $filter,
+            'pluginRoot' => $project->root,
+            'cache' => $cacheDirectory,
+            'virions' => $project->virions,
+            'poggit' => $project->poggitManifest,
         ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
         touch($this->eventsFile());
     }

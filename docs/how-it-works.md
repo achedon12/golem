@@ -31,10 +31,12 @@ results as they arrive, and stops the server if it crashes or hangs.
 The server folder contains a one-file script plugin, `plugins/golem.php`, that makes Golem's
 classes autoloadable from where Golem is installed. Its main class:
 
-1. registers a folder plugin loader and loads your plugin straight from its source folder, so
+1. loads the virions from your `.poggit.yml` under their own namespace, downloading them from
+   Poggit when needed;
+2. registers a folder plugin loader and loads your plugin straight from its source folder, so
    there is no phar to build and stack traces point at your files;
-2. waits for the first server tick, when every plugin is enabled and the world is ready;
-3. loads your tests and runs them one by one.
+3. waits for the first server tick, when every plugin is enabled and the world is ready;
+4. loads your tests and runs them one by one.
 
 Tests run on the main thread, between ticks, like any plugin code. A test written as a generator
 is a coroutine: when it yields, Golem registers a callback on what it is waiting for and returns
@@ -65,8 +67,6 @@ Golem is young. Things it does not do yet:
 - **The login is shortcut.** `PlayerPreLoginEvent` and the Xbox Live handshake are skipped:
   golems arrive with a login that was already accepted. `PlayerLoginEvent`, `PlayerJoinEvent` and
   everything after fire normally.
-- **Virions are not injected yet.** A plugin that relies on virions will not find their classes
-  when loaded from source.
 - **Tests run sequentially**, in a single server.
 
 Ideas and pull requests on any of these are welcome.

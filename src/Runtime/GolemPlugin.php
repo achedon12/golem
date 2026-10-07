@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Golem\Runtime;
 
 use Golem\Runtime\Loader\FolderPluginLoader;
+use Golem\Runtime\Loader\PoggitVirions;
+use Golem\Runtime\Loader\VirionLoader;
 use pocketmine\plugin\PluginBase;
 use pocketmine\plugin\PluginEnableOrder;
 use pocketmine\scheduler\ClosureTask;
@@ -33,10 +35,17 @@ final class GolemPlugin extends PluginBase
             return;
         }
 
-        /** @var array{events: string, tests: string, subjects: string, subject: string, filter: ?string} $config */
+        /** @var array{events: string, tests: string, subjects: string, subject: string, filter: ?string, pluginRoot: string, cache: string, virions: list<string>, poggit: ?string} $config */
         $config = json_decode((string) file_get_contents($configPath), true, flags: JSON_THROW_ON_ERROR);
         $this->events = new EventLog($config['events']);
 
+        try {
+            $this->loadVirions($config);
+        } catch (\Throwable $e) {
+            $this->abort('Could not load the virions: ' . $e->getMessage());
+
+            return;
+        }
         $this->loadSubjects($config['subjects']);
 
         Runtime::install(new Runtime(
@@ -49,6 +58,25 @@ final class GolemPlugin extends PluginBase
 
         // The first tick only happens once every plugin is enabled and the world is ready.
         $this->getScheduler()->scheduleDelayedTask(new ClosureTask(fn () => $this->begin($config)), 1);
+    }
+
+    /**
+     * Loads the virions listed in composer.json and in the plugin's .poggit.yml, before
+     * the plugin itself so its classes can use them from onLoad().
+     *
+     * @param array{events: string, tests: string, subjects: string, subject: string, filter: ?string, pluginRoot: string, cache: string, virions: list<string>, poggit: ?string} $config
+     */
+    private function loadVirions(array $config): void
+    {
+        $paths = $config['virions'];
+        if ($config['poggit'] !== null) {
+            array_push($paths, ...(new PoggitVirions($config['cache']))->resolve($config['poggit'], $config['pluginRoot']));
+        }
+
+        $loader = new VirionLoader($this->getServer()->getLoader());
+        foreach ($paths as $path) {
+            $this->getLogger()->info('Loaded virion ' . $loader->load($path));
+        }
     }
 
     /**
@@ -68,7 +96,7 @@ final class GolemPlugin extends PluginBase
     }
 
     /**
-     * @param array{events: string, tests: string, subjects: string, subject: string, filter: ?string} $config
+     * @param array{events: string, tests: string, subjects: string, subject: string, filter: ?string, pluginRoot: string, cache: string, virions: list<string>, poggit: ?string} $config
      */
     private function begin(array $config): void
     {
