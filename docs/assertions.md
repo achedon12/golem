@@ -1,3 +1,7 @@
+---
+description: "Every Golem assertion: PHPUnit-style checks plus Minecraft-aware ones for messages, titles, forms, inventories, health, positions and blocks."
+---
+
 # Assertions
 
 Every assertion takes an optional last `$message` argument that replaces the default failure

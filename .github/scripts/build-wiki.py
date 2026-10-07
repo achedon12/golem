@@ -44,6 +44,7 @@ def rewrite_link(target: str) -> str:
 
 
 def convert(markdown: str) -> str:
+    markdown = re.sub(r'\A---\n.*?\n---\n+', '', markdown, flags=re.S)   # website-only metadata
     markdown = re.sub(r'\A# .*\n+', '', markdown)   # the wiki shows the page name as its title
     return LINK.sub(lambda m: f']({rewrite_link(m.group(1))})', markdown)
 

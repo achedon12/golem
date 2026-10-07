@@ -1,3 +1,7 @@
+---
+description: "Install Golem, scaffold a first test and run integration tests for your PocketMine-MP plugin in about five minutes."
+---
+
 # Getting started
 
 This guide takes a plugin with no tests to a green test run in about five minutes.

@@ -1,3 +1,7 @@
+---
+description: "Run PocketMine-MP plugin tests in GitHub Actions with one line, test several PocketMine versions, or use Golem on GitLab CI and other systems."
+---
+
 # Continuous integration
 
 ## GitHub Actions

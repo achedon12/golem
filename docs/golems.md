@@ -1,3 +1,7 @@
+---
+description: "Golems are simulated PocketMine-MP players: make them chat, run commands, answer forms, break blocks, and read everything the server sent them."
+---
+
 # Golems
 
 A golem is a simulated player. Spawn one from a test with `yield $this->golem('Name')` (the name

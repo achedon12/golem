@@ -2,6 +2,7 @@
 layout: home
 title: Golem
 titleTemplate: Integration tests for PocketMine-MP plugins
+description: "Golem boots a real PocketMine-MP server, loads your plugin from source and fills it with simulated players to test it automatically, locally or in GitHub Actions."
 
 hero:
   name: golem

@@ -1,3 +1,7 @@
+---
+description: "Golem CLI options, composer.json settings, environment variables and the throwaway PocketMine-MP test server it creates."
+---
+
 # Configuration
 
 Golem works without any configuration when run from a plugin folder with a `tests/` folder.

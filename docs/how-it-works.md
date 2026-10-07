@@ -1,3 +1,7 @@
+---
+description: "How Golem boots PocketMine-MP, loads plugins from source, drives generator tests across ticks and simulates players without a network."
+---
+
 # How it works
 
 ```

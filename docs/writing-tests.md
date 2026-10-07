@@ -1,3 +1,7 @@
+---
+description: "How to write Golem tests for PocketMine-MP plugins: test methods, generators to wait for ticks and players, setUp, isolation and attributes."
+---
+
 # Writing tests
 
 ## Where tests live
