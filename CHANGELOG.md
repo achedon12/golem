@@ -7,6 +7,8 @@ breaking changes; they will always be listed here.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-07
+
 ### Added
 
 - `assertSoundPlayed()`, `assertPacketSent()` and `Golem::sounds()` (#5).
@@ -64,5 +66,6 @@ First public release.
 - `golem init` to scaffold a first test and a workflow.
 - A composite GitHub Action, `achedon12/golem@v0`.
 
+[0.2.0]: https://github.com/achedon12/golem/releases/tag/v0.2.0
 [0.1.1]: https://github.com/achedon12/golem/releases/tag/v0.1.1
 [0.1.0]: https://github.com/achedon12/golem/releases/tag/v0.1.0
