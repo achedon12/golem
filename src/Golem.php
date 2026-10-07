@@ -267,6 +267,41 @@ final class Golem
     }
 
     /**
+     * Right-clicks an entity or another golem (talking to an NPC, mounting, using an
+     * item on a mob), firing PlayerEntityInteractEvent.
+     *
+     * @return bool whether the entity reacted to the interaction
+     */
+    public function interactEntity(Entity|self $target): bool
+    {
+        $entity = $target instanceof self ? $target->player() : $target;
+        $clickPosition = $entity->getPosition()->add(0, $entity->getSize()->getHeight() / 2, 0);
+        $this->player->lookAt($clickPosition);
+
+        return $this->player->interactEntity($entity, $clickPosition);
+    }
+
+    public function isAlive(): bool
+    {
+        return $this->player->isAlive();
+    }
+
+    /**
+     * Leaves the death screen, like pressing Respawn, firing PlayerRespawnEvent.
+     *
+     * @return bool false when the golem is not dead
+     */
+    public function respawn(): bool
+    {
+        if ($this->player->isAlive()) {
+            return false;
+        }
+        $this->player->respawn();
+
+        return true;
+    }
+
+    /**
      * Disconnects, as if the player closed the game.
      */
     public function quit(string $reason = 'Golem left'): void
