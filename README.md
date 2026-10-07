@@ -111,12 +111,19 @@ public function testHealCooldown(): Generator
 | --- | --- |
 | `chat()`, `command()` | `messages()`, `titles()`, `actionBars()`, `tips()`, `popups()`, `toasts()` |
 | `clickButton()`, `submitForm()`, `closeForm()` | `form()`, `formData()` |
-| `breakBlock()`, `interactBlock()`, `useItem()`, `attack()` | `packets()` for anything else the server sent |
-| `op()`, `grant()`, `gamemode()`, `teleport()`, `give()`, `hold()`, `quit()` | `player()` for the full PocketMine API |
+| `clickSlot()`, `closeWindow()` in chest menus (InvMenu works) | `window()` |
+| `walkTo()`, `walk()`, `jump()`, `sneak()`, `sprint()` | `position()`, fall damage, `PlayerMoveEvent` in your plugin |
+| `breakBlock()`, `interactBlock()`, `interactEntity()`, `useItem()`, `attack()` | `scoreboard()`, `bossBar()`, `sounds()` |
+| `op()`, `grant()`, `gamemode()`, `teleport()`, `give()`, `hold()`, `respawn()`, `quit()` | `disconnectReason()`, `packets()`, and `player()` for the full PocketMine API |
 
 On top of the usual `assertSame`, `assertTrue`, `assertCount`… you get Minecraft-aware assertions:
-`assertReceivedMessage`, `assertTitle`, `assertFormOpen`, `assertHasItem`, `assertHealth`,
-`assertAt`, `assertBlockAt`, `assertGamemode`, `assertHasPermission`, `assertOnline` and more.
+`assertReceivedMessage`, `assertTitle`, `assertFormOpen`, `assertWindowOpen`, `assertScoreboardContains`,
+`assertBossBar`, `assertSoundPlayed`, `assertHasItem`, `assertHealth`, `assertAt`, `assertBlockAt`,
+`assertKicked`, `assertDead` and more.
+
+Tests can run in a throwaway world (`#[FreshWorld]`) or a copy of your map (`#[World('tests/worlds/arena')]`),
+take data sets (`#[DataProvider]`), and plugins using virions just work: Golem reads your `.poggit.yml`.
+Keep `vendor/bin/golem --watch` open while you code to re-run everything on each save.
 
 When something breaks, Golem tells you what it expected, what it got, and where:
 
