@@ -9,6 +9,8 @@
   <img src="https://img.shields.io/badge/PHP-8.1%2B-777bb4" alt="PHP 8.1+">
   <img src="https://img.shields.io/badge/PHPStan-level%208-brightgreen" alt="PHPStan level 8">
   <a href="LICENSE"><img src="https://img.shields.io/github/license/achedon12/golem?color=blue" alt="MIT license"></a>
+  <a href="https://achedon12.github.io/golem/"><img src="https://img.shields.io/badge/docs-website-22c55e" alt="Documentation"></a>
+  <a href="https://packagist.org/packages/achedon12/golem"><img src="https://img.shields.io/packagist/v/achedon12/golem?color=f28d1a&label=packagist" alt="Packagist"></a>
 </p>
 
 **Golem** tests your PocketMine-MP plugin the way your players use it. One command boots a real
@@ -142,13 +144,16 @@ the pull request. See [docs/ci.md](docs/ci.md) for the options and for other CI 
 
 ## Documentation
 
-- [Getting started](docs/getting-started.md)
-- [Writing tests](docs/writing-tests.md): structure, waiting, setUp, attributes
-- [Golems](docs/golems.md): everything a simulated player can do
-- [Assertions](docs/assertions.md): the full list
-- [Configuration](docs/configuration.md): CLI options and `composer.json` settings
-- [Continuous integration](docs/ci.md)
-- [How it works](docs/how-it-works.md), including the current limitations
+📖 **[achedon12.github.io/golem](https://achedon12.github.io/golem/)**, with search. The same pages are
+in the [wiki](https://github.com/achedon12/golem/wiki) and in [`docs/`](docs):
+
+- [Getting started](https://achedon12.github.io/golem/getting-started)
+- [Writing tests](https://achedon12.github.io/golem/writing-tests): structure, waiting, setUp, attributes
+- [Golems](https://achedon12.github.io/golem/golems): everything a simulated player can do
+- [Assertions](https://achedon12.github.io/golem/assertions): the full list
+- [Configuration](https://achedon12.github.io/golem/configuration): CLI options and `composer.json` settings
+- [Continuous integration](https://achedon12.github.io/golem/ci)
+- [How it works](https://achedon12.github.io/golem/how-it-works), including the current limitations
 
 ## Status
 

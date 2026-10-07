@@ -26,7 +26,7 @@ The repository is organised as:
 | `src/Runtime/` | everything that runs inside the server: plugin loader, test runner, fake network sessions |
 | `src/` (root) | the public API used in tests: `TestCase`, `Golem`, assertions, attributes |
 | `examples/hello-world/` | a small plugin and its tests, run by CI against every change |
-| `docs/` | user documentation |
+| `docs/` | user documentation: the website (VitePress, `cd docs && npm run dev`) and the wiki are generated from it |
 
 ### Static analysis
 
