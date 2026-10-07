@@ -30,6 +30,9 @@ final class GolemFactory
     /** @var list<Golem> golems spawned since the last {@see despawnAll()} */
     private array $golems = [];
 
+    /** @var array<string, bool> whether each golem name was already op before it spawned */
+    private array $opBefore = [];
+
     /** @var TaskHandler<ClosureTask>|null */
     private ?TaskHandler $pump = null;
 
@@ -46,6 +49,7 @@ final class GolemFactory
     {
         $name ??= 'Golem' . ++$this->counter;
         $server = $this->plugin->getServer();
+        $this->opBefore[strtolower($name)] ??= $server->isOp($name);
         /** @var Deferred<Golem> $deferred */
         $deferred = new Deferred();
 
@@ -104,9 +108,13 @@ final class GolemFactory
     {
         $server = $this->plugin->getServer();
         foreach ($this->golems as $golem) {
-            // ops are saved by name in ops.txt and would leak into the next test
-            $server->removeOp($golem->name());
+            // ops are saved by name in ops.txt and would leak into the next test, but an op
+            // that existed before the golem spawned is not the golem's to take away
+            if (!($this->opBefore[strtolower($golem->name())] ?? true)) {
+                $server->removeOp($golem->name());
+            }
         }
+        $this->opBefore = [];
         foreach ($this->sessions as $session) {
             $player = $session->getPlayer();
             if ($player !== null && $player->isConnected()) {
