@@ -17,6 +17,10 @@ breaking changes; they will always be listed here.
 
 ### Fixed
 
+- Virion downloads verify the TLS certificate (PocketMine's `Internet` helper does not), only
+  follow HTTPS redirects, and are rejected unless they are virion phars.
+- `.poggit.yml` is only looked up in the plugin folder and its parents inside the same git
+  repository.
 - Golems now receive packets broadcast by the world (sounds, particles, entity animations), which
   previously bypassed their inbox.
 
