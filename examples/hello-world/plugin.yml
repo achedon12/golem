@@ -1,0 +1,22 @@
+name: HelloWorld
+main: Example\HelloWorld\HelloWorld
+src-namespace-prefix: Example\HelloWorld
+version: 1.0.0
+api: 5.0.0
+description: A tiny plugin used to show what Golem tests look like.
+
+commands:
+  heal:
+    description: Restores your health
+    permission: hello.heal
+  menu:
+    description: Opens the server menu
+    permission: hello.menu
+
+permissions:
+  hello.heal:
+    default: op
+  hello.menu:
+    default: true
+  hello.build:
+    default: false
