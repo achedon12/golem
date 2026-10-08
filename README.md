@@ -146,6 +146,11 @@ Golem is also a plugin: put [`Golem.phar`](https://github.com/achedon12/golem/re
 Play a scenario by hand with `/golem record`, and `/golem record stop` writes a test that replays
 it. See [Server plugin](https://achedon12.github.io/golem/server-plugin) for every command.
 
+## Dashboard
+
+`vendor/bin/golem ui` opens a dashboard on localhost: run the tests and follow them live, read
+failures and coverage in the code. See [Dashboard](https://achedon12.github.io/golem/dashboard).
+
 ## Fuzzing
 
 `golem fuzz` has golems do random things to your plugin for a minute (commands with odd

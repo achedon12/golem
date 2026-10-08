@@ -19,7 +19,7 @@ use Golem\Cli\UserError;
  */
 final class BenchCommand
 {
-    public const VALUE_OPTIONS = ['players', 'duration', 'min-tps', 'baseline', 'save-baseline'];
+    public const VALUE_OPTIONS = ['players', 'duration', 'min-tps', 'baseline', 'save-baseline', 'log-events'];
 
     private const MAX_PLAYERS = 200;
 
@@ -76,9 +76,18 @@ final class BenchCommand
         $listeners = [];
         $abort = null;
         $root = $project->root;
+        $eventLog = $options->get('log-events');
+        $log = static function (array $event) use ($eventLog): void {
+            if ($eventLog !== null) {
+                file_put_contents($eventLog, json_encode($event, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n", FILE_APPEND);
+            }
+        };
+        if ($eventLog !== null) {
+            file_put_contents($eventLog, '');
+        }
 
         try {
-            $finished = $process->run(function (array $event) use (&$results, &$listeners, &$abort, $root): void {
+            $finished = $process->run(function (array $event) use (&$results, &$listeners, &$abort, $root, $log): void {
                 switch ($event['type'] ?? null) {
                     case 'bench_step':
                         $players = (int) ($event['players'] ?? 0);
@@ -90,6 +99,7 @@ final class BenchCommand
                             'usageMax' => (float) ($event['usageMax'] ?? 0),
                             'memory' => (int) ($event['memory'] ?? 0),
                         ];
+                        $log(['type' => 'step'] + $results[array_key_last($results)]);
                         $this->output->writeln(sprintf(
                             '  %7d   %s   %8s / %-8s   %8s',
                             $players,
@@ -134,6 +144,7 @@ final class BenchCommand
         }
 
         $this->slowest(array_slice($listeners, 0, 5), $project->name);
+        $log(['type' => 'listeners', 'listeners' => array_slice($listeners, 0, 10)]);
         $status = $this->verdict($results, $minTps);
 
         $current = ['plugin' => $project->name, 'pocketmine' => $version, 'steps' => $results, 'listeners' => $listeners];
