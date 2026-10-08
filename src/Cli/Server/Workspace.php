@@ -20,7 +20,7 @@ final class Workspace
     ) {
     }
 
-    public static function create(Project $project, string $golemSource, ?string $filter, string $cacheDirectory): self
+    public static function create(Project $project, string $golemSource, ?string $filter, string $cacheDirectory, bool $updateSnapshots = false): self
     {
         $path = sys_get_temp_dir() . '/golem-' . bin2hex(random_bytes(6));
         foreach (['', '/plugins', '/subjects'] as $directory) {
@@ -33,7 +33,7 @@ final class Workspace
         $workspace->writeServerProperties();
         $workspace->writeBootstrapPlugin($golemSource);
         $workspace->linkPlugins($project);
-        $workspace->writeRuntimeConfig($project, $filter, $cacheDirectory);
+        $workspace->writeRuntimeConfig($project, $filter, $cacheDirectory, $updateSnapshots);
 
         return $workspace;
     }
@@ -123,7 +123,7 @@ final class Workspace
         }
     }
 
-    private function writeRuntimeConfig(Project $project, ?string $filter, string $cacheDirectory): void
+    private function writeRuntimeConfig(Project $project, ?string $filter, string $cacheDirectory, bool $updateSnapshots): void
     {
         file_put_contents($this->runtimeConfig(), json_encode([
             'events' => $this->eventsFile(),
@@ -135,6 +135,8 @@ final class Workspace
             'cache' => $cacheDirectory,
             'virions' => $project->virions,
             'poggit' => $project->poggitManifest,
+            'updateSnapshots' => $updateSnapshots,
+            'ci' => getenv('CI') !== false && getenv('CI') !== '' && getenv('CI') !== 'false',
         ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
         touch($this->eventsFile());
     }

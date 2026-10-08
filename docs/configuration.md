@@ -21,6 +21,7 @@ golem init [--no-workflow]
 | `--pocketmine=<version>` | `latest` | The PocketMine-MP version to run, e.g. `5.44.3`, or a fork: `owner/repository` (its latest release) or `owner/repository@tag` (see [Forks](#pocketmine-mp-forks)) |
 | `--log-junit=<file>` | | Also write a JUnit XML report (needs `ext-dom`) |
 | `--timeout=<seconds>` | `600` | Stop a run that takes longer than this |
+| `--update-snapshots` | | Rewrite the snapshots of `assertMatchesSnapshot()` instead of comparing them |
 | `--watch` | | Keep running: re-run the tests whenever `src/`, `tests/`, `resources/` or `plugin.yml` change |
 | `--verbose` | | Print the server console while the tests run |
 | `--keep` | | Keep the temporary server folder, to inspect its world or logs |

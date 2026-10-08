@@ -181,6 +181,9 @@ final class ConsoleReporter
             $report->assertions(),
             $report->assertions() === 1 ? '' : 's',
         ));
+        if ($report->snapshotsWritten() > 0) {
+            $this->output->writeln(sprintf('  <gray>Snapshots:</> <yellow>%d written</> <gray>(commit them)</>', $report->snapshotsWritten()));
+        }
         $this->output->writeln(sprintf(
             '  <gray>Duration:</> %.2fs%s',
             $report->totalSeconds,

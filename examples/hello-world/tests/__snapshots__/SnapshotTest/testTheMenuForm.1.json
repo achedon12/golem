@@ -1,0 +1,13 @@
+{
+    "type": "form",
+    "title": "§lServer menu",
+    "content": "Where to?",
+    "buttons": [
+        {
+            "text": "Spawn"
+        },
+        {
+            "text": "Daytime"
+        }
+    ]
+}

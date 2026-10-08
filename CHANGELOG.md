@@ -7,6 +7,10 @@ breaking changes; they will always be listed here.
 
 ## [Unreleased]
 
+### Added
+
+- `assertMatchesSnapshot()` and `--update-snapshots` (#43).
+
 ## [0.3.0] - 2026-10-08
 
 ### Added

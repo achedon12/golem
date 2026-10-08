@@ -109,7 +109,7 @@ final class RunCommand
         $this->output->writeln();
         $this->output->writeln(sprintf('  <bold>Golem</> <gray>is starting PocketMine-MP %s…</>', Output::escape($version)));
 
-        $workspace = Workspace::create($project, $this->golemSource, $options->get('filter'), $cacheDirectory);
+        $workspace = Workspace::create($project, $this->golemSource, $options->get('filter'), $cacheDirectory, $options->has('update-snapshots'));
         if (!$options->has('keep')) {
             register_shutdown_function($workspace->delete(...)); // also runs when interrupted
         }

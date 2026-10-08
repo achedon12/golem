@@ -73,6 +73,7 @@ final class Application
                                         or a fork: owner/repository[@tag]
               --log-junit=<file>        Also write a JUnit XML report
               --timeout=<seconds>       Give up after this long (default: 600)
+              --update-snapshots        Rewrite the snapshots of assertMatchesSnapshot()
               --watch                   Re-run the tests whenever src/ or tests/ change
               --verbose                 Show the server console
               --keep                    Keep the server folder after the run
