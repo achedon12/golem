@@ -18,7 +18,7 @@ golem init [--no-workflow]
 | `--filter=<text>` | | Only run tests whose `Class::method` contains `<text>` (case-insensitive) |
 | `--path=<dir>` | current folder | The plugin folder, containing `plugin.yml` and `src/` |
 | `--tests=<dir>` | `tests` | The tests folder, relative to the plugin |
-| `--pocketmine=<version>` | `latest` | The PocketMine-MP version to run, e.g. `5.44.3` |
+| `--pocketmine=<version>` | `latest` | The PocketMine-MP version to run, e.g. `5.44.3`, or a fork: `owner/repository` (its latest release) or `owner/repository@tag` (see [Forks](#pocketmine-mp-forks)) |
 | `--log-junit=<file>` | | Also write a JUnit XML report (needs `ext-dom`) |
 | `--timeout=<seconds>` | `600` | Stop a run that takes longer than this |
 | `--watch` | | Keep running: re-run the tests whenever `src/`, `tests/`, `resources/` or `plugin.yml` change |
@@ -51,7 +51,8 @@ Project-wide defaults go in `extra.golem`. Command line options win over them.
 ```
 
 - `tests`: the tests folder.
-- `pocketmine`: pin a PocketMine-MP version so every machine tests against the same one.
+- `pocketmine`: pin a PocketMine-MP version so every machine tests against the same one, or a
+  fork as `owner/repository@tag`.
 - `plugins`: other plugins to load alongside yours, typically the ones listed in your `depend`.
   `.phar` files and source folders (with `plugin.yml` and `src/`) both work.
 - `virions`: virions to load that are not in your `.poggit.yml` (folders with `virion.yml` and `src/`,
@@ -79,6 +80,28 @@ point `extra.golem.virions` (or `vendor: raw` entries) at virion folders or phar
 Your source code uses each virion's own namespace (its `antigen`), and that is the namespace Golem
 registers: the shading Poggit applies when building the phar is not needed when running from
 source. Nothing to configure if your plugin already builds on Poggit.
+
+## PocketMine-MP forks
+
+PocketMine-MP reached its end of support in July 2026: 5.44.3 is the last release of
+`pmmp/PocketMine-MP`, and new Minecraft versions are followed by forks. Golem runs any fork that
+publishes its GitHub releases like pmmp did, with a `PocketMine-MP.phar` asset:
+
+```bash
+vendor/bin/golem --pocketmine=Plutonium-Mcpe/PocketMine-MP           # its latest release
+vendor/bin/golem --pocketmine=Plutonium-Mcpe/PocketMine-MP@5.118.8   # a given release
+```
+
+Testing on the fork your server will run is worth it: forks follow newer protocols, where packet
+classes change shape (`PlaySoundPacket::create()` takes another argument, `SetScorePacket` lost its
+`TYPE_CHANGE` constant), and they sometimes change gameplay too. Golem's own example plugin passes
+on pmmp 5.44.3 but not on Plutonium 5.118.8, for exactly those reasons, and a test caught that
+Plutonium computes fall damage differently (a 10 block fall costs 6 health instead of 7).
+
+Golem itself is checked against Plutonium in its CI. A fork that rewrites PocketMine's network
+internals may need Golem to adapt: please open an issue.
+
+For a fork without releases, build its phar yourself and pass it with `--phar=`.
 
 ## Environment variables
 

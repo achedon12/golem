@@ -17,8 +17,9 @@ final class Toolchain
 {
     private const PHP_VERSION = '8.4';
     private const PHP_RELEASE = 'https://github.com/pmmp/PHP-Binaries/releases/download/pm5-php-%1$s-latest/PHP-%1$s-%2$s-PM5.tar.gz';
-    private const PHAR_RELEASE = 'https://github.com/pmmp/PocketMine-MP/releases/download/%s/PocketMine-MP.phar';
-    private const TAG_PAGE = 'https://github.com/pmmp/PocketMine-MP/releases/latest';
+    private const PMMP = 'pmmp/PocketMine-MP';
+    private const PHAR_RELEASE = 'https://github.com/%s/releases/download/%s/PocketMine-MP.phar';
+    private const LATEST_RELEASE = 'https://github.com/%s/releases/latest';
 
     public function __construct(
         private readonly string $cacheDirectory,
@@ -43,27 +44,65 @@ final class Toolchain
     }
 
     /**
-     * @return array{string, string} the resolved version and the phar path
+     * PocketMine-MP itself (`latest` or a version like `5.44.3`), or a fork that publishes
+     * its releases the same way: `owner/repository` for its latest release, or
+     * `owner/repository@tag` for a given one.
+     *
+     * @return array{string, string} a label for the version and the phar path
      */
     public function pocketmine(string $version): array
     {
+        if (str_contains($version, '/')) {
+            return $this->fork($version);
+        }
+
         if ($version === 'latest') {
-            $version = $this->latestPocketMineVersion();
+            $version = $this->latestTag(self::PMMP);
         }
         if (preg_match('/^\d+\.\d+\.\d+$/', $version) !== 1) {
-            throw new UserError("\"$version\" is not a PocketMine-MP version. Use \"latest\" or something like \"5.44.3\".");
+            throw new UserError("\"$version\" is not a PocketMine-MP version. Use \"latest\", something like \"5.44.3\", or a fork as \"owner/repository@tag\".");
         }
         if (!str_starts_with($version, '5.')) {
             throw new UserError("Golem supports PocketMine-MP 5. Version $version is not supported.");
         }
 
-        $phar = "{$this->cacheDirectory}/pocketmine/$version/PocketMine-MP.phar";
-        if (!is_file($phar)) {
-            $this->output->writeln("  <dim>Downloading PocketMine-MP {$version}…</>");
-            $this->downloader->download(sprintf(self::PHAR_RELEASE, $version), $phar);
+        return [$version, $this->download(self::PMMP, $version)];
+    }
+
+    /**
+     * @return array{string, string}
+     */
+    private function fork(string $spec): array
+    {
+        [$repository, $tag] = array_pad(explode('@', $spec, 2), 2, 'latest');
+        if (preg_match('#^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$#', $repository) !== 1) {
+            throw new UserError("\"$spec\" is not a fork. Use \"owner/repository\" or \"owner/repository@tag\".");
+        }
+        if ($tag === 'latest') {
+            $tag = $this->latestTag($repository);
+        }
+        if (preg_match('#^[A-Za-z0-9_.+-]+$#', $tag) !== 1) {
+            throw new UserError("\"$tag\" is not a release tag.");
         }
 
-        return [$version, $phar];
+        return ["$tag ($repository)", $this->download($repository, $tag)];
+    }
+
+    private function download(string $repository, string $tag): string
+    {
+        $folder = $repository === self::PMMP ? $tag : str_replace('/', '-', $repository) . '/' . $tag;
+        $phar = "{$this->cacheDirectory}/pocketmine/$folder/PocketMine-MP.phar";
+        if (!is_file($phar)) {
+            $label = $repository === self::PMMP ? "PocketMine-MP $tag" : "$repository $tag";
+            $this->output->writeln("  <dim>Downloading {$label}…</>");
+            try {
+                $this->downloader->download(sprintf(self::PHAR_RELEASE, $repository, rawurlencode($tag)), $phar);
+            } catch (UserError $e) {
+                throw new UserError("$label has no PocketMine-MP.phar in its GitHub release. ({$e->getMessage()})", 0, $e);
+            }
+        }
+
+        return $phar;
     }
 
     /**
@@ -100,9 +139,13 @@ final class Toolchain
         return $binary;
     }
 
-    private function latestPocketMineVersion(): string
+    /**
+     * The tag a repository's latest release points to, read from GitHub's redirect and
+     * cached for a few hours (no API call, so no rate limit).
+     */
+    private function latestTag(string $repository): string
     {
-        $cached = "{$this->cacheDirectory}/pocketmine/latest.json";
+        $cached = "{$this->cacheDirectory}/pocketmine/latest-" . str_replace('/', '-', $repository) . '.json';
         if (is_file($cached) && filemtime($cached) > time() - 6 * 3600) {
             $data = json_decode((string) file_get_contents($cached), true);
             if (is_array($data) && is_string($data['version'] ?? null)) {
@@ -110,14 +153,19 @@ final class Toolchain
             }
         }
 
-        $location = $this->downloader->resolveRedirect(self::TAG_PAGE);
-        if (preg_match('#/tag/v?([0-9.]+)$#', $location, $match) !== 1) {
-            throw new UserError("Could not work out the latest PocketMine-MP version from $location. Pass --pocketmine=<version>.");
+        try {
+            $location = $this->downloader->resolveRedirect(sprintf(self::LATEST_RELEASE, $repository));
+        } catch (UserError $e) {
+            throw new UserError("Could not find the latest release of $repository on GitHub: does the repository exist and publish releases?", 0, $e);
         }
+        if (preg_match('~/tag/([^/?#]+)$~', $location, $match) !== 1) {
+            throw new UserError("$repository has no release to download. Pass a tag with --pocketmine=$repository@<tag>.");
+        }
+        $tag = rawurldecode($match[1]);
         @mkdir(dirname($cached), 0777, true);
-        file_put_contents($cached, json_encode(['version' => $match[1]]));
+        file_put_contents($cached, json_encode(['version' => $tag]));
 
-        return $match[1];
+        return $tag;
     }
 
     private static function platform(): string

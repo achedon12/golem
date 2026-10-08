@@ -14,8 +14,14 @@ breaking changes; they will always be listed here.
   `main` (#37). Poggit was sunset along with PocketMine-MP, so it is not published there.
 - Golems wear a visible stone-grey skin instead of a transparent one.
 
+- `--pocketmine=owner/repository[@tag]` (and the action's `pocketmine` input) runs a PocketMine-MP
+  fork that publishes releases like pmmp, now that PocketMine-MP itself has reached its end of
+  support (#39).
+
 ### Fixed
 
+- The scoreboard reader understands newer protocols, where removals are flagged on each score
+  entry instead of on the whole packet.
 - Golems never save player data on the server (their `PlayerDataSaveEvent` is cancelled), so
   `/golem spawn` can refuse every name with saved data or op status, without exceptions.
 - After a test, golems only lose the op status they did not have before spawning, so a name that

@@ -69,7 +69,8 @@ final class Application
               --filter=<text>           Only run tests whose Class::method contains <text>
               --path=<dir>              Plugin folder (default: current folder)
               --tests=<dir>             Tests folder, relative to the plugin (default: tests)
-              --pocketmine=<version>    PocketMine-MP version, e.g. 5.44.3 (default: latest)
+              --pocketmine=<version>    PocketMine-MP version, e.g. 5.44.3 (default: latest),
+                                        or a fork: owner/repository[@tag]
               --log-junit=<file>        Also write a JUnit XML report
               --timeout=<seconds>       Give up after this long (default: 600)
               --watch                   Re-run the tests whenever src/ or tests/ change

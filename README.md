@@ -178,7 +178,9 @@ in the [wiki](https://github.com/achedon12/golem/wiki) and in [`docs/`](docs):
 ## Status
 
 Golem is young (0.x): the API may still change between minor versions, and the
-[changelog](CHANGELOG.md) will say so. It targets PocketMine-MP 5. Ideas, bug reports and pull
+[changelog](CHANGELOG.md) will say so. It targets PocketMine-MP 5, which reached its end of support
+in July 2026, and **its forks**: `--pocketmine=owner/repository` tests your plugin on the fork your
+server runs (see [forks](https://achedon12.github.io/golem/configuration#pocketmine-mp-forks)). Ideas, bug reports and pull
 requests are very welcome, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License

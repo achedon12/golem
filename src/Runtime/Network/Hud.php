@@ -9,6 +9,7 @@ use pocketmine\network\mcpe\protocol\ClientboundPacket;
 use pocketmine\network\mcpe\protocol\RemoveObjectivePacket;
 use pocketmine\network\mcpe\protocol\SetDisplayObjectivePacket;
 use pocketmine\network\mcpe\protocol\SetScorePacket;
+use pocketmine\network\mcpe\protocol\types\ScorePacketEntry;
 use pocketmine\utils\TextFormat;
 
 /**
@@ -40,7 +41,7 @@ final class Hud
                 }
             } elseif ($packet instanceof SetScorePacket) {
                 foreach ($packet->entries as $entry) {
-                    if ($packet->type === SetScorePacket::TYPE_REMOVE) {
+                    if (self::isRemoval($packet, $entry)) {
                         unset($scores[$entry->objectiveName][$entry->scoreboardId]);
                     } else {
                         $scores[$entry->objectiveName][$entry->scoreboardId] = [$entry->score, $entry->customName ?? ''];
@@ -60,6 +61,22 @@ final class Hud
             'title' => TextFormat::clean($sidebar['title']),
             'lines' => array_map(static fn (array $line) => TextFormat::clean($line[1]), $lines),
         ];
+    }
+
+    /**
+     * PocketMine-MP 5 flags a whole SetScorePacket as a removal (its type property is 1);
+     * newer protocols, used by some forks, flag each entry instead. Read whichever is there,
+     * without referring to constants one of them does not have.
+     */
+    private static function isRemoval(SetScorePacket $packet, ScorePacketEntry $entry): bool
+    {
+        $packetFields = get_object_vars($packet);
+        if (array_key_exists('type', $packetFields)) {
+            return $packetFields['type'] === 1;
+        }
+        $perEntry = ScorePacketEntry::class . '::TYPE_REMOVE';
+
+        return defined($perEntry) && $entry->type === constant($perEntry);
     }
 
     /**

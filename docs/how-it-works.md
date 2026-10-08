@@ -69,7 +69,8 @@ Because the player is real, everything else (events, permissions, inventories, d
 
 Golem is young. Things it does not do yet:
 
-- **PocketMine-MP 5 only**, on Linux and macOS. Windows users can use WSL.
+- **PocketMine-MP 5 and its forks**, on Linux and macOS (Windows users can use WSL). Forks that
+  rewrite PocketMine's network internals may need Golem to adapt.
 - **Simple physics.** Golems walk, jump, fall and step up blocks, but do not swim, climb ladders or
   get pushed by entities and water.
 - **The login is shortcut.** `PlayerPreLoginEvent` and the Xbox Live handshake are skipped:
