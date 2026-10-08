@@ -130,6 +130,7 @@ final class Api
             'test' => ['run', '--log-events={run}/events.jsonl', ...$this->testArguments($options)],
             'fuzz' => ['fuzz', ...$this->fuzzArguments($options)],
             'bench' => ['bench', '--log-events={run}/events.jsonl', ...$this->benchArguments($options)],
+            'mutate' => ['mutate', '--log-events={run}/events.jsonl', ...$this->mutateArguments($options)],
             default => throw new InvalidRequest("Unknown run kind \"$kind\""),
         };
         $version = self::text($options, 'pocketmine', 100);
@@ -215,6 +216,27 @@ final class Api
         $minTps = $options['minTps'] ?? null;
         if (is_int($minTps) || is_float($minTps) || (is_string($minTps) && is_numeric($minTps))) {
             $arguments[] = '--min-tps=' . max(0.0, min(20.0, (float) $minTps));
+        }
+
+        return $arguments;
+    }
+
+    /**
+     * @param array<mixed> $options
+     * @return list<string>
+     */
+    private function mutateArguments(array $options): array
+    {
+        $arguments = [];
+        foreach (['workers' => [1, 16], 'max' => [1, 2000], 'minScore' => [0, 100]] as $name => [$min, $max]) {
+            $value = self::number($options, $name, $min, $max);
+            if ($value !== null) {
+                $arguments[] = '--' . ($name === 'minScore' ? 'min-score' : $name) . "=$value";
+            }
+        }
+        $filter = self::text($options, 'filter', 200);
+        if ($filter !== null) {
+            $arguments[] = "--filter=$filter";
         }
 
         return $arguments;

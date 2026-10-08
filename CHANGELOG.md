@@ -15,6 +15,11 @@ breaking changes; they will always be listed here.
 - The dashboard's **Watch** option runs the picked tests again whenever a file of the plugin
   changes (#87).
 
+- `golem mutate` changes the plugin's code one mutation at a time and runs the tests that cover
+  each line, then reports the mutation score and the surviving mutants; also in the dashboard
+  (#88).
+- `--stop-on-failure` stops a run at the first failing test.
+
 ### Changed
 
 - `golem --watch` no longer reacts to snapshots written by the tests.

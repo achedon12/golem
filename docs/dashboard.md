@@ -73,6 +73,12 @@ The **Benchmark** tab runs [`golem bench`](benchmark.md): the TPS and tick usage
 fill a chart and a table as golems join, then the plugin's slowest listeners and tasks are listed.
 The chart also shows your previous benchmarks, faded, to see whether a change made things slower.
 
+## Mutation testing
+
+The **Mutation** tab runs [`golem mutate`](mutation.md): each mutant appears as a square, green
+when the tests caught it and red when it survived, and the survivors are listed with the line they
+changed.
+
 ## History
 
 Every run started from the dashboard is kept in the **History** tab, with its settings and

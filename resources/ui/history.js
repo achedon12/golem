@@ -20,8 +20,8 @@ window.addEventListener('golem-run', (event) => {
   writeHistory([{ id: crypto.randomUUID(), date: Date.now(), pinned: false, ...event.detail }, ...readHistory()])
 })
 
-const kinds = { test: 'Tests', fuzz: 'Fuzz', bench: 'Benchmark' }
-const tabOf = { test: 'tests', fuzz: 'fuzz', bench: 'bench' }
+const kinds = { test: 'Tests', fuzz: 'Fuzz', bench: 'Benchmark', mutate: 'Mutation' }
+const tabOf = { test: 'tests', fuzz: 'fuzz', bench: 'bench', mutate: 'mutate' }
 
 function summary (entry) {
   const s = entry.summary ?? {}
@@ -33,6 +33,7 @@ function summary (entry) {
     if (s.problems === null || s.problems === undefined) return h('span', { class: 'hint' }, 'stopped')
     return h('span', {}, h('span', { class: `badge ${s.problems ? 'fail' : 'pass'}` }, s.problems ? `${s.problems} PROBLEM(S)` : 'NO CRASH'), ` ${s.actions} actions · seed ${entry.options?.seed ?? '?'}`)
   }
+  if (entry.kind === 'mutate') return s.score === undefined ? h('span', { class: 'hint' }, 'stopped') : h('span', {}, h('span', { class: `badge ${s.score >= 80 ? 'pass' : 'fail'}` }, `SCORE ${s.score}%`))
   if (!s.steps) return h('span', { class: 'hint' }, 'stopped')
   return h('span', {}, h('span', { class: `badge ${s.minTps >= 19.5 ? 'pass' : 'info'}` }, `min ${s.minTps.toFixed(1)} TPS`), ` ${s.steps} steps`)
 }

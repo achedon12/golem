@@ -380,3 +380,12 @@ button.link { border: 0; background: none; color: var(--brand); cursor: pointer;
 .tree-tools { display: flex; align-items: center; gap: 12px; padding: 0 8px 8px; border-bottom: 1px solid var(--border); margin-bottom: 6px; }
 .tree-tools .count { margin-left: auto; }
 .tree-tools button.link { font-size: 13px; padding: 2px 0; }
+
+/* ---------- mutation testing */
+.mutant-grid { display: flex; flex-wrap: wrap; gap: 4px; margin: 16px 0; }
+.mutant { width: 14px; height: 14px; border-radius: 3px; background: var(--brand); }
+.mutant.survived { background: var(--red); }
+.mutant.timed-out { background: var(--yellow); }
+.survivor { margin-top: 10px; padding: 10px 16px; }
+.survivor .location { margin: 0 0 6px; }
+.survivor pre { margin: 0; }

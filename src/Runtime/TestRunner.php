@@ -93,6 +93,9 @@ final class TestRunner
             return;
         }
 
+        if ($this->runtime->perTestCoverage) {
+            LineCoverage::restart();
+        }
         $run = new RunningTest(
             $test,
             $instance,
@@ -142,6 +145,13 @@ final class TestRunner
             $error instanceof AssertionFailed, $error instanceof WaitTimedOut => [self::FAILED, $this->describe($error, $stuckAt)],
             default => [self::ERRORED, $this->describe($error, $stuckAt)],
         };
+        if ($this->runtime->perTestCoverage) {
+            $details['lines'] = self::linesRan(LineCoverage::collect($this->runtime->pluginRoot . '/src'));
+            LineCoverage::restart();
+        }
+        if ($this->runtime->stopOnFailure && ($status === self::FAILED || $status === self::ERRORED)) {
+            $this->queue = [];
+        }
         $this->report(
             $run->definition,
             $status,
@@ -151,6 +161,23 @@ final class TestRunner
             $details + ['snapshotsWritten' => $run->instance->snapshotsWritten()],
         );
         $this->scheduleNext();
+    }
+
+    /**
+     * @param array<string, array<int, int>> $lines
+     * @return array<string, list<int>> the lines that ran, per file
+     */
+    private static function linesRan(array $lines): array
+    {
+        $ran = [];
+        foreach ($lines as $file => $fileLines) {
+            $numbers = array_keys(array_filter($fileLines, static fn (int $hit) => $hit === 1));
+            if ($numbers !== []) {
+                $ran[$file] = $numbers;
+            }
+        }
+
+        return $ran;
     }
 
     /**

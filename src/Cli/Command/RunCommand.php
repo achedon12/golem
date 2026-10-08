@@ -46,7 +46,7 @@ final class RunCommand
     /**
      * --repeat and --random-order, for the runtime.
      *
-     * @return array{repeat: int, seed: ?int}
+     * @return array{repeat: int, seed: ?int, perTestCoverage: bool, stopOnFailure: bool}
      */
     private function order(Options $options): array
     {
@@ -59,7 +59,12 @@ final class RunCommand
             $this->seed ??= $given !== null && ctype_digit($given) ? (int) $given : random_int(1, 999_999);
         }
 
-        return ['repeat' => $repeat, 'seed' => $this->seed];
+        return [
+            'repeat' => $repeat,
+            'seed' => $this->seed,
+            'perTestCoverage' => $options->has('per-test-coverage'),
+            'stopOnFailure' => $options->has('stop-on-failure'),
+        ];
     }
 
     public function execute(Options $options): int
@@ -383,7 +388,7 @@ final class RunCommand
 
     private static function wantsCoverage(Options $options): bool
     {
-        return $options->has('coverage') || $options->get('coverage-clover') !== null;
+        return $options->has('coverage') || $options->get('coverage-clover') !== null || $options->has('per-test-coverage');
     }
 
     /**

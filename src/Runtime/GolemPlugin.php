@@ -35,10 +35,10 @@ final class GolemPlugin extends PluginBase
             return;
         }
 
-        /** @var array{events: string, tests: string, subjects: string, subject: string, filter: ?string, files?: list<string>|null, repeat?: int, seed?: int|null, pluginRoot: string, cache: string, virions: list<string>, poggit: ?string, updateSnapshots?: bool, ci?: bool, coverage?: bool, fuzz?: array{seed: int, seconds: int, golems: int}|null, bench?: array{steps: list<int>, seconds: int}|null} $config */
+        /** @var array{events: string, tests: string, subjects: string, subject: string, filter: ?string, files?: list<string>|null, repeat?: int, seed?: int|null, perTestCoverage?: bool, stopOnFailure?: bool, pluginRoot: string, cache: string, virions: list<string>, poggit: ?string, updateSnapshots?: bool, ci?: bool, coverage?: bool, fuzz?: array{seed: int, seconds: int, golems: int}|null, bench?: array{steps: list<int>, seconds: int}|null} $config */
         $config = json_decode((string) file_get_contents($configPath), true, flags: JSON_THROW_ON_ERROR);
         $this->events = new EventLog($config['events']);
-        if (($config['coverage'] ?? false) && LineCoverage::available()) {
+        if ((($config['coverage'] ?? false) || ($config['perTestCoverage'] ?? false)) && LineCoverage::available()) {
             // before the plugin loads, to cover onLoad() and onEnable() too; the plugin is loaded
             // through a link in the subjects folder, so its code has paths from both
             LineCoverage::start([$config['pluginRoot'] . '/src', $config['subjects']]);
@@ -63,6 +63,9 @@ final class GolemPlugin extends PluginBase
             $config['updateSnapshots'] ?? false,
             $config['ci'] ?? false,
             $config['coverage'] ?? false,
+            $config['perTestCoverage'] ?? false,
+            $config['stopOnFailure'] ?? false,
+            $config['pluginRoot'],
         ));
 
         // The first tick only happens once every plugin is enabled and the world is ready.
@@ -73,7 +76,7 @@ final class GolemPlugin extends PluginBase
      * Loads the virions listed in composer.json and in the plugin's .poggit.yml, before
      * the plugin itself so its classes can use them from onLoad().
      *
-     * @param array{events: string, tests: string, subjects: string, subject: string, filter: ?string, files?: list<string>|null, repeat?: int, seed?: int|null, pluginRoot: string, cache: string, virions: list<string>, poggit: ?string, updateSnapshots?: bool, ci?: bool, coverage?: bool, fuzz?: array{seed: int, seconds: int, golems: int}|null, bench?: array{steps: list<int>, seconds: int}|null} $config
+     * @param array{events: string, tests: string, subjects: string, subject: string, filter: ?string, files?: list<string>|null, repeat?: int, seed?: int|null, perTestCoverage?: bool, stopOnFailure?: bool, pluginRoot: string, cache: string, virions: list<string>, poggit: ?string, updateSnapshots?: bool, ci?: bool, coverage?: bool, fuzz?: array{seed: int, seconds: int, golems: int}|null, bench?: array{steps: list<int>, seconds: int}|null} $config
      */
     private function loadVirions(array $config): void
     {
@@ -105,7 +108,7 @@ final class GolemPlugin extends PluginBase
     }
 
     /**
-     * @param array{events: string, tests: string, subjects: string, subject: string, filter: ?string, files?: list<string>|null, repeat?: int, seed?: int|null, pluginRoot: string, cache: string, virions: list<string>, poggit: ?string, updateSnapshots?: bool, ci?: bool, coverage?: bool, fuzz?: array{seed: int, seconds: int, golems: int}|null, bench?: array{steps: list<int>, seconds: int}|null} $config
+     * @param array{events: string, tests: string, subjects: string, subject: string, filter: ?string, files?: list<string>|null, repeat?: int, seed?: int|null, perTestCoverage?: bool, stopOnFailure?: bool, pluginRoot: string, cache: string, virions: list<string>, poggit: ?string, updateSnapshots?: bool, ci?: bool, coverage?: bool, fuzz?: array{seed: int, seconds: int, golems: int}|null, bench?: array{steps: list<int>, seconds: int}|null} $config
      */
     private function begin(array $config): void
     {

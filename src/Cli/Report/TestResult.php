@@ -36,6 +36,8 @@ final class TestResult
         public readonly array $trace,
         public readonly int $snapshotsWritten = 0,
         public readonly int $repetition = 1,
+        /** @var array<string, list<int>> lines of src/ the test ran, with --per-test-coverage */
+        public readonly array $lines = [],
     ) {
     }
 
@@ -66,6 +68,7 @@ final class TestResult
             array_values(array_filter((array) ($event['trace'] ?? []), 'is_string')),
             (int) ($event['snapshotsWritten'] ?? 0),
             max(1, (int) ($event['repetition'] ?? 1)),
+            self::lines($event['lines'] ?? null),
         );
     }
 
@@ -75,6 +78,19 @@ final class TestResult
     public function id(): string
     {
         return $this->class . '::' . $this->name();
+    }
+
+    /**
+     * @return array<string, list<int>>
+     */
+    private static function lines(mixed $value): array
+    {
+        $lines = [];
+        foreach (is_array($value) ? $value : [] as $file => $numbers) {
+            $lines[(string) $file] = array_values(array_map('intval', is_array($numbers) ? $numbers : []));
+        }
+
+        return $lines;
     }
 
     public function isProblem(): bool

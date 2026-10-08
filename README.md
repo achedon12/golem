@@ -167,6 +167,12 @@ failures and coverage in the code, fuzz, benchmark, and build tests without writ
 arguments, invalid form answers, clicks, disconnections) and reports every exception with the
 actions that led to it and a seed to replay them. See [Fuzzing](https://achedon12.github.io/golem/fuzzing).
 
+## Mutation testing
+
+`golem mutate` changes your code one small mutation at a time (`===` into `!==`, `<` into `<=`,
+`true` into `false`…) and runs the tests that cover each line: the mutants nobody notices are the
+bugs your tests would let through. See [Mutation testing](https://achedon12.github.io/golem/mutation).
+
 ## Benchmark
 
 `golem bench --players=100` brings golems in a few at a time and shows how TPS, tick usage and
