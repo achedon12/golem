@@ -13,6 +13,14 @@ so your plugin sees a normal player: join and quit events fire, it has an invent
 has permissions and can be kicked. When `yield $this->golem()` returns, the golem is in the world
 and `PlayerJoinEvent` has already fired.
 
+Spawning golems one after the other takes about half a second each. To bring several in, let them
+join together:
+
+```php
+[$steve, $alex] = yield $this->golems(['Steve', 'Alex']);
+$crowd = yield $this->golems(20); // Golem1 to Golem20
+```
+
 ## Acting
 
 | Method | What it does |
