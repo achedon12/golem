@@ -150,6 +150,12 @@ See [Server plugin](https://achedon12.github.io/golem/server-plugin) for every c
 arguments, invalid form answers, clicks, disconnections) and reports every exception with the
 actions that led to it and a seed to replay them. See [Fuzzing](https://achedon12.github.io/golem/fuzzing).
 
+## Benchmark
+
+`golem bench --players=100` brings golems in a few at a time and shows how TPS, tick usage and
+memory evolve, then the plugin's slowest listeners. `assertTpsAbove(18.0)` catches a slowdown in a
+test. See [Benchmark](https://achedon12.github.io/golem/benchmark).
+
 ## Continuous integration
 
 ```yaml

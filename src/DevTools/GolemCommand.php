@@ -12,14 +12,17 @@ use pocketmine\form\Form;
 use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginOwned;
+use pocketmine\scheduler\ClosureTask;
 use pocketmine\utils\TextFormat;
 
 final class GolemCommand extends Command implements PluginOwned
 {
     private const PREFIX = TextFormat::GREEN . '[Golem] ' . TextFormat::RESET;
 
+    private const MAX_CROWD = 100;
+
     private const USAGE = [
-        '/golem spawn <name>' => 'spawn a simulated player',
+        '/golem spawn <name> [count]' => 'spawn a simulated player, or count of them: <name>1, <name>2…',
         '/golem list' => 'list the golems',
         '/golem remove <name|all>' => 'disconnect golems',
         '/golem <name> chat <message>' => 'chat or run a command (start with /)',
@@ -57,7 +60,7 @@ final class GolemCommand extends Command implements PluginOwned
         $first = strtolower($args[0] ?? 'help');
         match ($first) {
             'help' => $this->help($sender),
-            'spawn' => $this->spawn($sender, $args[1] ?? null),
+            'spawn' => isset($args[2]) ? $this->spawnCrowd($sender, $args[1], $args[2]) : $this->spawn($sender, $args[1] ?? null),
             'list' => $this->list($sender),
             'remove' => $this->remove($sender, $args[1] ?? null),
             default => $this->control($sender, $args[0] ?? '', array_slice($args, 1)),
@@ -77,24 +80,13 @@ final class GolemCommand extends Command implements PluginOwned
     private function spawn(CommandSender $sender, ?string $name): void
     {
         if ($name === null) {
-            $this->error($sender, 'Usage: /golem spawn <name>');
+            $this->error($sender, 'Usage: /golem spawn <name> [count]');
 
             return;
         }
-        if (!Player::isValidUserName($name)) {
-            $this->error($sender, "\"$name\" is not a valid player name");
-
-            return;
-        }
-        // logging in with the name of an online player would kick that player
-        if ($sender->getServer()->getPlayerExact($name) !== null) {
-            $this->error($sender, "$name is already online");
-
-            return;
-        }
-        // and with the name of a known player, the golem would get their op status and data
-        if ($this->plugin->isRealPlayer($name)) {
-            $this->error($sender, "$name is a real player of this server: pick another name for the golem");
+        $problem = $this->nameProblem($sender, $name);
+        if ($problem !== null) {
+            $this->error($sender, $problem);
 
             return;
         }
@@ -103,6 +95,68 @@ final class GolemCommand extends Command implements PluginOwned
             fn (Golem $golem) => $this->reply($sender, "{$golem->name()} joined the server"),
             fn (\Throwable $e) => $this->error($sender, "$name could not join: {$e->getMessage()}"),
         );
+    }
+
+    /**
+     * Spawns <name>1 to <name><count>, one every other tick as players would join.
+     */
+    private function spawnCrowd(CommandSender $sender, string $prefix, string $count): void
+    {
+        if (!ctype_digit($count) || (int) $count < 1 || (int) $count > self::MAX_CROWD) {
+            $this->error($sender, sprintf('The count must be a number from 1 to %d', self::MAX_CROWD));
+
+            return;
+        }
+
+        $names = [];
+        for ($i = 1; $i <= (int) $count; $i++) {
+            $problem = $this->nameProblem($sender, $prefix . $i);
+            if ($problem !== null) {
+                $this->error($sender, $problem);
+
+                return;
+            }
+            $names[] = $prefix . $i;
+        }
+
+        $this->reply($sender, sprintf('%d golems are joining…', count($names)));
+        $pending = count($names);
+        $failed = 0;
+        $done = function () use ($sender, &$pending, &$failed, $names): void {
+            if (--$pending === 0) {
+                $this->reply($sender, sprintf('%d golem(s) joined the server', count($names) - $failed));
+            }
+        };
+        foreach ($names as $index => $name) {
+            $this->plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(fn () => $this->golems->spawn($name)->then(
+                static fn () => $done(),
+                function (\Throwable $e) use ($sender, $name, &$failed, $done): void {
+                    $failed++;
+                    $this->error($sender, "$name could not join: {$e->getMessage()}");
+                    $done();
+                },
+            )), 1 + 2 * $index);
+        }
+    }
+
+    /**
+     * Why a golem cannot take this name, if it cannot.
+     */
+    private function nameProblem(CommandSender $sender, string $name): ?string
+    {
+        if (!Player::isValidUserName($name)) {
+            return "\"$name\" is not a valid player name";
+        }
+        // logging in with the name of an online player would kick that player
+        if ($sender->getServer()->getPlayerExact($name) !== null) {
+            return "$name is already online";
+        }
+        // and with the name of a known player, the golem would get their op status and data
+        if ($this->plugin->isRealPlayer($name)) {
+            return "$name is a real player of this server: pick another name for the golem";
+        }
+
+        return null;
     }
 
     private function list(CommandSender $sender): void

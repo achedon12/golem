@@ -87,5 +87,8 @@ jobs:
       - name: Fuzz the example plugin
         run: php bin/golem fuzz --path=examples/hello-world --duration=15 --seed=1
 
+      - name: Benchmark the example plugin
+        run: php bin/golem bench --path=examples/hello-world --players=20 --duration=15
+
       - name: Analyse
         run: ~/.cache/golem/php/8.4-Linux-x86_64/bin/php7/bin/php vendor/bin/phpstan analyse --memory-limit=1G --no-progress

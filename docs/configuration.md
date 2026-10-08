@@ -12,6 +12,7 @@ Golem works without any configuration when run from a plugin folder with a `test
 golem [run] [options]
 golem init [--no-workflow]
 golem fuzz [--duration=60] [--golems=3] [--seed=<n>]
+golem bench [--players=20] [--duration=60] [--min-tps=<tps>]
 ```
 
 | Option | Default | Description |
@@ -35,8 +36,8 @@ golem fuzz [--duration=60] [--golems=3] [--seed=<n>]
 Exit codes: `0` when every test passed (or was skipped), `1` when a test failed or the server
 crashed, `2` for usage errors such as a missing `plugin.yml`.
 
-`golem fuzz` takes `--path`, `--pocketmine`, `--php`, `--phar` and `--verbose`, plus its
-own options: see [Fuzzing](fuzzing.md).
+`golem fuzz` and `golem bench` take `--path`, `--pocketmine`, `--php`, `--phar` and `--verbose`,
+plus their own options: see [Fuzzing](fuzzing.md) and [Benchmark](benchmark.md).
 
 ## composer.json
 

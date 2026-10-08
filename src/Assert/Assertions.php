@@ -548,6 +548,22 @@ trait Assertions
         );
     }
 
+    /**
+     * Checks the server's average TPS over the last second (20 ticks). Wait at least a
+     * second after creating the load, so the average covers it.
+     */
+    final protected function assertTpsAbove(float $minimum, string $message = ''): void
+    {
+        $server = Server::getInstance();
+        $tps = $server->getTicksPerSecondAverage();
+        $this->check(
+            $tps > $minimum,
+            $message ?: "The server ran slower than $minimum TPS",
+            "more than $minimum TPS",
+            sprintf('%s TPS, tick usage %s%%', $tps, $server->getTickUsageAverage()),
+        );
+    }
+
     // -------------------------------------------------------------- internal
 
     /**

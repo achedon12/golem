@@ -16,6 +16,10 @@ breaking changes; they will always be listed here.
   by cause, also in the GitHub Actions job summary (#44).
 - `golem fuzz` has golems do random things to the plugin and reports every exception, with the
   actions that led to it and a seed to replay them (#46).
+- `golem bench` brings golems in a few at a time and reports TPS, tick usage and memory as players
+  are added, and the plugin's slowest listeners and tasks; `--min-tps` fails the run below a
+  threshold. `assertTpsAbove()` checks the TPS in a test, and `/golem spawn <name> <count>` spawns
+  a crowd on a development server (#47).
 
 ### Fixed
 
