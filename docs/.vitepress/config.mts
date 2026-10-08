@@ -86,7 +86,7 @@ export default defineConfig({
       { text: 'Guide', link: '/getting-started', activeMatch: '^/(getting-started|writing-tests|golems|assertions|server-plugin)' },
       { text: 'Reference', link: '/configuration', activeMatch: '^/(configuration|ci|how-it-works)' },
       {
-        text: 'v0.2.0',
+        text: 'v0.3.0',
         items: [
           { text: 'Changelog', link: 'https://github.com/achedon12/golem/blob/main/CHANGELOG.md' },
           { text: 'Releases', link: 'https://github.com/achedon12/golem/releases' },
