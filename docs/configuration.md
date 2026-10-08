@@ -11,7 +11,7 @@ Golem works without any configuration when run from a plugin folder with a `test
 ```
 golem [run] [options]
 golem init [--no-workflow]
-golem fuzz [--duration=60] [--golems=3] [--seed=<n>]
+golem fuzz [--duration=60] [--golems=3] [--seed=<n>] [--write-tests]
 golem bench [--players=20] [--duration=60] [--min-tps=<tps>]
 ```
 

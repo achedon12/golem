@@ -84,13 +84,17 @@ final class FuzzRunner
         $this->task = $this->runtime->plugin->getScheduler()->scheduleRepeatingTask(new ClosureTask(fn () => $this->tick()), 1);
     }
 
-    private function join(string $name, bool $operator): void
+    private function join(string $name, bool $operator, bool $rejoining = false): void
     {
-        $this->runtime->golems->spawn($name)->then(function (Golem $golem) use ($operator): void {
+        $this->runtime->golems->spawn($name)->then(function (Golem $golem) use ($operator, $rejoining): void {
             if ($operator) {
                 $golem->op(); // reach the operator-only paths too
             }
             $this->golems[] = $golem;
+            if ($rejoining) {
+                $variable = self::variable($golem);
+                $this->record($golem, 'joined again', $variable . ' = yield $this->golem(\'' . $golem->name() . '\');' . ($operator ? "\n" . $variable . '->op();' : ''));
+            }
         }, fn (\Throwable $e) => $this->failed($e, "$name joining", $name));
     }
 
@@ -105,7 +109,7 @@ final class FuzzRunner
         $this->golems = array_values(array_filter($this->golems, static fn (Golem $golem) => $golem->isOnline()));
         foreach ($this->golems as $golem) {
             if (!$golem->isAlive()) {
-                $this->act($golem, 'respawned', static fn () => $golem->respawn());
+                $this->act($golem, 'respawned', static fn () => $golem->respawn(), '%s->respawn();');
             } elseif ($this->random->getInt(0, 3) === 0) {
                 $this->randomAction($golem);
             }
@@ -121,15 +125,15 @@ final class FuzzRunner
             $roll <= 40 && $this->commands !== [] => $this->runCommand($golem),
             $roll <= 55 && $golem->form() !== null => $this->answerForm($golem),
             $roll <= 60 && $golem->window() !== null => $this->clickWindow($golem),
-            $roll <= 68 => $this->act($golem, $this->describeWalk($dx = $this->random->getInt(-6, 6), $dz = $this->random->getInt(-6, 6)), static fn () => $golem->walk($dx, $dz)),
-            $roll <= 72 => $this->act($golem, 'jumped', static fn () => $golem->jump()),
+            $roll <= 68 => $this->walk($golem),
+            $roll <= 72 => $this->act($golem, 'jumped', static fn () => $golem->jump(), '%s->jump();'),
             $roll <= 77 => $this->useBlock($golem, false),
             $roll <= 82 => $this->useBlock($golem, true),
-            $roll <= 86 && $other !== $golem => $this->act($golem, "attacked {$other->name()}", static fn () => $golem->attack($other)),
-            $roll <= 89 && $other !== $golem => $this->act($golem, "right-clicked {$other->name()}", static fn () => $golem->interactEntity($other)),
-            $roll <= 92 => $this->act($golem, 'chatted', fn () => $golem->chat($this->pick(self::ARGUMENTS) . ' hello')),
-            $roll <= 95 => $this->act($golem, 'toggled sneaking', static fn () => $golem->sneak(!$golem->player()->isSneaking())),
-            $roll <= 97 => $this->act($golem, 'toggled sprinting', static fn () => $golem->sprint(!$golem->player()->isSprinting())),
+            $roll <= 86 && $other !== $golem => $this->act($golem, "attacked {$other->name()}", static fn () => $golem->attack($other), '%s->attack(' . self::variable($other) . ');'),
+            $roll <= 89 && $other !== $golem => $this->act($golem, "right-clicked {$other->name()}", static fn () => $golem->interactEntity($other), '%s->interactEntity(' . self::variable($other) . ');'),
+            $roll <= 92 => $this->chat($golem),
+            $roll <= 95 => $this->toggle($golem, 'sneak', !$golem->player()->isSneaking()),
+            $roll <= 97 => $this->toggle($golem, 'sprint', !$golem->player()->isSprinting()),
             default => $this->reconnect($golem),
         };
     }
@@ -144,7 +148,30 @@ final class FuzzRunner
             $arguments[] = $this->random->getInt(0, 4) === 0 ? $this->otherName() : $this->pick(self::ARGUMENTS);
         }
         $line = trim($this->pick($this->commands) . ' ' . implode(' ', array_map(self::quote(...), $arguments)));
-        $this->act($golem, 'ran /' . self::shorten($line), static fn () => $golem->command($line));
+        $this->act($golem, 'ran /' . self::shorten($line), static fn () => $golem->command($line), '%s->command(' . Literal::of($line) . ');');
+    }
+
+    private function walk(Golem $golem): void
+    {
+        $dx = $this->random->getInt(-6, 6);
+        $dz = $this->random->getInt(-6, 6);
+        $this->act($golem, "walked ($dx, $dz)", static fn () => $golem->walk($dx, $dz), "%s->walk($dx, $dz);");
+    }
+
+    private function chat(Golem $golem): void
+    {
+        $message = $this->pick(self::ARGUMENTS) . ' hello';
+        $this->act($golem, 'chatted', static fn () => $golem->chat($message), '%s->chat(' . Literal::of($message) . ');');
+    }
+
+    private function toggle(Golem $golem, string $what, bool $on): void
+    {
+        $this->act(
+            $golem,
+            'toggled ' . ($what === 'sneak' ? 'sneaking' : 'sprinting'),
+            static fn () => $what === 'sneak' ? $golem->sneak($on) : $golem->sprint($on),
+            "%s->$what(" . ($on ? 'true' : 'false') . ');',
+        );
     }
 
     private function answerForm(Golem $golem): void
@@ -156,6 +183,7 @@ final class FuzzRunner
             $golem,
             sprintf('answered %s to the form "%s"', self::shorten((string) json_encode($answer)), TextFormat::clean(is_string($title) ? $title : '?')),
             static fn () => $golem->submitForm($answer),
+            '%s->submitForm(' . Literal::of($answer) . ');',
         );
     }
 
@@ -166,45 +194,62 @@ final class FuzzRunner
             return;
         }
         if ($this->random->getInt(0, 4) === 0) {
-            $this->act($golem, 'closed the window', static fn () => $golem->closeWindow());
+            $this->act($golem, 'closed the window', static fn () => $golem->closeWindow(), '%s->closeWindow();');
 
             return;
         }
         $slot = $this->random->getInt(0, max(0, $window->getSize() - 1));
-        $this->act($golem, "clicked slot $slot of the window", static fn () => $golem->clickSlot($slot));
+        $this->act($golem, "clicked slot $slot of the window", static fn () => $golem->clickSlot($slot), "%s->clickSlot($slot);");
     }
 
     private function useBlock(Golem $golem, bool $break): void
     {
         $target = $golem->position()->floor()->add($this->random->getInt(-2, 2), $this->random->getInt(-2, 1), $this->random->getInt(-2, 2));
         $where = sprintf('(%d, %d, %d)', $target->x, $target->y, $target->z);
+        $vector = sprintf('new Vector3(%d, %d, %d)', $target->x, $target->y, $target->z);
         if ($break) {
-            $this->act($golem, "broke the block at $where", static fn () => $golem->breakBlock($target));
+            $this->act($golem, "broke the block at $where", static fn () => $golem->breakBlock($target), "%s->breakBlock($vector);");
         } else {
             $face = $this->random->getInt(Facing::DOWN, Facing::EAST);
-            $this->act($golem, "right-clicked the block at $where", static fn () => $golem->interactBlock($target, $face));
+            $this->act($golem, "right-clicked the block at $where", static fn () => $golem->interactBlock($target, $face), "%s->interactBlock($vector, $face);");
         }
     }
 
     private function reconnect(Golem $golem): void
     {
         $name = $golem->name();
-        $this->act($golem, 'disconnected', static fn () => $golem->quit('Fuzzing'));
-        $this->runtime->plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(fn () => $this->join($name, $name === 'Fuzz1')), 10);
+        $this->act($golem, 'disconnected', static fn () => $golem->quit('Fuzzing'), "%s->quit('Fuzzing');");
+        $this->runtime->plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(fn () => $this->join($name, $name === 'Fuzz1', true)), 10);
     }
 
     /**
      * Runs one action, recording it and any exception it lets through.
+     *
+     * @param string $code the PHP statement that replays the action in a test, starting with %s for the golem
      */
-    private function act(Golem $golem, string $description, \Closure $action): void
+    private function act(Golem $golem, string $description, \Closure $action, string $code): void
     {
-        $this->actions++;
-        $this->events->write('fuzz_action', ['golem' => $golem->name(), 'action' => $description]);
+        // not sprintf: the arguments in the code can contain % too
+        $this->record($golem, $description, self::variable($golem) . substr($code, 2));
         try {
             $action();
         } catch (\Throwable $e) {
             $this->failed($e, $description, $golem->name());
         }
+    }
+
+    private function record(Golem $golem, string $description, string $code): void
+    {
+        $this->actions++;
+        $this->events->write('fuzz_action', ['golem' => $golem->name(), 'action' => $description, 'code' => $code, 'tick' => $this->elapsedTicks]);
+    }
+
+    /**
+     * "$fuzz2" for Fuzz2: the golem's variable in a replay test.
+     */
+    private static function variable(Golem $golem): string
+    {
+        return '$' . lcfirst($golem->name());
     }
 
     private function failed(\Throwable $e, string $action, string $golem): void
@@ -267,11 +312,6 @@ final class FuzzRunner
     private function otherName(): string
     {
         return $this->golems === [] ? 'Fuzz1' : $this->golems[$this->random->getInt(0, count($this->golems) - 1)]->name();
-    }
-
-    private function describeWalk(int $dx, int $dz): string
-    {
-        return "walked ($dx, $dz)";
     }
 
     private static function shorten(string $text): string

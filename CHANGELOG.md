@@ -20,6 +20,7 @@ breaking changes; they will always be listed here.
   are added, and the plugin's slowest listeners and tasks; `--min-tps` fails the run below a
   threshold. `assertTpsAbove()` checks the TPS in a test, and `/golem spawn <name> <count>` spawns
   a crowd on a development server (#47).
+- `golem fuzz --write-tests` writes a test that replays the actions leading to each crash (#54).
 - `golems(20)` or `golems(['Steve', 'Alex'])` spawns several golems that join together (#53).
 
 ### Fixed
