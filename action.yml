@@ -25,6 +25,15 @@ inputs:
   parallel:
     description: Number of servers to split the tests between. GitHub's runners have 4 cores.
     default: '1'
+  report-html:
+    description: Where to write a self-contained HTML report of the run (to upload as an artifact). Empty to skip it.
+    default: ''
+  comment:
+    description: "On pull requests, post a summary comment (results, failures, coverage) and update it on every push. Needs `pull-requests: write`."
+    default: 'false'
+  token:
+    description: Token used to post the pull request comment.
+    default: ${{ github.token }}
 
 runs:
   using: composite
@@ -39,6 +48,7 @@ runs:
         key: golem-v2-${{ runner.os }}-${{ runner.arch }}-${{ inputs.pocketmine || 'latest' }}
 
     - name: Run Golem
+      id: golem
       shell: bash
       env:
         GOLEM_PATH: ${{ inputs.path }}
@@ -47,6 +57,8 @@ runs:
         GOLEM_FILTER: ${{ inputs.filter }}
         GOLEM_JUNIT: ${{ inputs.junit }}
         GOLEM_PARALLEL: ${{ inputs.parallel }}
+        GOLEM_REPORT_HTML: ${{ inputs.report-html }}
+        GOLEM_COMMENT: ${{ inputs.comment }}
       run: |
         args=(run --path="$GOLEM_PATH")
         [ -n "$GOLEM_TESTS" ] && args+=(--tests="$GOLEM_TESTS")
@@ -54,4 +66,31 @@ runs:
         [ -n "$GOLEM_FILTER" ] && args+=(--filter="$GOLEM_FILTER")
         [ -n "$GOLEM_JUNIT" ] && args+=(--log-junit="$GOLEM_JUNIT")
         [ -n "$GOLEM_PARALLEL" ] && [ "$GOLEM_PARALLEL" != "1" ] && args+=(--parallel="$GOLEM_PARALLEL")
-        php "$GITHUB_ACTION_PATH/bin/golem" "${args[@]}"
+        [ -n "$GOLEM_REPORT_HTML" ] && args+=(--report-html="$GOLEM_REPORT_HTML")
+        [ "$GOLEM_COMMENT" = "true" ] && args+=(--report-markdown="$RUNNER_TEMP/golem-report.md")
+        # the comment is posted whatever the result: keep the exit code for the last step
+        code=0
+        php "$GITHUB_ACTION_PATH/bin/golem" "${args[@]}" || code=$?
+        echo "exit-code=$code" >> "$GITHUB_OUTPUT"
+
+    - name: Comment on the pull request
+      if: inputs.comment == 'true' && github.event_name == 'pull_request'
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        REPO: ${{ github.repository }}
+        PR: ${{ github.event.pull_request.number }}
+      run: |
+        report="$RUNNER_TEMP/golem-report.md"
+        [ -f "$report" ] || { echo "No report to post."; exit 0; }
+        # one comment per pull request, found again by its marker and updated
+        id=$(gh api "repos/$REPO/issues/$PR/comments" --paginate --jq '.[] | select(.body | startswith("<!-- golem-report -->")) | .id' | head -n 1) || id=""
+        if [ -n "$id" ]; then
+          gh api -X PATCH "repos/$REPO/issues/comments/$id" -F body=@"$report" > /dev/null || echo "::warning::Golem could not update its comment (does the workflow have pull-requests: write?)"
+        else
+          gh api -X POST "repos/$REPO/issues/$PR/comments" -F body=@"$report" > /dev/null || echo "::warning::Golem could not comment (does the workflow have pull-requests: write?)"
+        fi
+
+    - name: Result
+      shell: bash
+      run: exit ${{ steps.golem.outputs.exit-code }}

@@ -14,6 +14,8 @@ use Golem\Cli\Project;
 use Golem\Cli\Report\CloverReporter;
 use Golem\Cli\Report\CompactReporter;
 use Golem\Cli\Report\EventLogReporter;
+use Golem\Cli\Report\HtmlReporter;
+use Golem\Cli\Report\MarkdownReporter;
 use Golem\Cli\Report\MultiReporter;
 use Golem\Cli\Report\ConsoleReporter;
 use Golem\Cli\Report\GitHubReporter;
@@ -32,7 +34,7 @@ use Golem\Cli\UserError;
  */
 final class RunCommand
 {
-    public const VALUE_OPTIONS = ['path', 'tests', 'filter', 'pocketmine', 'php', 'phar', 'log-junit', 'timeout', 'compare', 'parallel', 'coverage-clover', 'log-events', 'repeat'];
+    public const VALUE_OPTIONS = ['path', 'tests', 'filter', 'pocketmine', 'php', 'phar', 'log-junit', 'timeout', 'compare', 'parallel', 'coverage-clover', 'log-events', 'repeat', 'report-html', 'report-markdown'];
 
     /** the seed of --random-order, chosen once so every server of a run shares it */
     private ?int $seed = null;
@@ -157,8 +159,18 @@ final class RunCommand
                 $this->output->writeln('  <yellow>No line coverage was collected: no Clover report written.</>');
             }
         }
+        if ($options->get('report-html') !== null) {
+            (new HtmlReporter($project->root))->write($report, (string) $options->get('report-html'));
+        }
+        if ($options->get('report-markdown') !== null) {
+            (new MarkdownReporter($project->root))->write($report, (string) $options->get('report-markdown'));
+        }
         if (GitHubReporter::isAvailable()) {
             (new GitHubReporter($project->root))->write($report);
+            $summary = getenv('GITHUB_STEP_SUMMARY');
+            if (is_string($summary) && $summary !== '') {
+                file_put_contents($summary, (new MarkdownReporter($project->root))->markdown($report) . "\n", FILE_APPEND);
+            }
         }
 
         return $report->isSuccessful() ? 0 : 1;
