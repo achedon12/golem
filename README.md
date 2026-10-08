@@ -55,6 +55,15 @@ final class WelcomeTest extends TestCase
   </a>
 </p>
 
+## Watch the 4-minute tour
+
+<p align="center">
+  <a href="https://youtu.be/X-dhiehEwzw"><img src=".github/assets/video-thumbnail.jpg" alt="Video: Stop testing PocketMine-MP plugins by hand (Golem tour, 4 minutes)" width="640"></a>
+</p>
+
+Real server, simulated players, readable failures, the dashboard, fuzzing and benchmarks, in four
+minutes: [watch it on YouTube](https://youtu.be/X-dhiehEwzw).
+
 ## Why Golem
 
 Unit tests stop where PocketMine starts: events, permissions, forms, inventories, scheduling and

@@ -159,6 +159,19 @@ vendor/bin/golem ui
 
 <section class="home-section">
 
+## The four-minute tour
+
+<p class="lead">A real server, simulated players, readable failures, the dashboard, fuzzing and benchmarks: everything Golem does, shown on its example plugin.</p>
+
+<a href="https://youtu.be/X-dhiehEwzw" class="dashboard-demo">
+  <img src="/video-thumbnail.webp" alt="Video: Stop testing PocketMine-MP plugins by hand, the Golem tour" width="1280" height="720" loading="lazy">
+  <span>▶ Watch on YouTube</span>
+</a>
+
+</section>
+
+<section class="home-section">
+
 ## Or click through it all
 
 <p class="lead"><code>vendor/bin/golem ui</code> opens a dashboard on your machine: pick tests, watch them pass live, open a failure next to the line that broke, see which lines of your plugin your tests never ran. Fuzz, benchmark, and build tests without writing PHP, from the same page.</p>
