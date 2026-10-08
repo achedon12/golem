@@ -6,6 +6,7 @@ namespace Golem\Cli\Command;
 
 use Golem\Cli\Environment\Downloader;
 use Golem\Cli\Environment\Toolchain;
+use Golem\Cli\Fuzz\ReplayTestWriter;
 use Golem\Cli\Options;
 use Golem\Cli\Output;
 use Golem\Cli\Project;
@@ -60,14 +61,16 @@ final class FuzzCommand
 
         /** @var list<string> $history */
         $history = [];
-        /** @var array<string, array{event: array<string, mixed>, count: int, before: list<string>}> $failures */
+        /** @var array<string, array{event: array<string, mixed>, count: int, before: list<string>, actions: list<array{code: string, tick: int}>}> $failures */
         $failures = [];
+        /** @var list<array{code: string, tick: int}> $log every action so far, to replay a crash */
+        $log = [];
         $actions = 0;
         $lastProgress = 0.0;
         $startedAt = microtime(true);
 
         try {
-            $finished = $process->run(function (array $event) use (&$history, &$failures, &$actions, &$lastProgress, $startedAt): void {
+            $finished = $process->run(function (array $event) use (&$history, &$failures, &$log, &$actions, &$lastProgress, $startedAt): void {
                 switch ($event['type'] ?? null) {
                     case 'fuzz_start':
                         $commands = is_array($event['commands'] ?? null) ? $event['commands'] : [];
@@ -77,6 +80,7 @@ final class FuzzCommand
                         $actions++;
                         $history[] = self::string($event, 'golem') . ' ' . self::string($event, 'action');
                         $history = array_slice($history, -self::HISTORY);
+                        $log[] = ['code' => self::string($event, 'code'), 'tick' => (int) ($event['tick'] ?? 0)];
                         if (microtime(true) - $lastProgress > 5) {
                             $lastProgress = microtime(true);
                             $this->output->writeln(sprintf('  <gray>%3ds · %d actions · %d crash(es)</>', (int) (microtime(true) - $startedAt), $actions, count($failures)));
@@ -87,7 +91,7 @@ final class FuzzCommand
                         if (isset($failures[$key])) {
                             $failures[$key]['count']++;
                         } else {
-                            $failures[$key] = ['event' => $event, 'count' => 1, 'before' => array_slice($history, 0, -1)];
+                            $failures[$key] = ['event' => $event, 'count' => 1, 'before' => array_slice($history, 0, -1), 'actions' => $log];
                         }
                         break;
                     case 'abort':
@@ -115,6 +119,21 @@ final class FuzzCommand
             $this->output->writeln();
         }
 
+        if ($options->has('write-tests') && $failures !== []) {
+            $writer = new ReplayTestWriter($project->testsDirectory, $golems, $seed);
+            if (!is_dir($project->testsDirectory)) {
+                mkdir($project->testsDirectory, 0777, true);
+            }
+            foreach ($failures as $failure) {
+                if ($failure['actions'] === []) {
+                    continue; // failed while joining: nothing to replay
+                }
+                $path = $writer->write($failure['event'], $failure['actions'], $this->relative(self::string($failure['event'], 'file'), $project->root));
+                $this->output->writeln(sprintf('  <gray>Wrote</> <cyan>%s</> <gray>to replay it</>', Output::escape($this->relative($path, $project->root))));
+            }
+            $this->output->writeln();
+        }
+
         $clean = $failures === [] && $finished;
         $this->output->writeln(sprintf(
             '  <gray>Fuzzing:</> %d actions, %s',
@@ -123,6 +142,9 @@ final class FuzzCommand
         ));
         if (!$clean) {
             $this->output->writeln(sprintf('  <gray>Replay:</>  vendor/bin/golem fuzz --seed=%d --duration=%d --golems=%d', $seed, $seconds, $golems));
+            if (!$options->has('write-tests')) {
+                $this->output->writeln('  <gray>Add --write-tests to turn each crash into a test.</>');
+            }
         }
         $this->output->writeln();
 
@@ -135,8 +157,7 @@ final class FuzzCommand
      */
     private function failure(array $event, int $count, array $before, string $root): void
     {
-        $file = self::string($event, 'file');
-        $relative = str_starts_with($file, $root . '/') ? substr($file, strlen($root) + 1) : $file;
+        $relative = $this->relative(self::string($event, 'file'), $root);
         $exception = self::string($event, 'exception');
         $short = substr($exception, (int) strrpos('\\' . $exception, '\\'));
 
@@ -150,6 +171,11 @@ final class FuzzCommand
             }
         }
         $this->output->writeln();
+    }
+
+    private function relative(string $file, string $root): string
+    {
+        return str_starts_with($file, $root . '/') ? substr($file, strlen($root) + 1) : $file;
     }
 
     /**

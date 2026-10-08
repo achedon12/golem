@@ -54,6 +54,7 @@ At random, every few ticks, each golem:
 | `--duration=<seconds>` | `60` | How long to fuzz, at least `5` |
 | `--golems=<count>` | `3` | How many golems, at most `20` |
 | `--seed=<n>` | random | The seed of the random choices |
+| `--write-tests` | | Write a test that replays each crash (see [below](#turning-a-crash-into-a-test)) |
 
 `--path`, `--pocketmine`, `--php`, `--phar` and `--verbose` work as for
 [`golem run`](configuration.md#command-line), and the `extra.golem` settings of `composer.json`
@@ -73,5 +74,41 @@ fuzzing can run in CI:
 ```
 
 A fixed seed makes the golems choose the same actions in the same order. The server is not fully
-deterministic (timings, tasks), so a replay usually, not always, finds the same crash. Once it is
-fixed, turn the actions of the report into a test so it stays fixed.
+deterministic (timings, tasks), so a replay usually, not always, finds the same crash.
+
+## Turning a crash into a test
+
+With `--write-tests`, Golem writes a test next to yours for each crash, replaying every action of
+the run up to the one that threw, with the same values and the same pauses:
+
+```text
+  Wrote tests/FuzzMenuForm30Test.php to replay it
+```
+
+```php
+/**
+ * Found by golem fuzz --seed=3: TypeError: Cannot access offset of type array on array
+ * at src/MenuForm.php:30, when Fuzz1 answered [null] to the form "Server menu".
+ */
+final class FuzzMenuForm30Test extends TestCase
+{
+    #[Timeout(231)]
+    public function testTypeErrorAtMenuForm30(): Generator
+    {
+        [$fuzz1, $fuzz2, $fuzz3] = yield $this->golems(['Fuzz1', 'Fuzz2', 'Fuzz3']);
+        $fuzz1->op();
+
+        $fuzz2->command('heal');
+        $fuzz3->command('heal 1.5 Fuzz3 %s');
+        yield $this->wait(1);
+        // …
+        $fuzz1->command('menu');
+        yield $this->wait(1);
+        $fuzz1->submitForm([null]); // throws TypeError
+    }
+}
+```
+
+The test fails with the crash until it is fixed. Most of the actions usually do not matter: remove
+them until only what leads to the crash is left (here, `/menu` then the invalid answer), and
+replace the crash with an assertion of what should happen, so it stays fixed.
