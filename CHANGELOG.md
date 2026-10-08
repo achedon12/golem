@@ -7,30 +7,39 @@ breaking changes; they will always be listed here.
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-08
+
 ### Added
 
-- `--repeat=<n>` runs every test n times and lists the flaky ones; `--random-order[=<seed>]`
-  shuffles the order to find tests that depend on the ones before them. Both are in the dashboard
-  too (#86).
-- The dashboard's **Watch** option runs the picked tests again whenever a file of the plugin
-  changes (#87).
+Finding weak tests:
 
 - `golem mutate` changes the plugin's code one mutation at a time and runs the tests that cover
   each line, then reports the mutation score and the surviving mutants; also in the dashboard
   (#88).
-- `--stop-on-failure` stops a run at the first failing test.
-- `--report-html=<file>` writes a self-contained HTML report and `--report-markdown=<file>` a
-  summary, also added to the GitHub Actions job summary. The action's `comment` input posts it on
-  the pull request and keeps it up to date; `report-html` writes the HTML report (#89).
+- `--repeat=<n>` runs every test n times and lists the flaky ones; `--random-order[=<seed>]`
+  shuffles the order to find tests that depend on the ones before them. Both are in the dashboard
+  too (#86).
+
+Plugins side by side:
 
 - `golem compat <plugin...>` runs the tests alone, then with other plugins (phars, folders or
   Poggit names), and reports the tests that break and new command conflicts; `--with` loads
   other plugins in a run (#90).
 - Every run warns about commands of the plugin that another plugin takes, or takes from it.
 
+Reports and comfort:
+
+- `--report-html=<file>` writes a self-contained HTML report and `--report-markdown=<file>` a
+  summary, also added to the GitHub Actions job summary. The action's `comment` input posts it on
+  the pull request and keeps it up to date; `report-html` writes the HTML report (#89).
+- The dashboard's **Watch** option runs the picked tests again whenever a file of the plugin
+  changes (#87).
+- `--stop-on-failure` stops a run at the first failing test.
+
 ### Changed
 
 - `golem --watch` no longer reacts to snapshots written by the tests.
+- When the server stops early in `--compare` or `golem compat`, the report shows why.
 
 ## [0.6.0] - 2026-10-08
 
@@ -202,6 +211,7 @@ First public release.
 - `golem init` to scaffold a first test and a workflow.
 - A composite GitHub Action, `achedon12/golem@v0`.
 
+[0.7.0]: https://github.com/achedon12/golem/releases/tag/v0.7.0
 [0.6.0]: https://github.com/achedon12/golem/releases/tag/v0.6.0
 [0.5.1]: https://github.com/achedon12/golem/releases/tag/v0.5.1
 [0.5.0]: https://github.com/achedon12/golem/releases/tag/v0.5.0
