@@ -25,6 +25,7 @@ golem bench [--players=20] [--duration=60] [--min-tps=<tps>] [--save-baseline=<f
 | `--coverage` | | After the run, list the plugin's commands the tests never ran and listeners they never called (see [Coverage](writing-tests.md#coverage)) |
 | `--parallel=<n>` | `1` | Split the test files between `n` servers running side by side. Each class runs on one server, so tests of a class still share it; tests of different classes must not depend on each other |
 | `--log-junit=<file>` | | Also write a JUnit XML report (needs `ext-dom`) |
+| `--teamcity` | | Report with [TeamCity service messages](ci.md#teamcity) instead of the usual output |
 | `--timeout=<seconds>` | `600` | Stop a run that takes longer than this |
 | `--update-snapshots` | | Rewrite the snapshots of `assertMatchesSnapshot()` instead of comparing them |
 | `--watch` | | Keep running: re-run the tests whenever `src/`, `tests/`, `resources/` or `plugin.yml` change |
