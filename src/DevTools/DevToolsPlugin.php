@@ -21,8 +21,10 @@ final class DevToolsPlugin extends PluginBase implements Listener
     protected function onEnable(): void
     {
         $this->golems = new GolemFactory($this);
-        $this->getServer()->getCommandMap()->register('golem', new GolemCommand($this, $this->golems));
+        $recorder = new Recorder($this->getServer());
+        $this->getServer()->getCommandMap()->register('golem', new GolemCommand($this, $this->golems, $recorder));
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
+        $this->getServer()->getPluginManager()->registerEvents($recorder, $this);
     }
 
     protected function onDisable(): void

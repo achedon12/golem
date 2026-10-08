@@ -147,6 +147,38 @@ final class GolemCommandTest extends TestCase
         );
     }
 
+    public function testRecordsASessionIntoATest(): Generator
+    {
+        $rec = yield $this->golem('Rec');
+        $rec->op();
+        $this->admin->command('golem record Rec');
+        $this->assertReceivedMessage($this->admin, 'Recording Rec');
+
+        $rec->chat("it's 100%");
+        $rec->command('list');
+        yield $this->wait(5);
+        yield $rec->walk(3, 0);
+        $rec->jump();
+
+        $this->admin->command('golem record stop Rec session');
+        $file = $this->plugin()->getDataFolder() . 'recordings/RecSessionTest.php';
+        try {
+            $this->assertReceivedMessage($this->admin, 'RecSessionTest.php');
+            $code = (string) file_get_contents($file);
+
+            $this->assertContains("[\$rec] = yield \$this->golems(['Rec']);", $code);
+            $this->assertContains('$rec->op();', $code);
+            $this->assertContains("\$rec->chat('it\\'s 100%');", $code);
+            $this->assertContains("\$rec->command('list');", $code);
+            $this->assertContains('$rec->walkTo(new Vector3(', $code);
+            $this->assertContains('$rec->jump();', $code);
+            $this->assertContains('final class RecSessionTest extends TestCase', $code);
+            $this->assertNotContains("command('golem", $code);
+        } finally {
+            @unlink($file);
+        }
+    }
+
     public function testRegularPlayersCannotUseIt(): Generator
     {
         $steve = yield $this->golem('Steve');

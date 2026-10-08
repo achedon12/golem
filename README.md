@@ -142,7 +142,8 @@ Golem is also a plugin: put [`Golem.phar`](https://github.com/achedon12/golem/re
 /golem Rival inbox
 ```
 
-See [Server plugin](https://achedon12.github.io/golem/server-plugin) for every command.
+Play a scenario by hand with `/golem record`, and `/golem record stop` writes a test that replays
+it. See [Server plugin](https://achedon12.github.io/golem/server-plugin) for every command.
 
 ## Fuzzing
 
