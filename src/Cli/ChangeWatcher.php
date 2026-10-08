@@ -39,7 +39,10 @@ final class ChangeWatcher
         $this->fingerprint = $settled;
     }
 
-    private function fingerprint(): string
+    /**
+     * A digest of the watched files: it changes when one of them does.
+     */
+    public function fingerprint(): string
     {
         clearstatcache();
         $state = [];
@@ -54,6 +57,10 @@ final class ChangeWatcher
             $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS));
             /** @var \SplFileInfo $file */
             foreach ($files as $file) {
+                // snapshots and world copies are written by the tests themselves
+                if (str_contains($file->getPathname(), '/__snapshots__/')) {
+                    continue;
+                }
                 $state[$file->getPathname()] = $file->getMTime() . ':' . $file->getSize();
             }
         }

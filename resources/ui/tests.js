@@ -91,6 +91,28 @@ export function testsView (project, app) {
   const coverage = h('input', { type: 'checkbox' })
   const snapshots = h('input', { type: 'checkbox' })
   const runButton = h('button', { class: 'primary', onclick: () => current ? current.stop() : start() })
+
+  // ---------- watch mode: run the picked tests again whenever a file changes
+  const watch = h('input', { type: 'checkbox', onchange: () => { watching = watch.checked; watchState.textContent = watching ? 'watching src/, tests/, resources/…' : ''; if (watching) poll() } })
+  const watchState = h('span', { class: 'hint' })
+  let watching = false
+  let fingerprint = null
+  let pending = null
+  async function poll () {
+    if (!watching) return
+    try {
+      const now = (await api('changes')).fingerprint
+      if (fingerprint !== null && now !== fingerprint) pending = now
+      else if (pending !== null && now === pending && !current && selection().count > 0) {
+        // the files stopped changing: editors often save in several steps
+        pending = null
+        watchState.textContent = `change saved at ${new Date().toLocaleTimeString()}, running…`
+        start().then(() => { watchState.textContent = 'watching src/, tests/, resources/…' })
+      }
+      fingerprint = now
+    } catch {}
+    setTimeout(poll, 1200)
+  }
   function renderRunButton () {
     const { label, count } = selection()
     runButton.textContent = current ? 'Stop' : count === 0 ? 'Pick tests to run' : `Run ${label}`
@@ -281,6 +303,8 @@ export function testsView (project, app) {
         h('label', { class: 'check', title: 'Shuffle the order, to find tests that depend on the ones before them' }, randomOrder, ' Random order'),
         h('label', { class: 'check' }, coverage, ' Coverage'),
         h('label', { class: 'check', title: 'Rewrite the snapshots of assertMatchesSnapshot()' }, snapshots, ' Update snapshots'),
+        h('label', { class: 'check', title: 'Run the picked tests again whenever a file of the plugin changes' }, watch, ' Watch'),
+        watchState,
         runButton),
       status, results, details, coveragePanel, consoleBox),
   )
