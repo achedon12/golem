@@ -20,6 +20,7 @@ golem init [--no-workflow]
 | `--tests=<dir>` | `tests` | The tests folder, relative to the plugin |
 | `--pocketmine=<version>` | `latest` | The PocketMine-MP version to run, e.g. `5.44.3`, or a fork: `owner/repository` (its latest release) or `owner/repository@tag` (see [Forks](#pocketmine-mp-forks)) |
 | `--compare=<version>` | | Run the tests on the configured version, then on this one (a version or a fork), and report what changes (see [Forks](#pocketmine-mp-forks)) |
+| `--coverage` | | After the run, list the plugin's commands the tests never ran and listeners they never called (see [Coverage](writing-tests.md#coverage)) |
 | `--log-junit=<file>` | | Also write a JUnit XML report (needs `ext-dom`) |
 | `--timeout=<seconds>` | `600` | Stop a run that takes longer than this |
 | `--update-snapshots` | | Rewrite the snapshots of `assertMatchesSnapshot()` instead of comparing them |

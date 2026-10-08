@@ -10,6 +10,8 @@ breaking changes; they will always be listed here.
 ### Added
 
 - `assertMatchesSnapshot()` and `--update-snapshots` (#43).
+- `--coverage` lists the commands and event listeners of the plugin that the tests never reached
+  (#45).
 - `--compare=<version or fork>` runs the tests on two servers and reports what changes, grouped
   by cause, also in the GitHub Actions job summary (#44).
 

@@ -171,6 +171,22 @@ final class BossFightTest extends TestCase
 The default timeout is 200 ticks (10 seconds) per test. You can also skip from inside a test with
 `$this->skip('reason')`.
 
+## Coverage
+
+`vendor/bin/golem --coverage` tells you which parts of your plugin the tests never reached:
+
+```text
+  Tests:    2 passed (5 assertions)
+  Coverage: commands 1/3 · listeners 1/6
+            never run: /kits, /menu
+            never called: HelloWorld::onBreak (BlockBreakEvent), HelloWorld::onMove (PlayerMoveEvent), …
+```
+
+It counts the commands registered by your plugin (any way they are run: chat, `command()`, the
+console) and the event listeners it registered, called with the event actually handled. It does
+not measure lines of code: xdebug and PocketMine's threads do not get along, and "this listener
+never ran" is usually the more useful question for a plugin.
+
 ## Data providers
 
 Run the same test with several inputs: point `#[DataProvider]` at a public static method that

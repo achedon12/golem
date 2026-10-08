@@ -181,6 +181,9 @@ final class ConsoleReporter implements Reporter
             $report->assertions(),
             $report->assertions() === 1 ? '' : 's',
         ));
+        if ($report->coverage !== null) {
+            $this->coverage($report->coverage);
+        }
         if ($report->snapshotsWritten() > 0) {
             $this->output->writeln(sprintf('  <gray>Snapshots:</> <yellow>%d written</> <gray>(commit them)</>', $report->snapshotsWritten()));
         }
@@ -190,6 +193,31 @@ final class ConsoleReporter implements Reporter
             $report->bootSeconds > 0 ? sprintf(' <gray>(server boot %.2fs)</>', $report->bootSeconds) : '',
         ));
         $this->output->writeln();
+    }
+
+    /**
+     * @param array{commands: array<string, int>, listeners: array<string, int>} $coverage
+     */
+    private function coverage(array $coverage): void
+    {
+        $line = [];
+        foreach (['commands' => 'commands', 'listeners' => 'listeners'] as $key => $label) {
+            $all = $coverage[$key];
+            $covered = count(array_filter($all, static fn (int $count) => $count > 0));
+            $color = $covered === count($all) ? 'green' : 'yellow';
+            $line[] = sprintf('%s <%s>%d/%d</>', $label, $color, $covered, count($all));
+        }
+        $this->output->writeln('  <gray>Coverage:</> ' . implode(' <gray>·</> ', $line));
+
+        $missing = [
+            'never run' => array_map(static fn (string $name) => '/' . $name, array_keys(array_filter($coverage['commands'], static fn (int $count) => $count === 0))),
+            'never called' => array_keys(array_filter($coverage['listeners'], static fn (int $count) => $count === 0)),
+        ];
+        foreach ($missing as $label => $names) {
+            if ($names !== []) {
+                $this->output->writeln(sprintf('            <gray>%s:</> %s', $label, Output::escape(implode(', ', $names))));
+            }
+        }
     }
 
     private function duration(TestResult $result): string

@@ -72,6 +72,7 @@ final class Application
               --pocketmine=<version>    PocketMine-MP version, e.g. 5.44.3 (default: latest),
                                         or a fork: owner/repository[@tag]
               --compare=<version>       Also run on another version or fork, and report what changes
+              --coverage                Report the plugin's commands and listeners the tests never reached
               --log-junit=<file>        Also write a JUnit XML report
               --timeout=<seconds>       Give up after this long (default: 600)
               --update-snapshots        Rewrite the snapshots of assertMatchesSnapshot()

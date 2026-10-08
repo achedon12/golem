@@ -27,6 +27,9 @@ final class RunReport
 
     public float $totalSeconds = 0.0;
 
+    /** @var array{commands: array<string, int>, listeners: array<string, int>}|null */
+    public ?array $coverage = null;
+
     public function count(string $status): int
     {
         return count(array_filter($this->results, static fn (TestResult $r) => $r->status === $status));
