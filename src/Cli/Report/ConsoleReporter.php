@@ -9,7 +9,7 @@ use Golem\Cli\Output;
 /**
  * Prints results as they arrive, then a summary with every failure explained.
  */
-final class ConsoleReporter
+final class ConsoleReporter implements Reporter
 {
     private ?string $currentClass = null;
 

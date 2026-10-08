@@ -66,6 +66,18 @@ jobs:
           pocketmine: ${{ matrix.pocketmine }}
 ```
 
+### A migration report on every pull request
+
+```yaml
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+      - run: composer install
+      - run: vendor/bin/golem --compare=Plutonium-Mcpe/PocketMine-MP
+```
+
+The differences land in the job summary, and the job fails when a passing test breaks on the fork.
+
 ### Keeping the JUnit report
 
 ```yaml

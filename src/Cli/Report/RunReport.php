@@ -14,6 +14,9 @@ final class RunReport
 
     public ?string $pocketmine = null;
 
+    /** the server the run used, as given on the command line ("5.44.3", "5.118.8 (owner/fork)") */
+    public ?string $label = null;
+
     public ?string $plugin = null;
 
     public ?string $abortReason = null;

@@ -10,6 +10,8 @@ breaking changes; they will always be listed here.
 ### Added
 
 - `assertMatchesSnapshot()` and `--update-snapshots` (#43).
+- `--compare=<version or fork>` runs the tests on two servers and reports what changes, grouped
+  by cause, also in the GitHub Actions job summary (#44).
 
 ## [0.3.0] - 2026-10-08
 
