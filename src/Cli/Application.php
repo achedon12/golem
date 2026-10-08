@@ -9,7 +9,7 @@ use Golem\Cli\Command\RunCommand;
 
 final class Application
 {
-    public const VERSION = '0.2.0';
+    public const VERSION = '0.3.0';
 
     public function __construct(private readonly string $packageRoot)
     {
