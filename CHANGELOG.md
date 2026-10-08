@@ -20,6 +20,8 @@ breaking changes; they will always be listed here.
   are added, and the plugin's slowest listeners and tasks; `--min-tps` fails the run below a
   threshold. `assertTpsAbove()` checks the TPS in a test, and `/golem spawn <name> <count>` spawns
   a crowd on a development server (#47).
+- `/golem record` on a development server records what players do and writes a Golem test that
+  replays it (#59).
 - `--coverage` also measures the lines of `src/` that ran, with pcov or the Xdebug build that
   ships with PocketMine's PHP, and `--coverage-clover=<file>` writes them for Codecov (#58).
 - `--teamcity` reports with TeamCity service messages (#57).

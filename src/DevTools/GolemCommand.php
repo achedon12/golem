@@ -24,6 +24,8 @@ final class GolemCommand extends Command implements PluginOwned
     private const USAGE = [
         '/golem spawn <name> [count]' => 'spawn a simulated player, or count of them: <name>1, <name>2…',
         '/golem list' => 'list the golems',
+        '/golem record [player...]' => 'record what players do, to replay it in a test',
+        '/golem record stop [TestName]' => 'stop and write the test',
         '/golem remove <name|all>' => 'disconnect golems',
         '/golem <name> chat <message>' => 'chat or run a command (start with /)',
         '/golem <name> walk <x> <z>' => 'walk a number of blocks',
@@ -38,6 +40,7 @@ final class GolemCommand extends Command implements PluginOwned
     public function __construct(
         private readonly DevToolsPlugin $plugin,
         private readonly GolemFactory $golems,
+        private readonly Recorder $recorder,
     ) {
         parent::__construct('golem', 'Spawn and control simulated players', '/golem help');
         $this->setPermission('golem.command');
@@ -62,6 +65,7 @@ final class GolemCommand extends Command implements PluginOwned
             'help' => $this->help($sender),
             'spawn' => isset($args[2]) ? $this->spawnCrowd($sender, $args[1], $args[2]) : $this->spawn($sender, $args[1] ?? null),
             'list' => $this->list($sender),
+            'record' => $this->record($sender, array_slice($args, 1)),
             'remove' => $this->remove($sender, $args[1] ?? null),
             default => $this->control($sender, $args[0] ?? '', array_slice($args, 1)),
         };
@@ -137,6 +141,76 @@ final class GolemCommand extends Command implements PluginOwned
                 },
             )), 1 + 2 * $index);
         }
+    }
+
+    /**
+     * @param list<string> $args
+     */
+    private function record(CommandSender $sender, array $args): void
+    {
+        if (strtolower($args[0] ?? '') === 'stop') {
+            $words = array_slice($args, 1);
+            $this->stopRecording($sender, $words !== [] ? implode('', array_map(ucfirst(...), $words)) : null);
+
+            return;
+        }
+        if ($this->recorder->isRecording()) {
+            $this->error($sender, 'Already recording: /golem record stop first');
+
+            return;
+        }
+
+        $players = [];
+        if ($args === [] && $sender instanceof Player) {
+            $players[] = $sender;
+        }
+        foreach ($args as $name) {
+            $player = $sender->getServer()->getPlayerExact($name);
+            if ($player === null) {
+                $this->error($sender, "$name is not online");
+
+                return;
+            }
+            $players[] = $player;
+        }
+        if ($players === []) {
+            $this->error($sender, 'Usage: /golem record <player...>');
+
+            return;
+        }
+
+        $this->recorder->start($players);
+        $names = implode(', ', array_map(static fn (Player $player) => $player->getName(), $players));
+        $this->reply($sender, "Recording $names. Play, then /golem record stop [TestName]");
+    }
+
+    private function stopRecording(CommandSender $sender, ?string $name): void
+    {
+        if (!$this->recorder->isRecording()) {
+            $this->error($sender, 'Not recording: start with /golem record <player...>');
+
+            return;
+        }
+        $class = $name !== null ? (string) preg_replace('/[^A-Za-z0-9_]/', '', $name) : 'RecordedSession';
+        if ($class === '' || ctype_digit($class[0])) {
+            $class = 'RecordedSession';
+        }
+        if (!str_ends_with($class, 'Test')) {
+            $class .= 'Test';
+        }
+
+        $directory = $this->plugin->getDataFolder() . 'recordings';
+        if (!is_dir($directory)) {
+            mkdir($directory, 0777, true);
+        }
+        $base = substr($class, 0, -4);
+        for ($i = 2; is_file("$directory/$class.php"); $i++) {
+            $class = $base . $i . 'Test';
+        }
+
+        $test = $this->recorder->stop($class);
+        file_put_contents("$directory/$class.php", $test['code']);
+        $this->reply($sender, sprintf('Recorded %d action(s) to %s/%s.php', $test['actions'], $directory, $class));
     }
 
     /**
