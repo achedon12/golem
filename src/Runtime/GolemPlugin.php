@@ -35,7 +35,7 @@ final class GolemPlugin extends PluginBase
             return;
         }
 
-        /** @var array{events: string, tests: string, subjects: string, subject: string, filter: ?string, pluginRoot: string, cache: string, virions: list<string>, poggit: ?string, updateSnapshots?: bool, ci?: bool} $config */
+        /** @var array{events: string, tests: string, subjects: string, subject: string, filter: ?string, pluginRoot: string, cache: string, virions: list<string>, poggit: ?string, updateSnapshots?: bool, ci?: bool, coverage?: bool} $config */
         $config = json_decode((string) file_get_contents($configPath), true, flags: JSON_THROW_ON_ERROR);
         $this->events = new EventLog($config['events']);
 
@@ -66,7 +66,7 @@ final class GolemPlugin extends PluginBase
      * Loads the virions listed in composer.json and in the plugin's .poggit.yml, before
      * the plugin itself so its classes can use them from onLoad().
      *
-     * @param array{events: string, tests: string, subjects: string, subject: string, filter: ?string, pluginRoot: string, cache: string, virions: list<string>, poggit: ?string, updateSnapshots?: bool, ci?: bool} $config
+     * @param array{events: string, tests: string, subjects: string, subject: string, filter: ?string, pluginRoot: string, cache: string, virions: list<string>, poggit: ?string, updateSnapshots?: bool, ci?: bool, coverage?: bool} $config
      */
     private function loadVirions(array $config): void
     {
@@ -98,7 +98,7 @@ final class GolemPlugin extends PluginBase
     }
 
     /**
-     * @param array{events: string, tests: string, subjects: string, subject: string, filter: ?string, pluginRoot: string, cache: string, virions: list<string>, poggit: ?string, updateSnapshots?: bool, ci?: bool} $config
+     * @param array{events: string, tests: string, subjects: string, subject: string, filter: ?string, pluginRoot: string, cache: string, virions: list<string>, poggit: ?string, updateSnapshots?: bool, ci?: bool, coverage?: bool} $config
      */
     private function begin(array $config): void
     {
@@ -125,8 +125,17 @@ final class GolemPlugin extends PluginBase
             'plugin' => $subject->getName() . ' ' . $subject->getDescription()->getVersion(),
         ]);
 
+        $coverage = null;
+        if ($config['coverage'] ?? false) {
+            $coverage = new Coverage($this, $subject);
+            $coverage->install();
+        }
+
         $testsDirectory = str_replace('\\', '/', (string) realpath($config['tests']));
-        (new TestRunner($runtime, $tests, $this->events, $testsDirectory, function (): void {
+        (new TestRunner($runtime, $tests, $this->events, $testsDirectory, function () use ($coverage): void {
+            if ($coverage !== null) {
+                $this->events->write('coverage', $coverage->report());
+            }
             $this->events->write('end');
             $this->getServer()->shutdown();
         }))->start();

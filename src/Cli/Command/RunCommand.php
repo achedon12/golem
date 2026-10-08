@@ -153,7 +153,7 @@ final class RunCommand
         $this->output->writeln();
         $this->output->writeln(sprintf('  <bold>Golem</> <gray>is starting PocketMine-MP %s…</>', Output::escape($version)));
 
-        $workspace = Workspace::create($project, $this->golemSource, $options->get('filter'), $cacheDirectory, $options->has('update-snapshots'));
+        $workspace = Workspace::create($project, $this->golemSource, $options->get('filter'), $cacheDirectory, $options->has('update-snapshots'), $options->has('coverage'));
         if (!$options->has('keep')) {
             register_shutdown_function($workspace->delete(...)); // also runs when interrupted
         }
@@ -176,6 +176,12 @@ final class RunCommand
                         $report->results[] = $result;
                         $reporter->testFinished($result);
                         break;
+                    case 'coverage':
+                        $report->coverage = [
+                            'commands' => self::counts($event['commands'] ?? []),
+                            'listeners' => self::counts($event['listeners'] ?? []),
+                        ];
+                        break;
                     case 'abort':
                         $report->abortReason = is_string($event['message'] ?? null) ? $event['message'] : 'Aborted';
                         break;
@@ -194,5 +200,18 @@ final class RunCommand
         }
 
         return $report;
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    private static function counts(mixed $value): array
+    {
+        $counts = [];
+        foreach (is_array($value) ? $value : [] as $name => $count) {
+            $counts[(string) $name] = is_int($count) ? $count : 0;
+        }
+
+        return $counts;
     }
 }
