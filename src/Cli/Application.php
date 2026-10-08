@@ -20,7 +20,7 @@ final class Application
      */
     public function run(array $argv): int
     {
-        $options = Options::parse(array_slice($argv, 1), [...RunCommand::VALUE_OPTIONS, ...Command\FuzzCommand::VALUE_OPTIONS, ...Command\BenchCommand::VALUE_OPTIONS, ...Command\UiCommand::VALUE_OPTIONS]);
+        $options = Options::parse(array_slice($argv, 1), [...RunCommand::VALUE_OPTIONS, ...Command\FuzzCommand::VALUE_OPTIONS, ...Command\BenchCommand::VALUE_OPTIONS, ...Command\UiCommand::VALUE_OPTIONS, ...Command\MutateCommand::VALUE_OPTIONS]);
         $output = Output::forStdout(match (true) {
             $options->has('no-ansi') => false,
             $options->has('ansi') => true,
@@ -45,6 +45,7 @@ final class Application
                 'fuzz' => (new Command\FuzzCommand($output, $this->packageRoot . '/src'))->execute($options),
                 'bench' => (new Command\BenchCommand($output, $this->packageRoot . '/src'))->execute($options),
                 'ui' => (new Command\UiCommand($output, $this->packageRoot))->execute($options),
+                'mutate' => (new Command\MutateCommand($output, $this->packageRoot))->execute($options),
                 default => throw new UserError("Unknown command \"{$options->command}\". Try `golem --help`."),
             };
         } catch (UserError $e) {
@@ -70,6 +71,8 @@ final class Application
               golem fuzz                Let golems do random things to the plugin and report crashes
                                         (--duration=60 --golems=3 --seed=<n> --write-tests)
               golem ui                  Open a dashboard on localhost to run, fuzz, benchmark and build tests
+              golem mutate              Change the code one mutation at a time: do the tests notice?
+                                        (--workers=2 --max=200 --min-score=<percent>)
               golem bench               Bring golems in a few at a time and measure TPS, tick usage, memory
                                         (--players=20 --duration=60 --min-tps=<tps>
                                          --save-baseline=<file> --baseline=<file>)
@@ -85,6 +88,7 @@ final class Application
               --coverage-clover=<file>  Also write line coverage as a Clover XML report
               --parallel=<n>            Split the tests between n servers running side by side
               --repeat=<n>              Run every test n times, and list the flaky ones
+              --stop-on-failure         Stop at the first test that fails
               --random-order[=<seed>]   Shuffle the order of the tests
               --log-junit=<file>        Also write a JUnit XML report
               --teamcity                Report with TeamCity service messages

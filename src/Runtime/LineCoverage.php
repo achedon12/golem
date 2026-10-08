@@ -41,6 +41,21 @@ final class LineCoverage
     }
 
     /**
+     * Forgets what ran so far and starts counting again, with the same filter: the coverage
+     * of one test.
+     */
+    public static function restart(): void
+    {
+        if (function_exists('pcov\clear')) {
+            \pcov\clear();
+            \pcov\start();
+        } elseif (function_exists('xdebug_start_code_coverage')) {
+            xdebug_stop_code_coverage(true);
+            xdebug_start_code_coverage(XDEBUG_CC_UNUSED | XDEBUG_CC_DEAD_CODE);
+        }
+    }
+
+    /**
      * The executable lines of the files under $directory, with whether each one ran.
      *
      * @return array<string, array<int, int>> path relative to $directory => line => 1 if it ran, else 0

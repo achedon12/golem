@@ -24,7 +24,7 @@ final class Workspace
      * @param array{seed: int, seconds: int, golems: int}|null $fuzz
      * @param array{steps: list<int>, seconds: int}|null $bench
      * @param list<string>|null $testFiles only run the tests of these files
-     * @param array{repeat: int, seed: ?int}|null $order how many times, and in which order, to run the tests
+     * @param array{repeat: int, seed: ?int, perTestCoverage?: bool, stopOnFailure?: bool}|null $order how many times, and in which order, to run the tests
      */
     public static function create(Project $project, string $golemSource, ?string $filter, string $cacheDirectory, bool $updateSnapshots = false, bool $coverage = false, ?array $fuzz = null, ?array $bench = null, ?array $testFiles = null, ?array $order = null): self
     {
@@ -133,7 +133,7 @@ final class Workspace
      * @param array{seed: int, seconds: int, golems: int}|null $fuzz
      * @param array{steps: list<int>, seconds: int}|null $bench
      * @param list<string>|null $testFiles
-     * @param array{repeat: int, seed: ?int}|null $order
+     * @param array{repeat: int, seed: ?int, perTestCoverage?: bool, stopOnFailure?: bool}|null $order
      */
     private function writeRuntimeConfig(Project $project, ?string $filter, string $cacheDirectory, bool $updateSnapshots, bool $coverage, ?array $fuzz, ?array $bench, ?array $testFiles, ?array $order): void
     {
@@ -146,6 +146,8 @@ final class Workspace
             'files' => $testFiles,
             'repeat' => $order['repeat'] ?? 1,
             'seed' => $order['seed'] ?? null,
+            'perTestCoverage' => $order['perTestCoverage'] ?? false,
+            'stopOnFailure' => $order['stopOnFailure'] ?? false,
             'pluginRoot' => $project->root,
             'cache' => $cacheDirectory,
             'virions' => $project->virions,

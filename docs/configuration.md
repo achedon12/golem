@@ -13,6 +13,7 @@ golem [run] [options]
 golem init [--no-workflow]
 golem fuzz [--duration=60] [--golems=3] [--seed=<n>] [--write-tests]
 golem ui [--port=<port>] [--no-open]
+golem mutate [--workers=2] [--max=200] [--min-score=<percent>]
 golem bench [--players=20] [--duration=60] [--min-tps=<tps>] [--save-baseline=<file>] [--baseline=<file>]
 ```
 
@@ -27,6 +28,7 @@ golem bench [--players=20] [--duration=60] [--min-tps=<tps>] [--save-baseline=<f
 | `--coverage-clover=<file>` | | Also write line coverage as a Clover XML report (implies `--coverage`) |
 | `--repeat=<n>` | `1` | Run every test `n` times; tests that pass in some runs and fail in others are listed as flaky |
 | `--random-order[=<seed>]` | | Shuffle the order of the tests (a new order on every repetition), to find tests that depend on the ones before them. The seed is printed: pass it again to get the same order |
+| `--stop-on-failure` | | Stop at the first test that fails or errors |
 | `--parallel=<n>` | `1` | Split the test files between `n` servers running side by side. Each class runs on one server, so tests of a class still share it; tests of different classes must not depend on each other |
 | `--log-junit=<file>` | | Also write a JUnit XML report (needs `ext-dom`) |
 | `--log-events=<file>` | | Also write the run as JSON lines, one per event (started, each test, finished with the summary and coverage), for tools that follow it |

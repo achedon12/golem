@@ -22,6 +22,11 @@ final class Runtime
         public readonly bool $updateSnapshots = false,
         public readonly bool $ci = false,
         public readonly bool $coverage = false,
+        /** report the lines each test ran (golem mutate) */
+        public readonly bool $perTestCoverage = false,
+        /** stop at the first test that fails */
+        public readonly bool $stopOnFailure = false,
+        public readonly string $pluginRoot = '',
     ) {
     }
 

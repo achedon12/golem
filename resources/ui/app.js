@@ -2,6 +2,7 @@ import { api, h } from './api.js'
 import { testsView } from './tests.js'
 import { fuzzView } from './fuzz.js'
 import { benchView } from './bench.js'
+import { mutateView } from './mutate.js'
 import { scenarioView } from './scenario.js'
 import { historyView } from './history.js'
 
@@ -11,6 +12,7 @@ const sections = [
   { id: 'scenario', label: 'Scenario editor', view: scenarioView },
   { id: 'fuzz', label: 'Fuzz', view: fuzzView },
   { id: 'bench', label: 'Benchmark', view: benchView },
+  { id: 'mutate', label: 'Mutation', view: mutateView },
   { id: 'history', label: 'History', view: historyView },
 ]
 
