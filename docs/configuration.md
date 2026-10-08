@@ -18,7 +18,7 @@ golem bench [--players=20] [--duration=60] [--min-tps=<tps>] [--save-baseline=<f
 
 | Option | Default | Description |
 | --- | --- | --- |
-| `--filter=<text>` | | Only run tests whose `Class::method` contains `<text>` (case-insensitive) |
+| `--filter=<text>` | | Only run tests whose `Class::method` contains `<text>` (case-insensitive). Several, separated by `\|`, run the tests matching any of them: `--filter='KitMenuTest\|HealCommandTest::testRegular'` |
 | `--path=<dir>` | current folder | The plugin folder, containing `plugin.yml` and `src/` |
 | `--tests=<dir>` | `tests` | The tests folder, relative to the plugin |
 | `--pocketmine=<version>` | `latest` | The PocketMine-MP version to run, e.g. `5.44.3`, or a fork: `owner/repository` (its latest release) or `owner/repository@tag` (see [Forks](#pocketmine-mp-forks)) |

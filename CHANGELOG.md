@@ -7,6 +7,16 @@ breaking changes; they will always be listed here.
 
 ## [Unreleased]
 
+### Added
+
+- The dashboard has a checkbox per class and per test, to run exactly the tests you pick (or only
+  those that failed last time); the choice is kept in the browser.
+- `--filter` takes several patterns separated by `|`, and runs the tests matching any of them.
+
+### Changed
+
+- The website's demo says which test fails on purpose, and why.
+
 ## [0.5.1] - 2026-10-08
 
 ### Fixed

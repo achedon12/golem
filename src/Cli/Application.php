@@ -75,7 +75,7 @@ final class Application
                                          --save-baseline=<file> --baseline=<file>)
 
             <yellow>Options</>
-              --filter=<text>           Only run tests whose Class::method contains <text>
+              --filter=<text>           Only run tests whose Class::method contains <text> (a|b: either)
               --path=<dir>              Plugin folder (default: current folder)
               --tests=<dir>             Tests folder, relative to the plugin (default: tests)
               --pocketmine=<version>    PocketMine-MP version, e.g. 5.44.3 (default: latest),

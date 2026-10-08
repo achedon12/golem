@@ -22,7 +22,8 @@ final class TestDiscovery
     public const DEFAULT_TIMEOUT_TICKS = 200;
 
     /**
-     * @param string|null $filter case-insensitive substring matched against "Class::method"
+     * @param string|null $filter case-insensitive substring matched against "Class::method";
+     *                            several, separated by |, run the tests matching any of them
      * @param list<string>|null $only only the tests declared in these files (when running in parallel)
      * @return list<TestDefinition>
      */
@@ -82,7 +83,7 @@ final class TestDiscovery
                     worldTemplate: ($method->getAttributes(World::class)[0] ?? $reflection->getAttributes(World::class)[0] ?? null)?->newInstance()->path,
                 );
                 foreach (self::expand($definition, $method, $reflection) as $test) {
-                    if ($filter !== null && $filter !== '' && stripos($test->id(), $filter) === false) {
+                    if ($filter !== null && $filter !== '' && !self::matches($test->id(), $filter)) {
                         continue;
                     }
                     $tests[] = $test;
@@ -187,5 +188,17 @@ final class TestDiscovery
         $real = realpath($path);
 
         return rtrim(str_replace('\\', '/', $real === false ? $path : $real), '/');
+    }
+
+    private static function matches(string $id, string $filter): bool
+    {
+        foreach (explode('|', $filter) as $part) {
+            $part = trim($part);
+            if ($part !== '' && stripos($id, $part) !== false) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
