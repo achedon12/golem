@@ -16,8 +16,8 @@ hero:
       text: Get started
       link: /getting-started
     - theme: alt
-      text: Write your first test
-      link: /writing-tests
+      text: Try the dashboard
+      link: /dashboard#try-it
     - theme: alt
       text: View on GitHub
       link: https://github.com/achedon12/golem

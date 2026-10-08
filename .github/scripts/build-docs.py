@@ -71,9 +71,20 @@ def build(docs: pathlib.Path, out: pathlib.Path, version: str, latest: str, base
     subprocess.run([str(DOCS / 'node_modules' / '.bin' / 'vitepress'), 'build', str(docs), '--outDir', str(out)], check=True, env=env)
 
 
+def prepare_demo() -> None:
+    """The dashboard of golem ui, replaying runs recorded on the example plugin, at demo/.
+    It goes in public/ so that every version of the docs links to the same, current demo."""
+    demo = DOCS / 'public' / 'demo'
+    shutil.rmtree(demo, ignore_errors=True)
+    shutil.copytree(ROOT / 'resources' / 'ui', demo)
+    (demo / 'demo.html').replace(demo / 'index.html')
+    shutil.copy(DOCS / 'demo' / 'fixtures.json', demo / 'fixtures.json')
+
+
 def main() -> None:
     out = pathlib.Path(sys.argv[1]).resolve()
     shutil.rmtree(out, ignore_errors=True)
+    prepare_demo()
 
     tags = releases()
     latest = tags[0]

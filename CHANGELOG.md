@@ -16,6 +16,7 @@ breaking changes; they will always be listed here.
   it (#73).
 - The dashboard keeps the last runs and pinned settings in the browser, to run them again in a
   click, and draws the benchmarks over time (#74).
+- A live demo of the dashboard on the website, replaying runs recorded on the example plugin.
 - `$this->item('diamond_sword', 3)` in tests gets an item by name.
 - The dashboard runs `golem fuzz` and `golem bench`, with the benchmark drawn as a chart (#72).
 
