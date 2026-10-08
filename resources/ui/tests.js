@@ -189,6 +189,19 @@ export function testsView (project, app) {
     })))
   }
 
+  // "Run again" from the history
+  window.addEventListener('golem-rerun', (event) => {
+    const { kind, options = {}, label } = event.detail
+    if (kind !== 'test' || current) return
+    selection = { filter: options.filter ?? '', label: options.filter ? (label ?? options.filter) : `all ${total} tests` }
+    version.value = options.pocketmine ?? ''
+    parallel.value = String(options.parallel ?? 1)
+    coverage.checked = !!options.coverage
+    snapshots.checked = !!options.updateSnapshots
+    renderTree()
+    start()
+  })
+
   renderTree()
   renderRunButton()
   return h('div', { class: 'tests-view' },
