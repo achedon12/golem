@@ -32,6 +32,7 @@ request diff, at the line of the test.
 | `pocketmine` | from `composer.json`, else latest | PocketMine-MP version |
 | `filter` | | Only run matching tests |
 | `junit` | `golem-junit.xml` | JUnit report path, empty to skip it |
+| `parallel` | `1` | Number of servers to split the tests between (see [`--parallel`](configuration.md#command-line)) |
 
 ### Testing against several PocketMine versions
 

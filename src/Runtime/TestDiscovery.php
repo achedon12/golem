@@ -23,10 +23,12 @@ final class TestDiscovery
 
     /**
      * @param string|null $filter case-insensitive substring matched against "Class::method"
+     * @param list<string>|null $only only the tests declared in these files (when running in parallel)
      * @return list<TestDefinition>
      */
-    public static function discover(string $directory, ?string $filter): array
+    public static function discover(string $directory, ?string $filter, ?array $only = null): array
     {
+        $only = $only !== null ? array_map(self::normalize(...), $only) : null;
         $directory = self::normalize($directory);
         $files = self::phpFiles($directory);
 
@@ -55,6 +57,9 @@ final class TestDiscovery
             $reflection = new \ReflectionClass($class);
             $file = $reflection->getFileName();
             if ($reflection->isAbstract() || $file === false || !str_starts_with(self::normalize($file), $directory . '/')) {
+                continue;
+            }
+            if ($only !== null && !in_array(self::normalize($file), $only, true)) {
                 continue;
             }
 

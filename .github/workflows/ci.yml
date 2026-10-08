@@ -30,6 +30,7 @@ jobs:
         uses: ./
         with:
           path: examples/hello-world
+          parallel: 4
 
       - name: Test the /golem server plugin with Golem itself
         uses: ./
