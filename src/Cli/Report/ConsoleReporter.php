@@ -28,6 +28,9 @@ final class ConsoleReporter implements Reporter
             $count,
             $count === 1 ? '' : 's',
         ));
+        foreach ($report->conflicts as $conflict) {
+            $this->output->writeln('  <yellow>! ' . Output::escape(self::conflict($conflict)) . '</>');
+        }
     }
 
     public function testFinished(TestResult $result): void
@@ -299,6 +302,23 @@ final class ConsoleReporter implements Reporter
         }
 
         return implode(', ', $ranges);
+    }
+
+    /**
+     * @param array{command: string, owner: string, takenBy: string} $conflict
+     */
+    public static function conflict(array $conflict): string
+    {
+        return sprintf(
+            '/%s of %s is taken by %s: typing /%s runs %s\'s, the other is only /%s:%s',
+            $conflict['command'],
+            $conflict['owner'],
+            $conflict['takenBy'],
+            $conflict['command'],
+            $conflict['takenBy'],
+            strtolower($conflict['owner']),
+            $conflict['command'],
+        );
     }
 
     private function duration(TestResult $result): string

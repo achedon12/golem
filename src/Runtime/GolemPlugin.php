@@ -153,6 +153,7 @@ final class GolemPlugin extends PluginBase
             'pocketmine' => VersionInfo::VERSION()->getFullVersion(),
             'php' => PHP_VERSION,
             'plugin' => $subject->getName() . ' ' . $subject->getDescription()->getVersion(),
+            'conflicts' => $this->commandConflicts($subject),
         ]);
 
         $coverage = null;
@@ -208,6 +209,38 @@ final class GolemPlugin extends PluginBase
         foreach ($promises as $promise) {
             $promise->onCompletion($done, $done);
         }
+    }
+
+    /**
+     * Commands that two plugins (or a plugin and PocketMine-MP) both want: typing one runs the
+     * plugin that registered it first, the other is only reachable as /plugin:command. Only
+     * the conflicts involving the plugin under test.
+     *
+     * @return list<array{command: string, owner: string, takenBy: string}> owner lost the command to takenBy
+     */
+    private function commandConflicts(\pocketmine\plugin\Plugin $subject): array
+    {
+        $map = $this->getServer()->getCommandMap();
+        $name = static fn (?\pocketmine\command\Command $command): string => $command instanceof \pocketmine\plugin\PluginOwned ? $command->getOwningPlugin()->getName() : 'PocketMine-MP';
+        $conflicts = [];
+        foreach ($map->getCommands() as $command) {
+            if (!$command instanceof \pocketmine\plugin\PluginOwned) {
+                continue;
+            }
+            foreach ([$command->getName(), ...$command->getAliases()] as $label) {
+                $resolved = $map->getCommand($label);
+                if ($resolved === null || $resolved === $command) {
+                    continue;
+                }
+                $mine = $command->getOwningPlugin() === $subject || ($resolved instanceof \pocketmine\plugin\PluginOwned && $resolved->getOwningPlugin() === $subject);
+                if ($mine) {
+                    $conflicts[$label . '@' . $name($command)] = ['command' => $label, 'owner' => $name($command), 'takenBy' => $name($resolved)];
+                }
+            }
+        }
+        ksort($conflicts);
+
+        return array_values($conflicts);
     }
 
     private function abort(string $message): void

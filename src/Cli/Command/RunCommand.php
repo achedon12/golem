@@ -34,7 +34,7 @@ use Golem\Cli\UserError;
  */
 final class RunCommand
 {
-    public const VALUE_OPTIONS = ['path', 'tests', 'filter', 'pocketmine', 'php', 'phar', 'log-junit', 'timeout', 'compare', 'parallel', 'coverage-clover', 'log-events', 'repeat', 'report-html', 'report-markdown'];
+    public const VALUE_OPTIONS = ['path', 'tests', 'filter', 'pocketmine', 'php', 'phar', 'log-junit', 'timeout', 'compare', 'parallel', 'coverage-clover', 'log-events', 'repeat', 'report-html', 'report-markdown', 'with'];
 
     /** the seed of --random-order, chosen once so every server of a run shares it */
     private ?int $seed = null;
@@ -113,7 +113,7 @@ final class RunCommand
         }
     }
 
-    private function project(Options $options): Project
+    public function project(Options $options): Project
     {
         $project = Project::load(
             $options->get('path', getcwd() ?: '.') ?? '.',
@@ -122,6 +122,17 @@ final class RunCommand
         );
         if (!is_dir($project->testsDirectory)) {
             throw new UserError("No tests folder at {$project->testsDirectory}. Create one with `golem init`.");
+        }
+        if ($options->get('with') !== null) {
+            $plugins = [];
+            foreach (array_filter(array_map('trim', explode(',', (string) $options->get('with')))) as $plugin) {
+                $path = realpath($plugin);
+                if ($path === false) {
+                    throw new UserError("--with: there is no plugin at \"$plugin\".");
+                }
+                $plugins[] = $path;
+            }
+            $project = $project->withExtraPlugins($plugins);
         }
 
         return $project;
@@ -199,7 +210,10 @@ final class RunCommand
         return $completed && $migration->regressions() === 0 ? 0 : 1;
     }
 
-    private function runSuite(Options $options, Project $project, string $pocketmine, Reporter $reporter): RunReport
+    /**
+     * Runs the tests of the project once and returns what happened (also used by golem compat).
+     */
+    public function runSuite(Options $options, Project $project, string $pocketmine, Reporter $reporter): RunReport
     {
         $parallel = (int) ($options->get('parallel') ?? 1);
         if ($parallel > 1) {
@@ -237,6 +251,7 @@ final class RunCommand
                         $report->bootSeconds = microtime(true) - $startedAt;
                         $report->pocketmine = is_string($event['pocketmine'] ?? null) ? $event['pocketmine'] : null;
                         $report->plugin = is_string($event['plugin'] ?? null) ? $event['plugin'] : null;
+                        $report->conflicts = self::conflicts($event['conflicts'] ?? null);
                         $reporter->started($report, (int) ($event['count'] ?? 0));
                         break;
                     case 'test':
@@ -339,6 +354,7 @@ final class RunCommand
                         $report->bootSeconds = max($report->bootSeconds, microtime(true) - $startedAt);
                         $report->pocketmine ??= is_string($event['pocketmine'] ?? null) ? $event['pocketmine'] : null;
                         $report->plugin ??= is_string($event['plugin'] ?? null) ? $event['plugin'] : null;
+                        $report->conflicts = $report->conflicts ?: self::conflicts($event['conflicts'] ?? null);
                         $counts[$index] = (int) ($event['count'] ?? 0);
                         if (count($counts) === count($buckets)) {
                             $begin();
@@ -511,6 +527,21 @@ final class RunCommand
         }
 
         return $lines;
+    }
+
+    /**
+     * @return list<array{command: string, owner: string, takenBy: string}>
+     */
+    private static function conflicts(mixed $value): array
+    {
+        $conflicts = [];
+        foreach (is_array($value) ? $value : [] as $conflict) {
+            if (is_array($conflict) && is_string($conflict['command'] ?? null) && is_string($conflict['takenBy'] ?? null) && is_string($conflict['owner'] ?? null)) {
+                $conflicts[] = ['command' => $conflict['command'], 'owner' => $conflict['owner'], 'takenBy' => $conflict['takenBy']];
+            }
+        }
+
+        return $conflicts;
     }
 
     /**

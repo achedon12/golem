@@ -14,6 +14,7 @@ golem init [--no-workflow]
 golem fuzz [--duration=60] [--golems=3] [--seed=<n>] [--write-tests]
 golem ui [--port=<port>] [--no-open]
 golem mutate [--workers=2] [--max=200] [--min-score=<percent>]
+golem compat <plugin...>
 golem bench [--players=20] [--duration=60] [--min-tps=<tps>] [--save-baseline=<file>] [--baseline=<file>]
 ```
 
@@ -30,6 +31,7 @@ golem bench [--players=20] [--duration=60] [--min-tps=<tps>] [--save-baseline=<f
 | `--random-order[=<seed>]` | | Shuffle the order of the tests (a new order on every repetition), to find tests that depend on the ones before them. The seed is printed: pass it again to get the same order |
 | `--stop-on-failure` | | Stop at the first test that fails or errors |
 | `--parallel=<n>` | `1` | Split the test files between `n` servers running side by side. Each class runs on one server, so tests of a class still share it; tests of different classes must not depend on each other |
+| `--with=<plugin,...>` | | Load other plugins (phars or folders) next to yours for this run (see [Compatibility](compatibility.md)) |
 | `--log-junit=<file>` | | Also write a JUnit XML report (needs `ext-dom`) |
 | `--report-html=<file>` | | Also write a self-contained HTML report: results, failures with their code, coverage |
 | `--report-markdown=<file>` | | Also write a Markdown summary, as the action's pull request comment |

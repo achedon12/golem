@@ -173,6 +173,12 @@ actions that led to it and a seed to replay them. See [Fuzzing](https://achedon1
 `true` into `false`…) and runs the tests that cover each line: the mutants nobody notices are the
 bugs your tests would let through. See [Mutation testing](https://achedon12.github.io/golem/mutation).
 
+## Compatibility
+
+`golem compat EssentialsMP libs/Economy.phar` runs your tests alone, then with other plugins
+loaded next to yours, and shows the tests that break and the commands another plugin takes. See
+[Compatibility](https://achedon12.github.io/golem/compatibility).
+
 ## Benchmark
 
 `golem bench --players=100` brings golems in a few at a time and shows how TPS, tick usage and

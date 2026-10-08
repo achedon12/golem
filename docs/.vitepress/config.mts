@@ -103,7 +103,7 @@ export default defineConfig({
     siteTitle: 'golem',
 
     nav: [
-      { text: 'Guide', link: '/getting-started', activeMatch: '^/(getting-started|writing-tests|golems|assertions|server-plugin|fuzzing|benchmark|mutation|dashboard)' },
+      { text: 'Guide', link: '/getting-started', activeMatch: '^/(getting-started|writing-tests|golems|assertions|server-plugin|fuzzing|benchmark|mutation|compatibility|dashboard)' },
       { text: 'Reference', link: '/configuration', activeMatch: '^/(configuration|ci|how-it-works)' },
       {
         text: 'Links',
@@ -128,6 +128,7 @@ export default defineConfig({
           ...page('Fuzzing', '/fuzzing'),
           ...page('Benchmark', '/benchmark'),
           ...page('Mutation testing', '/mutation'),
+          ...page('Compatibility', '/compatibility'),
           ...page('Dashboard', '/dashboard'),
         ],
       },
