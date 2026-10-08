@@ -269,3 +269,36 @@ pre {
   .meta { display: none; }
   .top { gap: 12px; }
 }
+
+/* ---------- fuzz and benchmark */
+.content.wide { max-width: 1100px; margin: 0 auto; }
+.content h2 { margin: 4px 0 4px; font-size: 22px; }
+.lead { color: var(--text-2); margin: 0 0 18px; }
+.console.tall { max-height: 560px; min-height: 200px; margin-top: 16px; }
+.stats { display: flex; gap: 12px; flex-wrap: wrap; }
+.stat {
+  display: flex;
+  flex-direction: column;
+  min-width: 120px;
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-soft);
+}
+.stat strong { font-size: 22px; font-family: var(--mono); }
+.stat span { color: var(--text-3); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+.stat.alert strong { color: var(--red); }
+.file { display: block; font-family: var(--mono); color: var(--cyan); margin-top: 4px; }
+
+.table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px; }
+.table th { text-align: left; color: var(--text-3); font-weight: 500; padding: 6px 10px; border-bottom: 1px solid var(--border); }
+.table td { padding: 6px 10px; border-bottom: 1px solid var(--border); font-family: var(--mono); }
+.mono { font-family: var(--mono); }
+
+.chart { width: 100%; height: auto; display: block; }
+.chart .grid { stroke: var(--border); stroke-width: 1; }
+.chart .axis { fill: var(--text-3); font-size: 11px; font-family: var(--mono); }
+.chart .usage { fill: rgba(57, 197, 207, 0.35); }
+.chart .tps { fill: none; stroke: var(--brand); stroke-width: 2.5; }
+.chart .tps.old { stroke: var(--text-3); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.chart .tps-dot { fill: var(--brand); }

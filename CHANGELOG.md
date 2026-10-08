@@ -12,6 +12,7 @@ breaking changes; they will always be listed here.
 - `golem ui` opens a local dashboard to run the tests and follow them live, with failures and
   coverage shown in the code (#70, #71).
 - `--log-events=<file>` writes a run as JSON lines (#71).
+- The dashboard runs `golem fuzz` and `golem bench`, with the benchmark drawn as a chart (#72).
 
 ## [0.4.0] - 2026-10-08
 
