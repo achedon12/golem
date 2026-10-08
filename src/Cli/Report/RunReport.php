@@ -29,6 +29,11 @@ final class RunReport
         return count(array_filter($this->results, static fn (TestResult $r) => $r->status === $status));
     }
 
+    public function snapshotsWritten(): int
+    {
+        return array_sum(array_map(static fn (TestResult $r) => $r->snapshotsWritten, $this->results));
+    }
+
     public function assertions(): int
     {
         return array_sum(array_map(static fn (TestResult $r) => $r->assertions, $this->results));

@@ -75,6 +75,7 @@ final class TestRunner
 
         try {
             $instance = new ($test->class)();
+            $instance->bindTest($test->method, $test->dataName);
             if ($test->worldTemplate !== null) {
                 $this->runtime->worlds->fromTemplate($test->worldTemplate);
             } elseif ($test->freshWorld) {
@@ -145,7 +146,7 @@ final class TestRunner
             (hrtime(true) - $run->startedAt) / 1e9,
             $this->runtime->plugin->getServer()->getTick() - $run->startTick,
             $run->instance->assertionCount(),
-            $details,
+            $details + ['snapshotsWritten' => $run->instance->snapshotsWritten()],
         );
         $this->scheduleNext();
     }

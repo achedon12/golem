@@ -54,6 +54,28 @@ Text comparisons ignore colour codes on both sides and match substrings.
 | `assertHasPermission(Golem $golem, string $permission)` / `assertNotHasPermission(...)` | permission check |
 | `assertBlockAt(Vector3 $position, Block $block)` | the default world has that block, in the same state, at the position |
 
+## Snapshots
+
+Forms, scoreboards or a whole chat log are tedious to check field by field. A snapshot saves the
+value the first time and compares it on every run after:
+
+```php
+$steve->chat('/menu');
+$this->assertMatchesSnapshot($steve->formData());
+
+$this->assertMatchesSnapshot($steve->scoreboard(), 'sidebar');   // a name instead of a number
+```
+
+- Snapshots are pretty JSON files in `__snapshots__/<TestClass>/` next to the test. **Commit them**:
+  they are the expected values.
+- A difference fails the test and shows the saved value next to the actual one.
+- After an intended change, run `vendor/bin/golem --update-snapshots` and review the diff before
+  committing.
+- On CI (when `CI` is set, as on GitHub Actions), a missing snapshot fails instead of being
+  written, so a snapshot nobody committed cannot make a test pass silently.
+
+Arrays, scalars and `JsonSerializable` values (forms, items…) can be snapshotted.
+
 ## Writing your own
 
 Use `check()` so your assertion is counted and reported like the built-in ones:

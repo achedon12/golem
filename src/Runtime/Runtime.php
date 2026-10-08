@@ -19,6 +19,8 @@ final class Runtime
         public readonly Clock $clock,
         public readonly Worlds $worlds,
         public readonly string $subject,
+        public readonly bool $updateSnapshots = false,
+        public readonly bool $ci = false,
     ) {
     }
 

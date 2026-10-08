@@ -34,6 +34,7 @@ final class TestResult
         public readonly ?string $failureFile,
         public readonly ?int $failureLine,
         public readonly array $trace,
+        public readonly int $snapshotsWritten = 0,
     ) {
     }
 
@@ -62,6 +63,7 @@ final class TestResult
             is_string($location['file'] ?? null) ? $location['file'] : null,
             isset($location['line']) ? (int) $location['line'] : null,
             array_values(array_filter((array) ($event['trace'] ?? []), 'is_string')),
+            (int) ($event['snapshotsWritten'] ?? 0),
         );
     }
 

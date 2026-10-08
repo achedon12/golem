@@ -31,6 +31,14 @@ abstract class TestCase
 {
     use Assertions;
 
+    private string $currentMethod = '';
+
+    private ?string $currentDataName = null;
+
+    private int $snapshotIndex = 0;
+
+    private int $snapshotsWritten = 0;
+
     /**
      * Runs before each test. Declare it `: void`, or `: \Generator` to wait for things.
      *
@@ -129,6 +137,66 @@ abstract class TestCase
     final protected function spawn(): Position
     {
         return $this->world()->getSpawnLocation();
+    }
+
+    /**
+     * Compares a value with the snapshot saved by a previous run, or saves it on the first
+     * run. Snapshots live next to the test, in __snapshots__/, and are meant to be committed.
+     * Run `golem --update-snapshots` to accept intended changes.
+     *
+     * @param string|null $name names the snapshot; by default they are numbered in order
+     */
+    final protected function assertMatchesSnapshot(mixed $value, ?string $name = null, string $message = ''): void
+    {
+        $runtime = Runtime::get();
+        $actual = \Golem\Assert\Snapshot::encode($value);
+        $file = $this->snapshotFile($name ?? (string) ++$this->snapshotIndex);
+
+        if (!is_file($file) || $runtime->updateSnapshots) {
+            if (!is_file($file) && $runtime->ci && !$runtime->updateSnapshots) {
+                $this->fail('The snapshot ' . basename($file) . ' does not exist. Run the tests locally to create it, and commit it.');
+            }
+            @mkdir(dirname($file), 0777, true);
+            file_put_contents($file, $actual);
+            $this->snapshotsWritten++;
+            $this->check(true, '');
+
+            return;
+        }
+
+        $expected = (string) file_get_contents($file);
+        $this->check(
+            $expected === $actual,
+            $message ?: 'The value does not match the snapshot ' . basename($file) . ' (run with --update-snapshots if the change is intended)',
+            rtrim($expected),
+            rtrim($actual),
+        );
+    }
+
+    private function snapshotFile(string $name): string
+    {
+        $class = new \ReflectionClass($this);
+        $data = $this->currentDataName !== null ? ' (' . preg_replace('/[^A-Za-z0-9_.-]+/', '_', $this->currentDataName) . ')' : '';
+        $safe = (string) preg_replace('/[^A-Za-z0-9_.-]+/', '_', $name);
+
+        return dirname((string) $class->getFileName()) . '/__snapshots__/' . $class->getShortName() . '/' . $this->currentMethod . $data . '.' . $safe . '.json';
+    }
+
+    /**
+     * @internal
+     */
+    final public function bindTest(string $method, ?string $dataName): void
+    {
+        $this->currentMethod = $method;
+        $this->currentDataName = $dataName;
+    }
+
+    /**
+     * @internal
+     */
+    final public function snapshotsWritten(): int
+    {
+        return $this->snapshotsWritten;
     }
 
     /**
