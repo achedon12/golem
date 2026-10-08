@@ -32,7 +32,36 @@ request diff, at the line of the test.
 | `pocketmine` | from `composer.json`, else latest | PocketMine-MP version |
 | `filter` | | Only run matching tests |
 | `junit` | `golem-junit.xml` | JUnit report path, empty to skip it |
+| `report-html` | | Write a self-contained HTML report there, to upload as an artifact |
+| `comment` | `false` | On pull requests, post a summary comment (results, failures, coverage) and update it on every push. Needs `pull-requests: write` |
 | `parallel` | `1` | Number of servers to split the tests between (see [`--parallel`](configuration.md#command-line)) |
+
+### A summary on every pull request
+
+With `comment: true`, the action posts the results on the pull request, failures included, and
+updates the same comment on every push. The same summary goes to the job's summary page.
+
+```yaml
+jobs:
+  golem:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: achedon12/golem@v0
+        with:
+          comment: true
+          report-html: golem-report.html
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: golem-report
+          path: golem-report.html
+```
+
+Pull requests from forks get a read-only token: the comment is skipped there, with a warning.
 
 ### Testing against several PocketMine versions
 

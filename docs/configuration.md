@@ -31,6 +31,8 @@ golem bench [--players=20] [--duration=60] [--min-tps=<tps>] [--save-baseline=<f
 | `--stop-on-failure` | | Stop at the first test that fails or errors |
 | `--parallel=<n>` | `1` | Split the test files between `n` servers running side by side. Each class runs on one server, so tests of a class still share it; tests of different classes must not depend on each other |
 | `--log-junit=<file>` | | Also write a JUnit XML report (needs `ext-dom`) |
+| `--report-html=<file>` | | Also write a self-contained HTML report: results, failures with their code, coverage |
+| `--report-markdown=<file>` | | Also write a Markdown summary, as the action's pull request comment |
 | `--log-events=<file>` | | Also write the run as JSON lines, one per event (started, each test, finished with the summary and coverage), for tools that follow it |
 | `--teamcity` | | Report with [TeamCity service messages](ci.md#teamcity) instead of the usual output |
 | `--timeout=<seconds>` | `600` | Stop a run that takes longer than this |

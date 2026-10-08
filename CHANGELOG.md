@@ -19,6 +19,9 @@ breaking changes; they will always be listed here.
   each line, then reports the mutation score and the surviving mutants; also in the dashboard
   (#88).
 - `--stop-on-failure` stops a run at the first failing test.
+- `--report-html=<file>` writes a self-contained HTML report and `--report-markdown=<file>` a
+  summary, also added to the GitHub Actions job summary. The action's `comment` input posts it on
+  the pull request and keeps it up to date; `report-html` writes the HTML report (#89).
 
 ### Changed
 

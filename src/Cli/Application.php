@@ -91,6 +91,7 @@ final class Application
               --stop-on-failure         Stop at the first test that fails
               --random-order[=<seed>]   Shuffle the order of the tests
               --log-junit=<file>        Also write a JUnit XML report
+              --report-html=<file>      Also write an HTML report
               --teamcity                Report with TeamCity service messages
               --timeout=<seconds>       Give up after this long (default: 600)
               --update-snapshots        Rewrite the snapshots of assertMatchesSnapshot()
