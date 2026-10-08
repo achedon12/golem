@@ -144,6 +144,12 @@ Golem is also a plugin: put [`Golem.phar`](https://github.com/achedon12/golem/re
 
 See [Server plugin](https://achedon12.github.io/golem/server-plugin) for every command.
 
+## Fuzzing
+
+`golem fuzz` has golems do random things to your plugin for a minute (commands with odd
+arguments, invalid form answers, clicks, disconnections) and reports every exception with the
+actions that led to it and a seed to replay them. See [Fuzzing](https://achedon12.github.io/golem/fuzzing).
+
 ## Continuous integration
 
 ```yaml

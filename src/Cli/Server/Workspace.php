@@ -20,7 +20,10 @@ final class Workspace
     ) {
     }
 
-    public static function create(Project $project, string $golemSource, ?string $filter, string $cacheDirectory, bool $updateSnapshots = false, bool $coverage = false): self
+    /**
+     * @param array{seed: int, seconds: int, golems: int}|null $fuzz
+     */
+    public static function create(Project $project, string $golemSource, ?string $filter, string $cacheDirectory, bool $updateSnapshots = false, bool $coverage = false, ?array $fuzz = null): self
     {
         $path = sys_get_temp_dir() . '/golem-' . bin2hex(random_bytes(6));
         foreach (['', '/plugins', '/subjects'] as $directory) {
@@ -33,7 +36,7 @@ final class Workspace
         $workspace->writeServerProperties();
         $workspace->writeBootstrapPlugin($golemSource);
         $workspace->linkPlugins($project);
-        $workspace->writeRuntimeConfig($project, $filter, $cacheDirectory, $updateSnapshots, $coverage);
+        $workspace->writeRuntimeConfig($project, $filter, $cacheDirectory, $updateSnapshots, $coverage, $fuzz);
 
         return $workspace;
     }
@@ -123,7 +126,10 @@ final class Workspace
         }
     }
 
-    private function writeRuntimeConfig(Project $project, ?string $filter, string $cacheDirectory, bool $updateSnapshots, bool $coverage): void
+    /**
+     * @param array{seed: int, seconds: int, golems: int}|null $fuzz
+     */
+    private function writeRuntimeConfig(Project $project, ?string $filter, string $cacheDirectory, bool $updateSnapshots, bool $coverage, ?array $fuzz): void
     {
         file_put_contents($this->runtimeConfig(), json_encode([
             'events' => $this->eventsFile(),
@@ -137,6 +143,7 @@ final class Workspace
             'poggit' => $project->poggitManifest,
             'updateSnapshots' => $updateSnapshots,
             'coverage' => $coverage,
+            'fuzz' => $fuzz,
             'ci' => getenv('CI') !== false && getenv('CI') !== '' && getenv('CI') !== 'false',
         ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
         touch($this->eventsFile());

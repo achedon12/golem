@@ -20,7 +20,7 @@ final class Application
      */
     public function run(array $argv): int
     {
-        $options = Options::parse(array_slice($argv, 1), RunCommand::VALUE_OPTIONS);
+        $options = Options::parse(array_slice($argv, 1), [...RunCommand::VALUE_OPTIONS, ...Command\FuzzCommand::VALUE_OPTIONS]);
         $output = Output::forStdout(match (true) {
             $options->has('no-ansi') => false,
             $options->has('ansi') => true,
@@ -42,6 +42,7 @@ final class Application
             return match ($options->command ?? 'run') {
                 'run' => (new RunCommand($output, $this->packageRoot . '/src'))->execute($options),
                 'init' => (new InitCommand($output, $this->packageRoot . '/stubs'))->execute($options),
+                'fuzz' => (new Command\FuzzCommand($output, $this->packageRoot . '/src'))->execute($options),
                 default => throw new UserError("Unknown command \"{$options->command}\". Try `golem --help`."),
             };
         } catch (UserError $e) {
@@ -64,6 +65,8 @@ final class Application
             <yellow>Usage</>
               golem [run] [options]     Run the tests of the plugin in the current folder
               golem init                Add an example test and a GitHub Actions workflow
+              golem fuzz                Let golems do random things to the plugin and report crashes
+                                        (--duration=60 --golems=3 --seed=<n>)
 
             <yellow>Options</>
               --filter=<text>           Only run tests whose Class::method contains <text>

@@ -27,6 +27,10 @@ final class MenuForm implements Form
 
     public function handleResponse(Player $player, $data): void
     {
+        // a modified client can answer anything: closing the form (null), or not a button number
+        if (!is_int($data)) {
+            return;
+        }
         switch (self::BUTTONS[$data] ?? null) {
             case 'Spawn':
                 $player->teleport($player->getWorld()->getSpawnLocation());
