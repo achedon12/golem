@@ -7,6 +7,8 @@ breaking changes; they will always be listed here.
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-10-08
+
 ### Fixed
 
 - A dashboard link to a tab (`#scenario`, `#bench`…) opened the Tests tab instead.
@@ -163,6 +165,7 @@ First public release.
 - `golem init` to scaffold a first test and a workflow.
 - A composite GitHub Action, `achedon12/golem@v0`.
 
+[0.5.1]: https://github.com/achedon12/golem/releases/tag/v0.5.1
 [0.5.0]: https://github.com/achedon12/golem/releases/tag/v0.5.0
 [0.4.0]: https://github.com/achedon12/golem/releases/tag/v0.4.0
 [0.3.0]: https://github.com/achedon12/golem/releases/tag/v0.3.0
