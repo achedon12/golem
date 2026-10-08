@@ -13,8 +13,8 @@ forms, so every plugin on the server reacts to them as usual.
 
 ## Install
 
-Download the latest `Golem.phar` from [Poggit CI](https://poggit.pmmp.io/ci/achedon12/golem/Golem) and put it in your server's
-`plugins/` folder. The `/golem` command is for operators (permission `golem.command`).
+Download [`Golem.phar`](https://github.com/achedon12/golem/releases/latest/download/Golem.phar) from the [latest release](https://github.com/achedon12/golem/releases/latest)
+and put it in your server's `plugins/` folder. The `/golem` command is for operators (permission `golem.command`).
 
 ::: warning Development servers only
 Golems are real players: they count towards the player limit and show up in the player list.

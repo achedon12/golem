@@ -9,8 +9,9 @@ breaking changes; they will always be listed here.
 
 ### Added
 
-- Golem is also a PocketMine-MP plugin, built by Poggit: `/golem` spawns and controls golems on a
-  development server (#33).
+- Golem is also a PocketMine-MP plugin: `/golem` spawns and controls golems on a development
+  server (#33). `Golem.phar` is attached to every GitHub release, and built on every push to
+  `main` (#37). Poggit was sunset along with PocketMine-MP, so it is not published there.
 - Golems wear a visible stone-grey skin instead of a transparent one.
 
 ### Fixed

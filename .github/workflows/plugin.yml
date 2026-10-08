@@ -1,0 +1,46 @@
+name: Plugin
+
+on:
+  push:
+    branches: [main]
+    paths: ['src/**', 'plugin.yml', '.github/scripts/build-phar.php', '.github/workflows/plugin.yml']
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  phar:
+    name: Build Golem.phar
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          ini-values: phar.readonly=0
+          coverage: none
+
+      - name: Check that plugin.yml matches the release
+        if: github.event_name == 'release'
+        run: |
+          version=$(sed -n 's/^version: *//p' plugin.yml)
+          [ "v$version" = "${{ github.event.release.tag_name }}" ] || { echo "plugin.yml says $version, the release is ${{ github.event.release.tag_name }}"; exit 1; }
+
+      - name: Build
+        run: php .github/scripts/build-phar.php build/Golem.phar
+
+      - name: Keep the development build
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v6
+        with:
+          name: Golem-${{ github.sha }}
+          path: build/Golem.phar
+
+      - name: Attach to the release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" build/Golem.phar --clobber
