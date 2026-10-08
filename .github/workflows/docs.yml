@@ -3,7 +3,9 @@ name: Docs
 on:
   push:
     branches: [main]
-    paths: ['docs/**', '.github/workflows/docs.yml', '.github/scripts/build-wiki.py']
+    paths: ['docs/**', '.github/workflows/docs.yml', '.github/scripts/build-docs.py', '.github/scripts/build-wiki.py']
+  # after a release, run it on main so the new tag becomes the docs at the root and in the wiki
+  # (GitHub Pages only deploys from main)
   workflow_dispatch:
 
 concurrency:
@@ -17,7 +19,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          fetch-depth: 0   # "last updated" dates come from git history
+          ref: main        # main under next/, and today's configuration for every version
+          fetch-depth: 0   # every release tag, and "last updated" dates from git history
 
       - uses: actions/setup-node@v7
         with:
@@ -25,17 +28,18 @@ jobs:
           cache: npm
           cache-dependency-path: docs/package-lock.json
 
-      - name: Build
+      - name: Install
         working-directory: docs
-        run: |
-          npm ci
-          npm run build
+        run: npm ci
+
+      - name: Build every version
+        run: python3 .github/scripts/build-docs.py site
 
       - uses: actions/configure-pages@v6
 
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: docs/.vitepress/dist
+          path: site
 
   deploy:
     name: Deploy to GitHub Pages
@@ -58,6 +62,9 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0   # the docs of every release tag
 
       - name: Check out the wiki
         uses: actions/checkout@v7
@@ -65,8 +72,8 @@ jobs:
           repository: ${{ github.repository }}.wiki
           path: wiki
 
-      - name: Generate the pages from docs/
-        run: python3 .github/scripts/build-wiki.py docs wiki
+      - name: Generate the pages from the docs of every release
+        run: python3 .github/scripts/build-wiki.py . wiki
 
       - name: Publish
         working-directory: wiki

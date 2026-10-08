@@ -1,20 +1,40 @@
+import { existsSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitepress'
 
 const site = 'https://achedon12.github.io/golem/'
 const description = 'Integration tests for PocketMine-MP plugins: a real server, simulated players, one command.'
 
+// One build per version of the docs, made by .github/scripts/build-docs.py: the latest release
+// at the root, main under /next/, older releases under /vX.Y.Z/. Without these variables (npm run
+// dev), it builds main at the root.
+const version = process.env.GOLEM_DOCS_VERSION ?? 'next'
+const latest = process.env.GOLEM_DOCS_LATEST ?? version
+const base = process.env.GOLEM_DOCS_BASE ?? '/golem/'
+const versions: { version: string, base: string }[] = JSON.parse(process.env.GOLEM_DOCS_VERSIONS ?? '[]')
+// archived releases are built from an export of their docs/, not from a git checkout
+const archived = process.env.GOLEM_DOCS_ARCHIVED === '1'
+const isLatest = version === latest
+
+// the sidebar only lists the pages this version of the docs has
+const srcDir = fileURLToPath(new URL('..', import.meta.url))
+const page = (text: string, link: string) => existsSync(`${srcDir}${link.slice(1)}.md`) ? [{ text, link }] : []
+
 export default defineConfig({
   title: 'Golem',
   titleTemplate: ':title · Golem',
   description,
-  base: '/golem/',
+  base,
   lang: 'en-US',
   cleanUrls: true,
-  lastUpdated: true,
+  lastUpdated: !archived,
+  // older docs are kept as they were released, links included
+  ignoreDeadLinks: archived,
   appearance: 'dark',
   srcExclude: ['README.md', 'node_modules/**'],
 
-  sitemap: { hostname: site },
+  // only the latest docs are listed for search engines; other versions point to them as canonical
+  sitemap: isLatest ? { hostname: site } : undefined,
 
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/golem/favicon.svg' }],
@@ -86,7 +106,7 @@ export default defineConfig({
       { text: 'Guide', link: '/getting-started', activeMatch: '^/(getting-started|writing-tests|golems|assertions|server-plugin|fuzzing|benchmark)' },
       { text: 'Reference', link: '/configuration', activeMatch: '^/(configuration|ci|how-it-works)' },
       {
-        text: 'v0.4.0',
+        text: 'Links',
         items: [
           { text: 'Changelog', link: 'https://github.com/achedon12/golem/blob/main/CHANGELOG.md' },
           { text: 'Releases', link: 'https://github.com/achedon12/golem/releases' },
@@ -100,21 +120,21 @@ export default defineConfig({
       {
         text: 'Guide',
         items: [
-          { text: 'Getting started', link: '/getting-started' },
-          { text: 'Writing tests', link: '/writing-tests' },
-          { text: 'Golems', link: '/golems' },
-          { text: 'Assertions', link: '/assertions' },
-          { text: 'Server plugin', link: '/server-plugin' },
-          { text: 'Fuzzing', link: '/fuzzing' },
-          { text: 'Benchmark', link: '/benchmark' },
+          ...page('Getting started', '/getting-started'),
+          ...page('Writing tests', '/writing-tests'),
+          ...page('Golems', '/golems'),
+          ...page('Assertions', '/assertions'),
+          ...page('Server plugin', '/server-plugin'),
+          ...page('Fuzzing', '/fuzzing'),
+          ...page('Benchmark', '/benchmark'),
         ],
       },
       {
         text: 'Reference',
         items: [
-          { text: 'Configuration', link: '/configuration' },
-          { text: 'Continuous integration', link: '/ci' },
-          { text: 'How it works', link: '/how-it-works' },
+          ...page('Configuration', '/configuration'),
+          ...page('Continuous integration', '/ci'),
+          ...page('How it works', '/how-it-works'),
         ],
       },
     ],
@@ -124,10 +144,14 @@ export default defineConfig({
       { icon: 'packagist', link: 'https://packagist.org/packages/achedon12/golem' },
     ],
 
-    editLink: {
+    // a released version's docs are not edited anymore
+    editLink: archived ? undefined : {
       pattern: 'https://github.com/achedon12/golem/edit/main/docs/:path',
       text: 'Edit this page on GitHub',
     },
+
+    // read by the version switcher and banner of theme/
+    golem: { version, latest, versions },
 
     search: { provider: 'local' },
 
