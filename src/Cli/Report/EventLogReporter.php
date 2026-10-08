@@ -46,6 +46,14 @@ final class EventLogReporter implements Reporter
             'seconds' => round($report->totalSeconds, 2),
             'bootSeconds' => round($report->bootSeconds, 2),
             'coverage' => $report->coverage,
+            'repeat' => $report->repeat,
+            'seed' => $report->seed,
+            'flaky' => array_values(array_map(static fn (array $entry) => [
+                'shortClass' => $entry['result']->shortClass(),
+                'description' => $entry['result']->description(),
+                'passed' => $entry['passed'],
+                'failed' => $entry['failed'],
+            ], $report->flaky())),
             'serverLog' => $serverLogTail,
         ]);
     }

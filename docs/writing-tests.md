@@ -143,6 +143,26 @@ blocks before any golem joins. From code: `$this->loadWorld('tests/worlds/arena'
 Mark world folders as binary in `.gitattributes` (`**/worlds/** binary`), or git may rewrite the
 line endings of LevelDB files and corrupt them.
 
+
+### Flaky tests
+
+A test that passes on its own but fails once in a while usually depends on timing, or on what a
+test before it left behind. Run every test several times, in a random order:
+
+```bash
+vendor/bin/golem --repeat=10 --random-order
+```
+
+```text
+  Tests:    2 failed, 68 passed (140 assertions)
+  Flaky:     1 test passed in some runs and failed in others
+             KitMenuTest › picking a kit gives a copy · failed 2 of 10 runs
+  Order:     random, seed 857451 (same order again: --random-order=857451)
+```
+
+Each repetition shuffles the tests again. Pass the printed seed to `--random-order=<seed>` to run
+them in the same order and reproduce a failure.
+
 ## Attributes
 
 ```php

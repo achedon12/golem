@@ -86,6 +86,8 @@ export function testsView (project, app) {
   // ---------- options and run button
   const version = h('input', { type: 'text', placeholder: project.pocketmine, title: 'PocketMine-MP version, or owner/repository[@tag] for a fork', size: 18 })
   const parallel = h('select', { title: 'Servers running side by side' }, ...[1, 2, 4, 8].map((n) => h('option', { value: n }, n === 1 ? '1 server' : `${n} servers`)))
+  const repeat = h('select', { title: 'Run every test several times, to find flaky tests' }, ...[1, 3, 10, 25].map((n) => h('option', { value: n }, n === 1 ? 'once' : `×${n}`)))
+  const randomOrder = h('input', { type: 'checkbox' })
   const coverage = h('input', { type: 'checkbox' })
   const snapshots = h('input', { type: 'checkbox' })
   const runButton = h('button', { class: 'primary', onclick: () => current ? current.stop() : start() })
@@ -117,6 +119,8 @@ export function testsView (project, app) {
       parallel: Number(parallel.value),
       coverage: coverage.checked,
       updateSnapshots: snapshots.checked,
+      repeat: Number(repeat.value),
+      randomOrder: randomOrder.checked,
     }
     let count = 0
     let done = 0
@@ -167,7 +171,7 @@ export function testsView (project, app) {
     const problem = event.status === 'failed' || event.status === 'errored'
     const row = h('button', { class: `result ${event.status}`, onclick: () => showDetails(event, row) },
       h('span', { class: `status ${event.status}` }, icons[event.status]),
-      h('span', { class: 'label' }, event.description),
+      h('span', { class: 'label' }, event.description + (event.repetition > 1 ? ` (run ${event.repetition})` : '')),
       h('span', { class: 'time' }, event.status === 'skipped' ? (event.message ?? 'skipped') : `${seconds(event.seconds)} · ${event.ticks} ticks`))
     results.append(row)
     if (problem && !details.hasChildNodes()) showDetails(event, row)
@@ -202,6 +206,12 @@ export function testsView (project, app) {
       ` · ${event.assertions} assertions · ${event.seconds}s`,
     )
     results.append(h('div', { class: 'summary' }))
+    if (event.seed) status.append(h('span', { class: 'hint' }, ` · random order, seed ${event.seed}`))
+    if (event.flaky?.length) {
+      details.replaceChildren(h('h3', {}, `${event.flaky.length} flaky test${event.flaky.length > 1 ? 's' : ''}`),
+        h('p', { class: 'hint' }, 'They passed in some runs and failed in others: they depend on timing, or on the tests run before them.'),
+        ...event.flaky.map((f) => h('p', { class: 'message failed' }, `${f.shortClass} › ${f.description} · failed ${f.failed} of ${f.passed + f.failed} runs`)))
+    }
     if (event.abortReason) details.replaceChildren(h('p', { class: 'message failed' }, event.abortReason))
     if (event.crashed && event.serverLog) details.append(h('pre', { class: 'trace' }, event.serverLog))
     if (event.coverage) renderCoverage(event.coverage)
@@ -253,6 +263,8 @@ export function testsView (project, app) {
     parallel.value = String(options.parallel ?? 1)
     coverage.checked = !!options.coverage
     snapshots.checked = !!options.updateSnapshots
+    repeat.value = String(options.repeat ?? 1)
+    randomOrder.checked = !!options.randomOrder
     renderTree()
     start()
   })
@@ -265,6 +277,8 @@ export function testsView (project, app) {
       h('div', { class: 'toolbar' },
         h('label', {}, 'PocketMine-MP ', version),
         h('label', {}, parallel),
+        h('label', { title: 'Run every test several times' }, 'Repeat ', repeat),
+        h('label', { class: 'check', title: 'Shuffle the order, to find tests that depend on the ones before them' }, randomOrder, ' Random order'),
         h('label', { class: 'check' }, coverage, ' Coverage'),
         h('label', { class: 'check', title: 'Rewrite the snapshots of assertMatchesSnapshot()' }, snapshots, ' Update snapshots'),
         runButton),

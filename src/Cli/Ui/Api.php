@@ -154,6 +154,13 @@ final class Api
         if (($options['updateSnapshots'] ?? false) === true) {
             $arguments[] = '--update-snapshots';
         }
+        $repeat = self::number($options, 'repeat', 1, 100);
+        if ($repeat !== null && $repeat > 1) {
+            $arguments[] = "--repeat=$repeat";
+        }
+        if (($options['randomOrder'] ?? false) === true) {
+            $arguments[] = '--random-order';
+        }
 
         return $arguments;
     }

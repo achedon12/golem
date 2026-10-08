@@ -7,6 +7,12 @@ breaking changes; they will always be listed here.
 
 ## [Unreleased]
 
+### Added
+
+- `--repeat=<n>` runs every test n times and lists the flaky ones; `--random-order[=<seed>]`
+  shuffles the order to find tests that depend on the ones before them. Both are in the dashboard
+  too (#86).
+
 ## [0.6.0] - 2026-10-08
 
 ### Added

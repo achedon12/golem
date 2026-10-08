@@ -195,6 +195,7 @@ final class TestRunner
             'seconds' => round($seconds, 4),
             'ticks' => $ticks,
             'assertions' => $assertions,
+            'repetition' => $test->repetition,
         ] + $details);
     }
 
