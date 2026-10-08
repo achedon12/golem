@@ -7,18 +7,21 @@ breaking changes; they will always be listed here.
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-08
+
 ### Added
 
-- `golem ui` opens a local dashboard to run the tests and follow them live, with failures and
-  coverage shown in the code (#70, #71).
-- `--log-events=<file>` writes a run as JSON lines (#71).
-- The dashboard's scenario editor builds a test from golems, actions and checks, writes it and runs
-  it (#73).
-- The dashboard keeps the last runs and pinned settings in the browser, to run them again in a
-  click, and draws the benchmarks over time (#74).
-- A live demo of the dashboard on the website, replaying runs recorded on the example plugin.
+- `golem ui` opens a dashboard on localhost for the plugin in the current folder (#70):
+  - run the tests and follow them live, with failures shown next to the code that failed and
+    line coverage in the source (#71);
+  - run `golem fuzz` and `golem bench`, with the benchmark drawn as a chart (#72);
+  - build a test without writing PHP in the scenario editor, write it and run it (#73);
+  - keep the last runs and pinned settings in the browser, to run them again in a click (#74).
+- A [live demo of the dashboard](https://achedon12.github.io/golem/demo/) on the website,
+  replaying runs recorded on the example plugin.
+- `--log-events=<file>` writes a run as JSON lines, for tools that follow it (#71).
 - `$this->item('diamond_sword', 3)` in tests gets an item by name.
-- The dashboard runs `golem fuzz` and `golem bench`, with the benchmark drawn as a chart (#72).
+- The website and the wiki keep the documentation of every release, with a version switcher.
 
 ## [0.4.0] - 2026-10-08
 
@@ -152,6 +155,7 @@ First public release.
 - `golem init` to scaffold a first test and a workflow.
 - A composite GitHub Action, `achedon12/golem@v0`.
 
+[0.5.0]: https://github.com/achedon12/golem/releases/tag/v0.5.0
 [0.4.0]: https://github.com/achedon12/golem/releases/tag/v0.4.0
 [0.3.0]: https://github.com/achedon12/golem/releases/tag/v0.3.0
 [0.2.0]: https://github.com/achedon12/golem/releases/tag/v0.2.0
