@@ -80,6 +80,7 @@ final class Application
                                         or a fork: owner/repository[@tag]
               --compare=<version>       Also run on another version or fork, and report what changes
               --coverage                Report the plugin's commands and listeners the tests never reached
+              --parallel=<n>            Split the tests between n servers running side by side
               --log-junit=<file>        Also write a JUnit XML report
               --timeout=<seconds>       Give up after this long (default: 600)
               --update-snapshots        Rewrite the snapshots of assertMatchesSnapshot()

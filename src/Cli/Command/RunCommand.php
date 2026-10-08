@@ -27,7 +27,7 @@ use Golem\Cli\UserError;
  */
 final class RunCommand
 {
-    public const VALUE_OPTIONS = ['path', 'tests', 'filter', 'pocketmine', 'php', 'phar', 'log-junit', 'timeout', 'compare'];
+    public const VALUE_OPTIONS = ['path', 'tests', 'filter', 'pocketmine', 'php', 'phar', 'log-junit', 'timeout', 'compare', 'parallel'];
 
     public function __construct(
         private readonly Output $output,
@@ -142,6 +142,11 @@ final class RunCommand
 
     private function runSuite(Options $options, Project $project, string $pocketmine, Reporter $reporter): RunReport
     {
+        $parallel = (int) ($options->get('parallel') ?? 1);
+        if ($parallel > 1) {
+            return $this->runParallel($options, $project, $pocketmine, $reporter, $parallel);
+        }
+
         $startedAt = microtime(true);
         $cacheDirectory = Toolchain::defaultCacheDirectory();
         $toolchain = new Toolchain($cacheDirectory, new Downloader(), $this->output);
@@ -200,6 +205,191 @@ final class RunCommand
         }
 
         return $report;
+    }
+
+    /**
+     * Splits the test files between several servers, runs them side by side, and reports
+     * the results as one run. Each class is reported at once, as it finishes.
+     */
+    private function runParallel(Options $options, Project $project, string $pocketmine, Reporter $reporter, int $workers): RunReport
+    {
+        $startedAt = microtime(true);
+        $cacheDirectory = Toolchain::defaultCacheDirectory();
+        $toolchain = new Toolchain($cacheDirectory, new Downloader(), $this->output);
+        $php = $options->get('php') ?? $toolchain->php();
+        [$version, $phar] = $options->get('phar') !== null && $options->get('compare') === null
+            ? ['custom', (string) $options->get('phar')]
+            : $toolchain->pocketmine($pocketmine);
+
+        $buckets = self::split(self::testFiles($project->testsDirectory), $workers);
+
+        $this->output->writeln();
+        $this->output->writeln(sprintf('  <bold>Golem</> <gray>is starting %d PocketMine-MP %s servers…</>', count($buckets), Output::escape($version)));
+
+        $report = new RunReport();
+        $report->label = $version;
+        $counts = [];
+        /** @var array<int, list<TestResult>> $current the results of the class each server is running */
+        $current = [];
+        /** @var list<TestResult> $waiting classes finished before every server started */
+        $waiting = [];
+        $emit = function (array $results) use ($report, $reporter, &$counts, &$waiting, $buckets): void {
+            if (count($counts) < count($buckets)) {
+                array_push($waiting, ...$results);
+
+                return;
+            }
+            foreach ($results as $result) {
+                $report->results[] = $result;
+                $reporter->testFinished($result);
+            }
+        };
+        $begin = function () use ($report, $reporter, &$counts, &$waiting, $emit): void {
+            $reporter->started($report, array_sum($counts));
+            $results = $waiting;
+            $waiting = [];
+            $emit($results);
+        };
+
+        $runs = [];
+        $processes = [];
+        $workspaces = [];
+        foreach ($buckets as $index => $files) {
+            $workspace = Workspace::create($project, $this->golemSource, $options->get('filter'), $cacheDirectory, $options->has('update-snapshots'), $options->has('coverage'), testFiles: $files);
+            $workspaces[] = $workspace;
+            if (!$options->has('keep')) {
+                register_shutdown_function($workspace->delete(...));
+            }
+            $process = new ServerProcess($php, $phar, $workspace, $options->has('verbose'));
+            register_shutdown_function($process->stop(...));
+            $processes[] = $process;
+            $current[$index] = [];
+
+            $runs[] = [$process, function (array $event) use ($index, $report, $startedAt, &$counts, &$current, $emit, $begin, $buckets): void {
+                switch ($event['type'] ?? null) {
+                    case 'start':
+                        $report->bootSeconds = max($report->bootSeconds, microtime(true) - $startedAt);
+                        $report->pocketmine ??= is_string($event['pocketmine'] ?? null) ? $event['pocketmine'] : null;
+                        $report->plugin ??= is_string($event['plugin'] ?? null) ? $event['plugin'] : null;
+                        $counts[$index] = (int) ($event['count'] ?? 0);
+                        if (count($counts) === count($buckets)) {
+                            $begin();
+                        }
+                        break;
+                    case 'test':
+                        $result = TestResult::fromEvent($event);
+                        if ($current[$index] !== [] && $current[$index][0]->class !== $result->class) {
+                            $emit($current[$index]);
+                            $current[$index] = [];
+                        }
+                        $current[$index][] = $result;
+                        break;
+                    case 'coverage':
+                        $report->coverage = self::mergeCoverage($report->coverage, [
+                            'commands' => self::counts($event['commands'] ?? []),
+                            'listeners' => self::counts($event['listeners'] ?? []),
+                        ]);
+                        break;
+                    case 'abort':
+                        $report->abortReason ??= is_string($event['message'] ?? null) ? $event['message'] : 'Aborted';
+                        break;
+                    case 'end':
+                        $emit($current[$index]);
+                        $current[$index] = [];
+                        break;
+                }
+            }];
+        }
+
+        try {
+            $finished = ServerProcess::runAll($runs, (int) ($options->get('timeout') ?? 600));
+            // a server that crashed before starting or before its end event
+            if (count($counts) < count($buckets)) {
+                $counts += array_fill_keys(array_keys($buckets), 0);
+                $begin();
+            }
+            foreach ($current as $results) {
+                $emit($results);
+            }
+
+            $crashed = array_search(false, $finished, true);
+            $report->crashed = $crashed !== false;
+            $report->totalSeconds = microtime(true) - $startedAt;
+            $reporter->finished($report, $report->isSuccessful() ? '' : $processes[$crashed === false ? 0 : $crashed]->logTail());
+        } finally {
+            foreach ($workspaces as $workspace) {
+                if ($options->has('keep')) {
+                    $this->output->writeln("  <gray>Server folder kept at {$workspace->path}</>");
+                } else {
+                    $workspace->delete();
+                }
+            }
+        }
+
+        return $report;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function testFiles(string $directory): array
+    {
+        $files = [];
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directory, \FilesystemIterator::SKIP_DOTS));
+        /** @var \SplFileInfo $file */
+        foreach ($iterator as $file) {
+            if ($file->isFile() && $file->getExtension() === 'php') {
+                $files[] = $file->getPathname();
+            }
+        }
+        sort($files);
+
+        return $files;
+    }
+
+    /**
+     * Shares the files between the servers, the biggest first, each to the least loaded
+     * server: file size is a fair guess of how long its tests take.
+     *
+     * @param list<string> $files
+     * @return list<list<string>> no empty bucket
+     */
+    private static function split(array $files, int $workers): array
+    {
+        $sizes = [];
+        foreach ($files as $file) {
+            $sizes[$file] = (int) filesize($file);
+        }
+        arsort($sizes);
+
+        $buckets = array_fill(0, max(1, min($workers, count($files))), []);
+        $loads = array_fill(0, count($buckets), 0);
+        foreach ($sizes as $file => $size) {
+            $lightest = (int) array_search(min($loads), $loads, true);
+            $buckets[$lightest][] = (string) $file;
+            $loads[$lightest] += $size;
+        }
+
+        return array_values(array_filter($buckets, static fn (array $bucket) => $bucket !== []));
+    }
+
+    /**
+     * @param array{commands: array<string, int>, listeners: array<string, int>}|null $total
+     * @param array{commands: array<string, int>, listeners: array<string, int>} $more
+     * @return array{commands: array<string, int>, listeners: array<string, int>}
+     */
+    private static function mergeCoverage(?array $total, array $more): array
+    {
+        if ($total === null) {
+            return $more;
+        }
+        foreach (['commands', 'listeners'] as $kind) {
+            foreach ($more[$kind] as $name => $count) {
+                $total[$kind][$name] = ($total[$kind][$name] ?? 0) + $count;
+            }
+        }
+
+        return $total;
     }
 
     /**

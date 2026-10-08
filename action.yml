@@ -22,6 +22,9 @@ inputs:
   junit:
     description: Where to write the JUnit XML report. Empty to skip it.
     default: golem-junit.xml
+  parallel:
+    description: Number of servers to split the tests between. GitHub's runners have 4 cores.
+    default: '1'
 
 runs:
   using: composite
@@ -43,10 +46,12 @@ runs:
         GOLEM_POCKETMINE: ${{ inputs.pocketmine }}
         GOLEM_FILTER: ${{ inputs.filter }}
         GOLEM_JUNIT: ${{ inputs.junit }}
+        GOLEM_PARALLEL: ${{ inputs.parallel }}
       run: |
         args=(run --path="$GOLEM_PATH")
         [ -n "$GOLEM_TESTS" ] && args+=(--tests="$GOLEM_TESTS")
         [ -n "$GOLEM_POCKETMINE" ] && args+=(--pocketmine="$GOLEM_POCKETMINE")
         [ -n "$GOLEM_FILTER" ] && args+=(--filter="$GOLEM_FILTER")
         [ -n "$GOLEM_JUNIT" ] && args+=(--log-junit="$GOLEM_JUNIT")
+        [ -n "$GOLEM_PARALLEL" ] && [ "$GOLEM_PARALLEL" != "1" ] && args+=(--parallel="$GOLEM_PARALLEL")
         php "$GITHUB_ACTION_PATH/bin/golem" "${args[@]}"

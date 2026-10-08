@@ -23,8 +23,9 @@ final class Workspace
     /**
      * @param array{seed: int, seconds: int, golems: int}|null $fuzz
      * @param array{steps: list<int>, seconds: int}|null $bench
+     * @param list<string>|null $testFiles only run the tests of these files
      */
-    public static function create(Project $project, string $golemSource, ?string $filter, string $cacheDirectory, bool $updateSnapshots = false, bool $coverage = false, ?array $fuzz = null, ?array $bench = null): self
+    public static function create(Project $project, string $golemSource, ?string $filter, string $cacheDirectory, bool $updateSnapshots = false, bool $coverage = false, ?array $fuzz = null, ?array $bench = null, ?array $testFiles = null): self
     {
         $path = sys_get_temp_dir() . '/golem-' . bin2hex(random_bytes(6));
         foreach (['', '/plugins', '/subjects'] as $directory) {
@@ -37,7 +38,7 @@ final class Workspace
         $workspace->writeServerProperties();
         $workspace->writeBootstrapPlugin($golemSource);
         $workspace->linkPlugins($project);
-        $workspace->writeRuntimeConfig($project, $filter, $cacheDirectory, $updateSnapshots, $coverage, $fuzz, $bench);
+        $workspace->writeRuntimeConfig($project, $filter, $cacheDirectory, $updateSnapshots, $coverage, $fuzz, $bench, $testFiles);
 
         return $workspace;
     }
@@ -130,8 +131,9 @@ final class Workspace
     /**
      * @param array{seed: int, seconds: int, golems: int}|null $fuzz
      * @param array{steps: list<int>, seconds: int}|null $bench
+     * @param list<string>|null $testFiles
      */
-    private function writeRuntimeConfig(Project $project, ?string $filter, string $cacheDirectory, bool $updateSnapshots, bool $coverage, ?array $fuzz, ?array $bench): void
+    private function writeRuntimeConfig(Project $project, ?string $filter, string $cacheDirectory, bool $updateSnapshots, bool $coverage, ?array $fuzz, ?array $bench, ?array $testFiles): void
     {
         file_put_contents($this->runtimeConfig(), json_encode([
             'events' => $this->eventsFile(),
@@ -139,6 +141,7 @@ final class Workspace
             'subjects' => $this->path . '/subjects',
             'subject' => $project->name,
             'filter' => $filter,
+            'files' => $testFiles,
             'pluginRoot' => $project->root,
             'cache' => $cacheDirectory,
             'virions' => $project->virions,

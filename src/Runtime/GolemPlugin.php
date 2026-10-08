@@ -35,7 +35,7 @@ final class GolemPlugin extends PluginBase
             return;
         }
 
-        /** @var array{events: string, tests: string, subjects: string, subject: string, filter: ?string, pluginRoot: string, cache: string, virions: list<string>, poggit: ?string, updateSnapshots?: bool, ci?: bool, coverage?: bool, fuzz?: array{seed: int, seconds: int, golems: int}|null, bench?: array{steps: list<int>, seconds: int}|null} $config */
+        /** @var array{events: string, tests: string, subjects: string, subject: string, filter: ?string, files?: list<string>|null, pluginRoot: string, cache: string, virions: list<string>, poggit: ?string, updateSnapshots?: bool, ci?: bool, coverage?: bool, fuzz?: array{seed: int, seconds: int, golems: int}|null, bench?: array{steps: list<int>, seconds: int}|null} $config */
         $config = json_decode((string) file_get_contents($configPath), true, flags: JSON_THROW_ON_ERROR);
         $this->events = new EventLog($config['events']);
 
@@ -66,7 +66,7 @@ final class GolemPlugin extends PluginBase
      * Loads the virions listed in composer.json and in the plugin's .poggit.yml, before
      * the plugin itself so its classes can use them from onLoad().
      *
-     * @param array{events: string, tests: string, subjects: string, subject: string, filter: ?string, pluginRoot: string, cache: string, virions: list<string>, poggit: ?string, updateSnapshots?: bool, ci?: bool, coverage?: bool, fuzz?: array{seed: int, seconds: int, golems: int}|null, bench?: array{steps: list<int>, seconds: int}|null} $config
+     * @param array{events: string, tests: string, subjects: string, subject: string, filter: ?string, files?: list<string>|null, pluginRoot: string, cache: string, virions: list<string>, poggit: ?string, updateSnapshots?: bool, ci?: bool, coverage?: bool, fuzz?: array{seed: int, seconds: int, golems: int}|null, bench?: array{steps: list<int>, seconds: int}|null} $config
      */
     private function loadVirions(array $config): void
     {
@@ -98,7 +98,7 @@ final class GolemPlugin extends PluginBase
     }
 
     /**
-     * @param array{events: string, tests: string, subjects: string, subject: string, filter: ?string, pluginRoot: string, cache: string, virions: list<string>, poggit: ?string, updateSnapshots?: bool, ci?: bool, coverage?: bool, fuzz?: array{seed: int, seconds: int, golems: int}|null, bench?: array{steps: list<int>, seconds: int}|null} $config
+     * @param array{events: string, tests: string, subjects: string, subject: string, filter: ?string, files?: list<string>|null, pluginRoot: string, cache: string, virions: list<string>, poggit: ?string, updateSnapshots?: bool, ci?: bool, coverage?: bool, fuzz?: array{seed: int, seconds: int, golems: int}|null, bench?: array{steps: list<int>, seconds: int}|null} $config
      */
     private function begin(array $config): void
     {
@@ -131,7 +131,7 @@ final class GolemPlugin extends PluginBase
         }
 
         try {
-            $tests = TestDiscovery::discover($config['tests'], $config['filter']);
+            $tests = TestDiscovery::discover($config['tests'], $config['filter'], $config['files'] ?? null);
         } catch (\Throwable $e) {
             $this->abort(sprintf('Could not load the tests: %s (%s:%d)', $e->getMessage(), $e->getFile(), $e->getLine()));
 

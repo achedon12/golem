@@ -21,6 +21,18 @@ final class ServerProcess
 
     private string $pendingLine = '';
 
+    private bool $finished = false;
+
+    private ?int $finishedAt = null;
+
+    private int $deadline = 0;
+
+    private int $timeoutSeconds = 0;
+
+    private int $logOffset = 0;
+
+    private int $polls = 0;
+
     public function __construct(
         private readonly string $php,
         private readonly string $phar,
@@ -37,53 +49,102 @@ final class ServerProcess
      */
     public function run(\Closure $onEvent, int $timeoutSeconds): bool
     {
-        $this->start();
-        $deadline = time() + $timeoutSeconds;
-        $finished = false;
-        $finishedAt = null;
-        $logOffset = 0;
-        $polls = 0;
-
-        while (true) {
-            foreach ($this->readEvents() as $event) {
-                $onEvent($event);
-                if (in_array($event['type'] ?? null, ['end', 'abort'], true)) {
-                    $finished = true;
-                    $finishedAt = time();
-                }
-            }
-            if ($this->echoServerLog) {
-                $logOffset = $this->echoLog($logOffset);
-            }
-
-            if (!$this->isRunning()) {
-                foreach ($this->readEvents() as $event) {
-                    $onEvent($event);
-                    $finished = $finished || in_array($event['type'] ?? null, ['end', 'abort'], true);
-                }
-                break;
-            }
-
-            // A crashed PocketMine waits two minutes before exiting, to throttle restarts.
-            // Once the tests are over, or the log says it crashed, there is nothing to wait for.
-            $crashed = !$finished && ++$polls % 25 === 0 && $this->logShowsCrash();
-            $lingering = $finishedAt !== null && time() - $finishedAt > self::SHUTDOWN_GRACE_SECONDS;
-            if ($crashed || $lingering || time() > $deadline) {
-                $this->kill();
-                if (time() > $deadline && !$finished) {
-                    throw new UserError("The test run did not finish within $timeoutSeconds seconds. Raise it with --timeout.");
-                }
-                break;
-            }
-
+        $this->begin($timeoutSeconds);
+        while ($this->poll($onEvent)) {
             usleep(self::POLL_INTERVAL_US);
         }
 
-        if ($this->echoServerLog) {
-            $this->echoLog($logOffset);
+        return $this->finished;
+    }
+
+    /**
+     * Runs several servers side by side, each with its own event handler.
+     *
+     * @param list<array{self, \Closure(array<string, mixed>): void}> $runs
+     * @return list<bool> for each server, whether its run reached its end event
+     */
+    public static function runAll(array $runs, int $timeoutSeconds): array
+    {
+        foreach ($runs as [$process]) {
+            $process->begin($timeoutSeconds);
+        }
+        $running = $runs;
+        while ($running !== []) {
+            foreach ($running as $index => [$process, $onEvent]) {
+                if (!$process->poll($onEvent)) {
+                    unset($running[$index]);
+                }
+            }
+            if ($running !== []) {
+                usleep(self::POLL_INTERVAL_US);
+            }
         }
 
-        return $finished;
+        return array_map(static fn (array $run) => $run[0]->finished, $runs);
+    }
+
+    private function begin(int $timeoutSeconds): void
+    {
+        $this->start();
+        $this->timeoutSeconds = $timeoutSeconds;
+        $this->deadline = time() + $timeoutSeconds;
+        $this->finished = false;
+        $this->finishedAt = null;
+        $this->logOffset = 0;
+        $this->polls = 0;
+    }
+
+    /**
+     * Handles what happened since the last call.
+     *
+     * @param \Closure(array<string, mixed>): void $onEvent
+     * @return bool whether the server is still running
+     */
+    private function poll(\Closure $onEvent): bool
+    {
+        foreach ($this->readEvents() as $event) {
+            $onEvent($event);
+            if (in_array($event['type'] ?? null, ['end', 'abort'], true)) {
+                $this->finished = true;
+                $this->finishedAt = time();
+            }
+        }
+        if ($this->echoServerLog) {
+            $this->logOffset = $this->echoLog($this->logOffset);
+        }
+
+        if (!$this->isRunning()) {
+            foreach ($this->readEvents() as $event) {
+                $onEvent($event);
+                $this->finished = $this->finished || in_array($event['type'] ?? null, ['end', 'abort'], true);
+            }
+
+            return $this->stopped();
+        }
+
+        // A crashed PocketMine waits two minutes before exiting, to throttle restarts.
+        // Once the tests are over, or the log says it crashed, there is nothing to wait for.
+        $crashed = !$this->finished && ++$this->polls % 25 === 0 && $this->logShowsCrash();
+        $lingering = $this->finishedAt !== null && time() - $this->finishedAt > self::SHUTDOWN_GRACE_SECONDS;
+        if ($crashed || $lingering || time() > $this->deadline) {
+            $this->kill();
+            if (time() > $this->deadline && !$this->finished) {
+                throw new UserError("The test run did not finish within {$this->timeoutSeconds} seconds. Raise it with --timeout.");
+            }
+
+            return $this->stopped();
+        }
+
+        return true;
+    }
+
+    private function stopped(): bool
+    {
+        if ($this->echoServerLog) {
+            $this->echoLog($this->logOffset);
+        }
+
+        return false;
     }
 
     /**
