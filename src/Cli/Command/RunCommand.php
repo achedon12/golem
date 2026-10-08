@@ -13,6 +13,8 @@ use Golem\Cli\Output;
 use Golem\Cli\Project;
 use Golem\Cli\Report\CloverReporter;
 use Golem\Cli\Report\CompactReporter;
+use Golem\Cli\Report\EventLogReporter;
+use Golem\Cli\Report\MultiReporter;
 use Golem\Cli\Report\ConsoleReporter;
 use Golem\Cli\Report\GitHubReporter;
 use Golem\Cli\Report\JUnitReporter;
@@ -30,7 +32,7 @@ use Golem\Cli\UserError;
  */
 final class RunCommand
 {
-    public const VALUE_OPTIONS = ['path', 'tests', 'filter', 'pocketmine', 'php', 'phar', 'log-junit', 'timeout', 'compare', 'parallel', 'coverage-clover'];
+    public const VALUE_OPTIONS = ['path', 'tests', 'filter', 'pocketmine', 'php', 'phar', 'log-junit', 'timeout', 'compare', 'parallel', 'coverage-clover', 'log-events'];
 
     public function __construct(
         private readonly Output $output,
@@ -112,6 +114,9 @@ final class RunCommand
         }
 
         $reporter = $options->has('teamcity') ? new TeamCityReporter() : new ConsoleReporter($this->output, $project->root);
+        if ($options->get('log-events') !== null) {
+            $reporter = new MultiReporter($reporter, new EventLogReporter((string) $options->get('log-events')));
+        }
         $report = $this->runSuite($options, $project, $project->pocketmineVersion, $reporter);
 
         if ($junit !== null) {

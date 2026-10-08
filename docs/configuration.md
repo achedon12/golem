@@ -12,6 +12,7 @@ Golem works without any configuration when run from a plugin folder with a `test
 golem [run] [options]
 golem init [--no-workflow]
 golem fuzz [--duration=60] [--golems=3] [--seed=<n>] [--write-tests]
+golem ui [--port=<port>] [--no-open]
 golem bench [--players=20] [--duration=60] [--min-tps=<tps>] [--save-baseline=<file>] [--baseline=<file>]
 ```
 
@@ -26,6 +27,7 @@ golem bench [--players=20] [--duration=60] [--min-tps=<tps>] [--save-baseline=<f
 | `--coverage-clover=<file>` | | Also write line coverage as a Clover XML report (implies `--coverage`) |
 | `--parallel=<n>` | `1` | Split the test files between `n` servers running side by side. Each class runs on one server, so tests of a class still share it; tests of different classes must not depend on each other |
 | `--log-junit=<file>` | | Also write a JUnit XML report (needs `ext-dom`) |
+| `--log-events=<file>` | | Also write the run as JSON lines, one per event (started, each test, finished with the summary and coverage), for tools that follow it |
 | `--teamcity` | | Report with [TeamCity service messages](ci.md#teamcity) instead of the usual output |
 | `--timeout=<seconds>` | `600` | Stop a run that takes longer than this |
 | `--update-snapshots` | | Rewrite the snapshots of `assertMatchesSnapshot()` instead of comparing them |
