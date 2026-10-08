@@ -14,6 +14,12 @@ breaking changes; they will always be listed here.
   (#45).
 - `--compare=<version or fork>` runs the tests on two servers and reports what changes, grouped
   by cause, also in the GitHub Actions job summary (#44).
+- `golem fuzz` has golems do random things to the plugin and reports every exception, with the
+  actions that led to it and a seed to replay them (#46).
+
+### Fixed
+
+- The example plugin's menu form no longer throws on an invalid answer, found by `golem fuzz`.
 
 ## [0.3.0] - 2026-10-08
 
