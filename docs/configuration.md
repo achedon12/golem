@@ -25,6 +25,8 @@ golem bench [--players=20] [--duration=60] [--min-tps=<tps>] [--save-baseline=<f
 | `--compare=<version>` | | Run the tests on the configured version, then on this one (a version or a fork), and report what changes (see [Forks](#pocketmine-mp-forks)) |
 | `--coverage` | | After the run, list the plugin's commands the tests never ran, listeners they never called and lines of `src/` that never ran (see [Coverage](writing-tests.md#coverage)) |
 | `--coverage-clover=<file>` | | Also write line coverage as a Clover XML report (implies `--coverage`) |
+| `--repeat=<n>` | `1` | Run every test `n` times; tests that pass in some runs and fail in others are listed as flaky |
+| `--random-order[=<seed>]` | | Shuffle the order of the tests (a new order on every repetition), to find tests that depend on the ones before them. The seed is printed: pass it again to get the same order |
 | `--parallel=<n>` | `1` | Split the test files between `n` servers running side by side. Each class runs on one server, so tests of a class still share it; tests of different classes must not depend on each other |
 | `--log-junit=<file>` | | Also write a JUnit XML report (needs `ext-dom`) |
 | `--log-events=<file>` | | Also write the run as JSON lines, one per event (started, each test, finished with the summary and coverage), for tools that follow it |

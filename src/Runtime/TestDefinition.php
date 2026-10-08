@@ -28,6 +28,8 @@ final class TestDefinition
         /** @var list<mixed> */
         public readonly array $arguments = [],
         public readonly ?string $worldTemplate = null,
+        /** which run of the test this is, with --repeat */
+        public readonly int $repetition = 1,
     ) {
     }
 
@@ -41,6 +43,11 @@ final class TestDefinition
      */
     public function withData(string $name, array $arguments): self
     {
-        return new self($this->class, $this->method, $this->file, $this->line, $this->timeoutTicks, $this->skipReason, $this->freshWorld, $name, $arguments, $this->worldTemplate);
+        return new self($this->class, $this->method, $this->file, $this->line, $this->timeoutTicks, $this->skipReason, $this->freshWorld, $name, $arguments, $this->worldTemplate, $this->repetition);
+    }
+
+    public function withRepetition(int $repetition): self
+    {
+        return new self($this->class, $this->method, $this->file, $this->line, $this->timeoutTicks, $this->skipReason, $this->freshWorld, $this->dataName, $this->arguments, $this->worldTemplate, $repetition);
     }
 }

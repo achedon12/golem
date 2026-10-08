@@ -84,6 +84,8 @@ final class Application
               --coverage                Report the plugin's commands, listeners and lines the tests never reached
               --coverage-clover=<file>  Also write line coverage as a Clover XML report
               --parallel=<n>            Split the tests between n servers running side by side
+              --repeat=<n>              Run every test n times, and list the flaky ones
+              --random-order[=<seed>]   Shuffle the order of the tests
               --log-junit=<file>        Also write a JUnit XML report
               --teamcity                Report with TeamCity service messages
               --timeout=<seconds>       Give up after this long (default: 600)

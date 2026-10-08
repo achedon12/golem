@@ -32,12 +32,34 @@ use Golem\Cli\UserError;
  */
 final class RunCommand
 {
-    public const VALUE_OPTIONS = ['path', 'tests', 'filter', 'pocketmine', 'php', 'phar', 'log-junit', 'timeout', 'compare', 'parallel', 'coverage-clover', 'log-events'];
+    public const VALUE_OPTIONS = ['path', 'tests', 'filter', 'pocketmine', 'php', 'phar', 'log-junit', 'timeout', 'compare', 'parallel', 'coverage-clover', 'log-events', 'repeat'];
+
+    /** the seed of --random-order, chosen once so every server of a run shares it */
+    private ?int $seed = null;
 
     public function __construct(
         private readonly Output $output,
         private readonly string $golemSource,
     ) {
+    }
+
+    /**
+     * --repeat and --random-order, for the runtime.
+     *
+     * @return array{repeat: int, seed: ?int}
+     */
+    private function order(Options $options): array
+    {
+        $repeat = (int) ($options->get('repeat') ?? 1);
+        if ($repeat < 1 || $repeat > 1000) {
+            throw new UserError('--repeat must be a number from 1 to 1000.');
+        }
+        if ($options->has('random-order')) {
+            $given = $options->get('random-order');
+            $this->seed ??= $given !== null && ctype_digit($given) ? (int) $given : random_int(1, 999_999);
+        }
+
+        return ['repeat' => $repeat, 'seed' => $this->seed];
     }
 
     public function execute(Options $options): int
@@ -179,7 +201,8 @@ final class RunCommand
         $this->output->writeln();
         $this->output->writeln(sprintf('  <bold>Golem</> <gray>is starting PocketMine-MP %s…</>', Output::escape($version)));
 
-        $workspace = Workspace::create($project, $this->golemSource, $options->get('filter'), $cacheDirectory, $options->has('update-snapshots'), self::wantsCoverage($options));
+        $order = $this->order($options);
+        $workspace = Workspace::create($project, $this->golemSource, $options->get('filter'), $cacheDirectory, $options->has('update-snapshots'), self::wantsCoverage($options), order: $order);
         if (!$options->has('keep')) {
             register_shutdown_function($workspace->delete(...)); // also runs when interrupted
         }
@@ -187,6 +210,8 @@ final class RunCommand
         register_shutdown_function($process->stop(...)); // never leave a server behind
         $report = new RunReport();
         $report->label = $version;
+        $report->repeat = $order['repeat'];
+        $report->seed = $order['seed'];
 
         try {
             $finished = $process->run(function (array $event) use ($report, $reporter, $startedAt): void {
@@ -251,6 +276,9 @@ final class RunCommand
 
         $report = new RunReport();
         $report->label = $version;
+        $order = $this->order($options);
+        $report->repeat = $order['repeat'];
+        $report->seed = $order['seed'];
         $counts = [];
         /** @var array<int, list<TestResult>> $current the results of the class each server is running */
         $current = [];
@@ -278,7 +306,7 @@ final class RunCommand
         $processes = [];
         $workspaces = [];
         foreach ($buckets as $index => $files) {
-            $workspace = Workspace::create($project, $this->golemSource, $options->get('filter'), $cacheDirectory, $options->has('update-snapshots'), self::wantsCoverage($options), testFiles: $files);
+            $workspace = Workspace::create($project, $this->golemSource, $options->get('filter'), $cacheDirectory, $options->has('update-snapshots'), self::wantsCoverage($options), testFiles: $files, order: $order);
             $workspaces[] = $workspace;
             if (!$options->has('keep')) {
                 register_shutdown_function($workspace->delete(...));

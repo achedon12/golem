@@ -35,6 +35,7 @@ final class TestResult
         public readonly ?int $failureLine,
         public readonly array $trace,
         public readonly int $snapshotsWritten = 0,
+        public readonly int $repetition = 1,
     ) {
     }
 
@@ -64,7 +65,16 @@ final class TestResult
             isset($location['line']) ? (int) $location['line'] : null,
             array_values(array_filter((array) ($event['trace'] ?? []), 'is_string')),
             (int) ($event['snapshotsWritten'] ?? 0),
+            max(1, (int) ($event['repetition'] ?? 1)),
         );
+    }
+
+    /**
+     * The test whatever the run: "Class::method" plus its data set.
+     */
+    public function id(): string
+    {
+        return $this->class . '::' . $this->name();
     }
 
     public function isProblem(): bool

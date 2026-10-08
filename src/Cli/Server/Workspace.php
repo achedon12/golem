@@ -24,8 +24,9 @@ final class Workspace
      * @param array{seed: int, seconds: int, golems: int}|null $fuzz
      * @param array{steps: list<int>, seconds: int}|null $bench
      * @param list<string>|null $testFiles only run the tests of these files
+     * @param array{repeat: int, seed: ?int}|null $order how many times, and in which order, to run the tests
      */
-    public static function create(Project $project, string $golemSource, ?string $filter, string $cacheDirectory, bool $updateSnapshots = false, bool $coverage = false, ?array $fuzz = null, ?array $bench = null, ?array $testFiles = null): self
+    public static function create(Project $project, string $golemSource, ?string $filter, string $cacheDirectory, bool $updateSnapshots = false, bool $coverage = false, ?array $fuzz = null, ?array $bench = null, ?array $testFiles = null, ?array $order = null): self
     {
         $path = sys_get_temp_dir() . '/golem-' . bin2hex(random_bytes(6));
         foreach (['', '/plugins', '/subjects'] as $directory) {
@@ -38,7 +39,7 @@ final class Workspace
         $workspace->writeServerProperties();
         $workspace->writeBootstrapPlugin($golemSource);
         $workspace->linkPlugins($project);
-        $workspace->writeRuntimeConfig($project, $filter, $cacheDirectory, $updateSnapshots, $coverage, $fuzz, $bench, $testFiles);
+        $workspace->writeRuntimeConfig($project, $filter, $cacheDirectory, $updateSnapshots, $coverage, $fuzz, $bench, $testFiles, $order);
 
         return $workspace;
     }
@@ -132,8 +133,9 @@ final class Workspace
      * @param array{seed: int, seconds: int, golems: int}|null $fuzz
      * @param array{steps: list<int>, seconds: int}|null $bench
      * @param list<string>|null $testFiles
+     * @param array{repeat: int, seed: ?int}|null $order
      */
-    private function writeRuntimeConfig(Project $project, ?string $filter, string $cacheDirectory, bool $updateSnapshots, bool $coverage, ?array $fuzz, ?array $bench, ?array $testFiles): void
+    private function writeRuntimeConfig(Project $project, ?string $filter, string $cacheDirectory, bool $updateSnapshots, bool $coverage, ?array $fuzz, ?array $bench, ?array $testFiles, ?array $order): void
     {
         file_put_contents($this->runtimeConfig(), json_encode([
             'events' => $this->eventsFile(),
@@ -142,6 +144,8 @@ final class Workspace
             'subject' => $project->name,
             'filter' => $filter,
             'files' => $testFiles,
+            'repeat' => $order['repeat'] ?? 1,
+            'seed' => $order['seed'] ?? null,
             'pluginRoot' => $project->root,
             'cache' => $cacheDirectory,
             'virions' => $project->virions,

@@ -32,6 +32,10 @@ final class ConsoleReporter implements Reporter
 
     public function testFinished(TestResult $result): void
     {
+        // with --repeat, later runs only show when they go wrong
+        if ($result->repetition > 1 && !$result->isProblem()) {
+            return;
+        }
         if ($result->class !== $this->currentClass) {
             $this->currentClass = $result->class;
             $this->output->writeln();
@@ -43,7 +47,7 @@ final class ConsoleReporter implements Reporter
             TestResult::SKIPPED => '  <yellow>-</> <gray>%s</> <yellow>skipped</>',
             default => '  <red>✗ %s</>',
         };
-        $text = sprintf($line, Output::escape($result->description()));
+        $text = sprintf($line, Output::escape($result->description() . ($result->repetition > 1 ? " (run {$result->repetition})" : '')));
         if ($result->status === TestResult::SKIPPED && $result->message !== null && $result->message !== '') {
             $text .= ' <gray>· ' . Output::escape($result->message) . '</>';
         }
@@ -183,6 +187,22 @@ final class ConsoleReporter implements Reporter
         ));
         if ($report->coverage !== null) {
             $this->coverage($report->coverage);
+        }
+        $flaky = $report->flaky();
+        if ($flaky !== []) {
+            $this->output->writeln(sprintf('  <gray>Flaky:</>     <yellow>%d test%s passed in some runs and failed in others</>', count($flaky), count($flaky) === 1 ? '' : 's'));
+            foreach ($flaky as $entry) {
+                $this->output->writeln(sprintf(
+                    '             <yellow>%s › %s</> <gray>· failed %d of %d runs</>',
+                    Output::escape($entry['result']->shortClass()),
+                    Output::escape($entry['result']->description()),
+                    $entry['failed'],
+                    $entry['passed'] + $entry['failed'],
+                ));
+            }
+        }
+        if ($report->seed !== null) {
+            $this->output->writeln(sprintf('  <gray>Order:</>     random, seed %d <gray>(same order again: --random-order=%d)</>', $report->seed, $report->seed));
         }
         if ($report->snapshotsWritten() > 0) {
             $this->output->writeln(sprintf('  <gray>Snapshots:</> <yellow>%d written</> <gray>(commit them)</>', $report->snapshotsWritten()));
