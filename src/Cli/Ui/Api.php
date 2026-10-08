@@ -70,6 +70,7 @@ final class Api
         try {
             return match (true) {
                 $method === 'GET' && $path === '/api/project' => $this->send(200, $this->project()),
+                $method === 'GET' && $path === '/api/changes' => $this->send(200, ['fingerprint' => $this->watcher()->fingerprint()]),
                 $method === 'GET' && $path === '/api/source' => $this->source((string) ($_GET['file'] ?? '')),
                 $method === 'POST' && $path === '/api/runs' => $this->startRun($body),
                 $method === 'GET' && preg_match('#^/api/runs/([\w-]+)$#', $path, $match) === 1 => $this->poll($match[1]),
@@ -103,6 +104,19 @@ final class Api
             'golem' => Application::VERSION,
             'tests' => TestCatalog::read($this->testsDirectory),
         ];
+    }
+
+    /**
+     * The files whose changes start the tests again in watch mode, as with golem --watch.
+     */
+    private function watcher(): \Golem\Cli\ChangeWatcher
+    {
+        return new \Golem\Cli\ChangeWatcher([
+            $this->projectRoot . '/src',
+            $this->projectRoot . '/resources',
+            $this->projectRoot . '/plugin.yml',
+            $this->testsDirectory,
+        ]);
     }
 
     /**

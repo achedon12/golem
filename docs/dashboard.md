@@ -44,6 +44,10 @@ number of servers, coverage, and run:
   each file's code with the lines that ran in green and the others in red;
 - the console output of the run is there too, as the command line prints it.
 
+Tick **Watch** to keep it running: whenever a file of `src/`, `tests/` or `resources/` changes,
+the tests you picked run again on their own, as soon as your editor has finished saving. **Repeat**
+and **Random order** run them several times, shuffled, to find [flaky tests](writing-tests.md#flaky-tests).
+
 ## Building a test without writing PHP
 
 The **Scenario editor** builds a test from golems and steps:

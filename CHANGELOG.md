@@ -12,6 +12,12 @@ breaking changes; they will always be listed here.
 - `--repeat=<n>` runs every test n times and lists the flaky ones; `--random-order[=<seed>]`
   shuffles the order to find tests that depend on the ones before them. Both are in the dashboard
   too (#86).
+- The dashboard's **Watch** option runs the picked tests again whenever a file of the plugin
+  changes (#87).
+
+### Changed
+
+- `golem --watch` no longer reacts to snapshots written by the tests.
 
 ## [0.6.0] - 2026-10-08
 
