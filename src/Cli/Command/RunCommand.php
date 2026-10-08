@@ -17,6 +17,7 @@ use Golem\Cli\Report\JUnitReporter;
 use Golem\Cli\Report\MigrationReport;
 use Golem\Cli\Report\Reporter;
 use Golem\Cli\Report\RunReport;
+use Golem\Cli\Report\TeamCityReporter;
 use Golem\Cli\Report\TestResult;
 use Golem\Cli\Server\ServerProcess;
 use Golem\Cli\Server\Workspace;
@@ -105,7 +106,8 @@ final class RunCommand
             throw new UserError('--log-junit needs the dom extension in the PHP running Golem.');
         }
 
-        $report = $this->runSuite($options, $project, $project->pocketmineVersion, new ConsoleReporter($this->output, $project->root));
+        $reporter = $options->has('teamcity') ? new TeamCityReporter() : new ConsoleReporter($this->output, $project->root);
+        $report = $this->runSuite($options, $project, $project->pocketmineVersion, $reporter);
 
         if ($junit !== null) {
             (new JUnitReporter())->write($report, $junit);

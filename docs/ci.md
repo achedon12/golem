@@ -119,3 +119,22 @@ golem:
     reports:
       junit: golem-junit.xml
 ```
+
+## TeamCity
+
+`--teamcity` replaces the usual output with
+[TeamCity service messages](https://www.jetbrains.com/help/teamcity/service-messages.html#Reporting+Tests):
+TeamCity, and other tools that read them, show each test class as a suite, each test with its
+duration, and failures with their expected and actual values.
+
+```bash
+vendor/bin/golem --teamcity
+```
+
+```text
+##teamcity[testCount count='4']
+##teamcity[testSuiteStarted name='LobbyHudTest' locationHint='php_qn:///…/tests/LobbyHudTest.php::\Example\HelloWorld\Tests\LobbyHudTest']
+##teamcity[testStarted name='testCountsPlayersOnline' locationHint='php_qn:///…/tests/LobbyHudTest.php::\Example\HelloWorld\Tests\LobbyHudTest::testCountsPlayersOnline']
+##teamcity[testFailed name='testCountsPlayersOnline' message='The scoreboard of Steve does not show "Online: 3"' type='comparisonFailure' expected='"Online: 3"' actual='…']
+##teamcity[testFinished name='testCountsPlayersOnline' duration='1452']
+```

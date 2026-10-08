@@ -20,6 +20,7 @@ breaking changes; they will always be listed here.
   are added, and the plugin's slowest listeners and tasks; `--min-tps` fails the run below a
   threshold. `assertTpsAbove()` checks the TPS in a test, and `/golem spawn <name> <count>` spawns
   a crowd on a development server (#47).
+- `--teamcity` reports with TeamCity service messages (#57).
 - `--parallel=<n>` (and the action's `parallel` input) splits the test files between several
   servers running side by side: the example suite runs in 20 s instead of 43 s on 4 servers (#56).
 - `golem bench --save-baseline` and `--baseline` compare a benchmark with an earlier one and fail

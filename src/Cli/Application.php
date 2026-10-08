@@ -82,6 +82,7 @@ final class Application
               --coverage                Report the plugin's commands and listeners the tests never reached
               --parallel=<n>            Split the tests between n servers running side by side
               --log-junit=<file>        Also write a JUnit XML report
+              --teamcity                Report with TeamCity service messages
               --timeout=<seconds>       Give up after this long (default: 600)
               --update-snapshots        Rewrite the snapshots of assertMatchesSnapshot()
               --watch                   Re-run the tests whenever src/ or tests/ change
