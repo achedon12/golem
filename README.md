@@ -11,6 +11,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/github/license/achedon12/golem?color=blue" alt="MIT license"></a>
   <a href="https://achedon12.github.io/golem/"><img src="https://img.shields.io/badge/docs-website-22c55e" alt="Documentation"></a>
   <a href="https://packagist.org/packages/achedon12/golem"><img src="https://img.shields.io/packagist/v/achedon12/golem?color=f28d1a&label=packagist" alt="Packagist"></a>
+  <a href="https://packagist.org/packages/achedon12/golem/stats"><img src="https://img.shields.io/packagist/dt/achedon12/golem?color=f28d1a&label=downloads" alt="Packagist downloads"></a>
 </p>
 
 **Golem** tests your PocketMine-MP plugin the way your players use it. One command boots a real
