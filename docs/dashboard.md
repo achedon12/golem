@@ -32,8 +32,10 @@ bug) or a benchmark, build a scenario.
 
 ## Running tests
 
-The side panel lists the tests found in your tests folder. Pick all of them, a class or a single
-test, choose the PocketMine-MP version or fork, the number of servers, coverage, and run:
+The side panel lists the tests found in your tests folder, each with a checkbox: tick the classes
+and tests to run (or **All**, **None**, **Failed** to keep only those that failed last time); the
+choice is kept in your browser for next time. Then pick the PocketMine-MP version or fork, the
+number of servers, coverage, and run:
 
 - results arrive live, grouped by class, and the side panel shows what passed or failed;
 - click a test to see its failure: the message, expected and actual values, and the code around

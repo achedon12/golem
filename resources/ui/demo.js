@@ -16,7 +16,8 @@ function source (file) {
 function testRecording (filter) {
   const recording = fixtures.runs.tests
   if (!filter) return recording
-  const wanted = (event) => `${event.class}::${event.method}`.toLowerCase().includes(filter.toLowerCase())
+  const parts = filter.toLowerCase().split('|').map((p) => p.trim()).filter(Boolean)
+  const wanted = (event) => parts.some((p) => `${event.class}::${event.method}`.toLowerCase().includes(p))
   const frames = []
   const counts = { passed: 0, failed: 0, errored: 0, skipped: 0 }
   let count = 0

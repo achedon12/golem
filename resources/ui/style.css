@@ -372,3 +372,11 @@ button.link { border: 0; background: none; color: var(--brand); cursor: pointer;
 }
 .demo-banner code { font-family: var(--mono); color: var(--brand); }
 .demo-banner a { color: var(--brand); font-weight: 600; }
+.demo-note { margin: 0 0 12px; padding: 8px 12px; border-left: 3px solid var(--brand); background: var(--brand-soft); border-radius: 6px; color: var(--text); font-size: 13px; }
+
+/* ---------- picking tests */
+.tree .row input[type=checkbox] { flex: none; margin: 0; accent-color: var(--brand); cursor: pointer; }
+.tree .row.off .label { color: var(--text-3); }
+.tree-tools { display: flex; align-items: center; gap: 12px; padding: 0 8px 8px; border-bottom: 1px solid var(--border); margin-bottom: 6px; }
+.tree-tools .count { margin-left: auto; }
+.tree-tools button.link { font-size: 13px; padding: 2px 0; }
