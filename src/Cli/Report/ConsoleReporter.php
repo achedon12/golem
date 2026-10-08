@@ -196,7 +196,7 @@ final class ConsoleReporter implements Reporter
     }
 
     /**
-     * @param array{commands: array<string, int>, listeners: array<string, int>} $coverage
+     * @param array{commands: array<string, int>, listeners: array<string, int>, lines: array<string, array<int, int>>|null} $coverage
      */
     private function coverage(array $coverage): void
     {
@@ -207,7 +207,16 @@ final class ConsoleReporter implements Reporter
             $color = $covered === count($all) ? 'green' : 'yellow';
             $line[] = sprintf('%s <%s>%d/%d</>', $label, $color, $covered, count($all));
         }
+        $lines = $coverage['lines'];
+        if ($lines !== null && $lines !== []) {
+            $total = array_sum(array_map('count', $lines));
+            $covered = array_sum(array_map(static fn (array $file) => count(array_filter($file)), $lines));
+            $line[] = sprintf('lines <%s>%.1f%%</> <gray>(%d/%d)</>', $covered === $total ? 'green' : 'yellow', $total > 0 ? $covered / $total * 100 : 100, $covered, $total);
+        }
         $this->output->writeln('  <gray>Coverage:</> ' . implode(' <gray>·</> ', $line));
+        if ($lines !== null) {
+            $this->uncoveredLines($lines);
+        }
 
         $missing = [
             'never run' => array_map(static fn (string $name) => '/' . $name, array_keys(array_filter($coverage['commands'], static fn (int $count) => $count === 0))),
@@ -218,6 +227,58 @@ final class ConsoleReporter implements Reporter
                 $this->output->writeln(sprintf('            <gray>%s:</> %s', $label, Output::escape(implode(', ', $names))));
             }
         }
+    }
+
+    /**
+     * The files with lines the tests never ran, least covered first.
+     *
+     * @param array<string, array<int, int>> $lines
+     */
+    private function uncoveredLines(array $lines): void
+    {
+        $files = [];
+        foreach ($lines as $file => $fileLines) {
+            $missed = array_keys(array_filter($fileLines, static fn (int $ran) => $ran === 0));
+            if ($missed !== []) {
+                $files[$file] = [count($fileLines) > 0 ? 1 - count($missed) / count($fileLines) : 1, $missed];
+            }
+        }
+        uasort($files, static fn (array $a, array $b) => $a[0] <=> $b[0]);
+
+        foreach (array_slice($files, 0, 8, true) as $file => [$ratio, $missed]) {
+            $this->output->writeln(sprintf(
+                '            <cyan>src/%s</> <yellow>%d%%</> <gray>· not run: %s</>',
+                Output::escape($file),
+                (int) floor($ratio * 100),
+                Output::escape(self::ranges($missed)),
+            ));
+        }
+        if (count($files) > 8) {
+            $this->output->writeln(sprintf('            <gray>and %d more file(s): see --coverage-clover</>', count($files) - 8));
+        }
+    }
+
+    /**
+     * [3, 4, 5, 9] becomes "3-5, 9".
+     *
+     * @param list<int> $numbers sorted
+     */
+    private static function ranges(array $numbers): string
+    {
+        $ranges = [];
+        $start = $previous = null;
+        foreach ([...$numbers, null] as $number) {
+            if ($start !== null && $number === $previous + 1) {
+                $previous = $number;
+                continue;
+            }
+            if ($start !== null) {
+                $ranges[] = $start === $previous ? (string) $start : "$start-$previous";
+            }
+            $start = $previous = $number;
+        }
+
+        return implode(', ', $ranges);
     }
 
     private function duration(TestResult $result): string

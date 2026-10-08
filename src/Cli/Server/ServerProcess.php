@@ -33,11 +33,15 @@ final class ServerProcess
 
     private int $polls = 0;
 
+    /**
+     * @param list<string> $phpOptions given to PHP before the phar, such as ['-d', 'xdebug.mode=coverage']
+     */
     public function __construct(
         private readonly string $php,
         private readonly string $phar,
         private readonly Workspace $workspace,
         private readonly bool $echoServerLog,
+        private readonly array $phpOptions = [],
     ) {
     }
 
@@ -167,6 +171,7 @@ final class ServerProcess
     {
         $command = [
             $this->php,
+            ...$this->phpOptions,
             $this->phar,
             '--no-wizard',
             '--disable-ansi',

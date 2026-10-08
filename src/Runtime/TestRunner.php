@@ -101,10 +101,12 @@ final class TestRunner
             $startedAt,
             $startTick,
         );
+        // collecting coverage slows everything down: give tests more time, not a false failure
+        $timeoutTicks = $this->runtime->coverage ? $test->timeoutTicks * 3 : $test->timeoutTicks;
         $run->timeout = $this->runtime->plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(fn () => $this->finish($run, new WaitTimedOut(sprintf(
             'The test did not finish within %d ticks. Raise the limit with #[Timeout(ticks)] if it really needs more time.',
-            $test->timeoutTicks,
-        )))), $test->timeoutTicks);
+            $timeoutTicks,
+        )))), $timeoutTicks);
 
         $run->coroutine->completion()->then(
             fn () => $this->finish($run, null),

@@ -554,6 +554,9 @@ trait Assertions
      */
     final protected function assertTpsAbove(float $minimum, string $message = ''): void
     {
+        if (\Golem\Runtime\Runtime::get()->coverage) {
+            $this->skip('TPS is not checked with --coverage: collecting coverage slows the server down');
+        }
         $server = Server::getInstance();
         $tps = $server->getTicksPerSecondAverage();
         $this->check(
