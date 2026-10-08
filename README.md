@@ -133,7 +133,7 @@ When something breaks, Golem tells you what it expected, what it got, and where:
 
 ## On a development server
 
-Golem is also a plugin: put [`Golem.phar`](https://poggit.pmmp.io/ci/achedon12/golem/Golem) in your dev server's
+Golem is also a plugin: put [`Golem.phar`](https://github.com/achedon12/golem/releases/latest/download/Golem.phar) in your dev server's
 `plugins/` folder and spawn simulated players by hand, to try a minigame or a duel alone:
 
 ```text

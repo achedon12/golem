@@ -72,6 +72,10 @@ projects:
         vendor: raw
 ```
 
+Poggit has been read-only since it was sunset in September 2026, along with PocketMine-MP. Its
+downloads still work, and Golem keeps a cached copy of every virion, but if Poggit goes offline,
+point `extra.golem.virions` (or `vendor: raw` entries) at virion folders or phars you keep yourself.
+
 Your source code uses each virion's own namespace (its `antigen`), and that is the namespace Golem
 registers: the shading Poggit applies when building the phar is not needed when running from
 source. Nothing to configure if your plugin already builds on Poggit.

@@ -1,8 +1,0 @@
---- # Poggit-CI manifest: https://poggit.pmmp.io/ci/achedon12/golem
-build-by-default: true
-branches:
-  - main
-projects:
-  Golem:
-    path: ""
-    icon: ".github/assets/icon.png"
