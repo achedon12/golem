@@ -42,7 +42,8 @@ final class InitCommand
         }
 
         $this->output->writeln();
-        $this->output->writeln('  Next: run <bold>vendor/bin/golem</> and watch your first golem join.');
+        $this->output->writeln('  Next: run <bold>vendor/bin/golem</> and watch your first golem join,');
+        $this->output->writeln('  or <bold>vendor/bin/golem ui</> to do it from a dashboard in your browser.');
         $this->output->writeln();
 
         return 0;

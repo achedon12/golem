@@ -4,7 +4,7 @@
 const params = new URLSearchParams(location.search)
 if (params.has('token')) {
   sessionStorage.setItem('golem-token', params.get('token'))
-  history.replaceState(null, '', location.pathname)
+  history.replaceState(null, '', location.pathname + location.hash)
 }
 const token = sessionStorage.getItem('golem-token') ?? ''
 
