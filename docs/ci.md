@@ -49,6 +49,23 @@ jobs:
           pocketmine: ${{ matrix.pocketmine }}
 ```
 
+### Testing on a fork as well
+
+```yaml
+jobs:
+  golem:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        pocketmine: ['5.44.3', 'Plutonium-Mcpe/PocketMine-MP']
+    steps:
+      - uses: actions/checkout@v7
+      - uses: achedon12/golem@v0
+        with:
+          pocketmine: ${{ matrix.pocketmine }}
+```
+
 ### Keeping the JUnit report
 
 ```yaml

@@ -45,6 +45,26 @@ jobs:
           path: golem-*junit.xml
           if-no-files-found: ignore
 
+  fork:
+    name: Fork compatibility (Plutonium)
+    runs-on: ubuntu-latest
+    # Informational: a broken release of a third-party fork must not block Golem.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+
+      - name: Golem's own tests on the latest Plutonium release
+        uses: ./
+        with:
+          path: .
+          pocketmine: Plutonium-Mcpe/PocketMine-MP
+          junit: ''
+
   analyse:
     name: PHPStan
     runs-on: ubuntu-latest

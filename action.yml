@@ -14,7 +14,7 @@ inputs:
     description: Tests folder, relative to the plugin. Defaults to composer.json extra.golem.tests, then "tests".
     default: ''
   pocketmine:
-    description: PocketMine-MP version to test against, e.g. 5.44.3. Defaults to composer.json extra.golem.pocketmine, then the latest release.
+    description: PocketMine-MP version to test against, e.g. 5.44.3, or a fork as owner/repository[@tag]. Defaults to composer.json extra.golem.pocketmine, then the latest release.
     default: ''
   filter:
     description: Only run tests whose Class::method contains this text.
