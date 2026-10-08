@@ -15,13 +15,15 @@ breaking changes; they will always be listed here.
   server (#33). `Golem.phar` is attached to every GitHub release, and built on every push to
   `main` (#37). Poggit was sunset along with PocketMine-MP, so it is not published there.
 - Golems wear a visible stone-grey skin instead of a transparent one.
-
 - `--pocketmine=owner/repository[@tag]` (and the action's `pocketmine` input) runs a PocketMine-MP
   fork that publishes releases like pmmp, now that PocketMine-MP itself has reached its end of
   support (#39).
 
 ### Fixed
 
+- The GitHub Action keeps a separate cache for each `pocketmine` value and no longer restores
+  another one's: a fork's code, which runs during the tests, could otherwise alter the cached PHP
+  build used by other runs.
 - The scoreboard reader understands newer protocols, where removals are flagged on each score
   entry instead of on the whole packet.
 - Golems never save player data on the server (their `PlayerDataSaveEvent` is cancelled), so

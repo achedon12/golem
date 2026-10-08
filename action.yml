@@ -26,13 +26,14 @@ inputs:
 runs:
   using: composite
   steps:
+    # One cache per PocketMine-MP source, never shared between them: a run executes the
+    # server it downloads, and a fork's code must not be able to tamper with what other
+    # runs restore (the PHP build, pmmp's phar...).
     - name: Cache PocketMine-MP and its PHP build
       uses: actions/cache@v6
       with:
         path: ~/.cache/golem
-        key: golem-v1-${{ runner.os }}-${{ runner.arch }}-${{ inputs.pocketmine || 'latest' }}
-        restore-keys: |
-          golem-v1-${{ runner.os }}-${{ runner.arch }}-
+        key: golem-v2-${{ runner.os }}-${{ runner.arch }}-${{ inputs.pocketmine || 'latest' }}
 
     - name: Run Golem
       shell: bash
