@@ -5,18 +5,13 @@ declare(strict_types=1);
 namespace Example\HelloWorld\Tests;
 
 use Generator;
-use Golem\Attribute\Timeout;
 use Golem\TestCase;
 
 final class LoadTest extends TestCase
 {
-    #[Timeout(600)] // golems join one after the other, about 10 ticks each
     public function testTwentyPlayersWalkingDoNotSlowTheServerDown(): Generator
     {
-        $golems = [];
-        for ($i = 1; $i <= 20; $i++) {
-            $golems[] = yield $this->golem("Walker$i");
-        }
+        $golems = yield $this->golems(20);
         foreach ($golems as $i => $golem) {
             $golem->walk($i % 2 === 0 ? 10 : -10, 6); // a few seconds of walking
         }
@@ -24,5 +19,14 @@ final class LoadTest extends TestCase
         yield $this->wait(30); // measure while they walk: the average covers the last 20 ticks
 
         $this->assertTpsAbove(18.0);
+    }
+
+    public function testNamedGolemsJoinTogether(): Generator
+    {
+        [$steve, $alex] = yield $this->golems(['Steve', 'Alex']);
+
+        $this->assertSame('Steve', $steve->name());
+        $this->assertSame('Alex', $alex->name());
+        $this->assertScoreboardContains($steve, 'Online: 2');
     }
 }

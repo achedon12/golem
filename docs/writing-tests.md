@@ -41,6 +41,7 @@ keeps ticking, and the test resumes when the value is ready.
 | Yield this | To wait for | You get back |
 | --- | --- | --- |
 | `$this->golem('Steve')` | a simulated player to join | the `Golem` |
+| `$this->golems(['Steve', 'Alex'])` or `$this->golems(20)` | several golems to join, all together | a list of `Golem`, in order |
 | `$this->wait(40)` | 40 ticks (20 ticks = 1 second) | `null` |
 | `$this->waitUntil(fn () => ..., 100)` | a condition, checked every tick | the condition's value |
 | any PocketMine `Promise` | the promise to resolve | its value |

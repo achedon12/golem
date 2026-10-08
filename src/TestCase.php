@@ -67,6 +67,24 @@ abstract class TestCase
     }
 
     /**
+     * Spawns several golems at once, all joining together, and waits until they are all
+     * in the world: a number of them (named like golem()), or one per name.
+     *
+     *     [$steve, $alex] = yield $this->golems(['Steve', 'Alex']);
+     *     $crowd = yield $this->golems(20);
+     *
+     * @param int|list<string> $golems
+     * @return Deferred<list<Golem>> yield it to get the golems, in order
+     */
+    final protected function golems(int|array $golems): Deferred
+    {
+        $factory = Runtime::get()->golems;
+        $names = is_int($golems) ? array_fill(0, max(0, $golems), null) : $golems;
+
+        return Deferred::all(array_map(static fn (?string $name) => $factory->spawn($name), $names));
+    }
+
+    /**
      * Lets the server run for a number of ticks (20 ticks = 1 second).
      *
      * @return Deferred<null>

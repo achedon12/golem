@@ -68,13 +68,9 @@ only fails on a real slowdown:
 makes a feature lag:
 
 ```php
-#[Timeout(600)] // golems join one after the other
 public function testTwentyPlayersWalkingDoNotSlowTheServerDown(): Generator
 {
-    $golems = [];
-    for ($i = 1; $i <= 20; $i++) {
-        $golems[] = yield $this->golem("Walker$i");
-    }
+    $golems = yield $this->golems(20);
     foreach ($golems as $i => $golem) {
         $golem->walk($i % 2 === 0 ? 10 : -10, 6); // a few seconds of walking
     }

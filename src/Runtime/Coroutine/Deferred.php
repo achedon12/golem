@@ -30,6 +30,41 @@ final class Deferred
     private array $callbacks = [];
 
     /**
+     * Settles once every deferred has: with their values in the same order, or with the
+     * first failure.
+     *
+     * @template V
+     * @param list<Deferred<V>> $deferreds
+     * @return Deferred<list<V>>
+     */
+    public static function all(array $deferreds): self
+    {
+        /** @var Deferred<list<V>> $all */
+        $all = new self();
+        $values = [];
+        $pending = count($deferreds);
+        if ($pending === 0) {
+            $all->resolve([]);
+
+            return $all;
+        }
+        foreach ($deferreds as $index => $deferred) {
+            $deferred->then(static function (mixed $value) use ($all, &$values, &$pending, $index, $deferreds): void {
+                $values[$index] = $value;
+                if (--$pending === 0) {
+                    $ordered = [];
+                    foreach (array_keys($deferreds) as $key) {
+                        $ordered[] = $values[$key];
+                    }
+                    $all->resolve($ordered);
+                }
+            }, static fn (\Throwable $reason) => $all->reject($reason));
+        }
+
+        return $all;
+    }
+
+    /**
      * @param T $value
      */
     public function resolve(mixed $value = null): void
