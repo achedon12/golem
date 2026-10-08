@@ -7,6 +7,8 @@ namespace Golem;
 use Golem\Assert\Assertions;
 use Golem\Runtime\Coroutine\Deferred;
 use Golem\Runtime\Runtime;
+use pocketmine\item\Item;
+use pocketmine\item\StringToItemParser;
 use pocketmine\plugin\Plugin;
 use pocketmine\Server;
 use pocketmine\world\Position;
@@ -147,6 +149,16 @@ abstract class TestCase
     final protected function loadWorld(string $path): World
     {
         return Runtime::get()->worlds->fromTemplate($path);
+    }
+
+    /**
+     * An item by its name, as in /give: "diamond_sword", "oak_planks"…
+     */
+    final protected function item(string $name, int $count = 1): Item
+    {
+        $item = StringToItemParser::getInstance()->parse($name) ?? throw new \InvalidArgumentException("There is no item named \"$name\"");
+
+        return $item->setCount($count);
     }
 
     /**
