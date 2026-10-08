@@ -7,30 +7,46 @@ breaking changes; they will always be listed here.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-08
+
 ### Added
 
+Writing tests:
+
 - `assertMatchesSnapshot()` and `--update-snapshots` (#43).
-- `--coverage` lists the commands and event listeners of the plugin that the tests never reached
-  (#45).
-- `--compare=<version or fork>` runs the tests on two servers and reports what changes, grouped
-  by cause, also in the GitHub Actions job summary (#44).
-- `golem fuzz` has golems do random things to the plugin and reports every exception, with the
-  actions that led to it and a seed to replay them (#46).
-- `golem bench` brings golems in a few at a time and reports TPS, tick usage and memory as players
-  are added, and the plugin's slowest listeners and tasks; `--min-tps` fails the run below a
-  threshold. `assertTpsAbove()` checks the TPS in a test, and `/golem spawn <name> <count>` spawns
-  a crowd on a development server (#47).
-- `/golem record` on a development server records what players do and writes a Golem test that
-  replays it (#59).
-- `--coverage` also measures the lines of `src/` that ran, with pcov or the Xdebug build that
-  ships with PocketMine's PHP, and `--coverage-clover=<file>` writes them for Codecov (#58).
-- `--teamcity` reports with TeamCity service messages (#57).
+- `golems(20)` or `golems(['Steve', 'Alex'])` spawns several golems that join together (#53).
+- `assertTpsAbove()` checks the server's TPS in a test (#47).
+
+Running them:
+
 - `--parallel=<n>` (and the action's `parallel` input) splits the test files between several
   servers running side by side: the example suite runs in 20 s instead of 43 s on 4 servers (#56).
-- `golem bench --save-baseline` and `--baseline` compare a benchmark with an earlier one and fail
-  on a performance regression, also in the GitHub Actions job summary (#55).
-- `golem fuzz --write-tests` writes a test that replays the actions leading to each crash (#54).
-- `golems(20)` or `golems(['Steve', 'Alex'])` spawns several golems that join together (#53).
+- `--compare=<version or fork>` runs the tests on two servers and reports what changes, grouped
+  by cause, also in the GitHub Actions job summary (#44).
+- `--coverage` lists the commands, event listeners and lines of `src/` the tests never reached
+  (#45). Lines need pcov or Xdebug: Golem turns on the Xdebug build that ships with PocketMine's
+  PHP. `--coverage-clover=<file>` writes them for Codecov (#58).
+- `--teamcity` reports with TeamCity service messages (#57).
+
+Finding bugs and slowdowns:
+
+- `golem fuzz` has golems do random things to the plugin and reports every exception, with the
+  actions that led to it and a seed to replay them (#46); `--write-tests` turns each crash into a
+  test that replays it (#54).
+- `golem bench` brings golems in a few at a time and reports TPS, tick usage and memory as players
+  are added, and the plugin's slowest listeners and tasks; `--min-tps` fails the run below a
+  threshold (#47). `--save-baseline` and `--baseline` compare with an earlier run and fail on a
+  performance regression, also in the GitHub Actions job summary (#55).
+
+On a development server:
+
+- `/golem spawn <name> <count>` spawns a crowd (#47).
+- `/golem record` records what players do and writes a Golem test that replays it (#59).
+
+### Changed
+
+- `v0`, which the GitHub Action is used with (`achedon12/golem@v0`), is now a branch instead of a
+  tag: Packagist published the tag as a version and refused to let it move. `@v0` works as before.
 
 ### Fixed
 
@@ -123,6 +139,7 @@ First public release.
 - `golem init` to scaffold a first test and a workflow.
 - A composite GitHub Action, `achedon12/golem@v0`.
 
+[0.4.0]: https://github.com/achedon12/golem/releases/tag/v0.4.0
 [0.3.0]: https://github.com/achedon12/golem/releases/tag/v0.3.0
 [0.2.0]: https://github.com/achedon12/golem/releases/tag/v0.2.0
 [0.1.1]: https://github.com/achedon12/golem/releases/tag/v0.1.1
