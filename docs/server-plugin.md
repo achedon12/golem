@@ -26,6 +26,7 @@ Keep the plugin off production servers.
 | Command | What it does |
 | --- | --- |
 | `/golem spawn <name>` | spawns a golem. Names of real players are refused: an online one would be kicked, and an op or a player with saved data would lend the golem their rights and data |
+| `/golem spawn <name> <count>` | spawns a crowd, `<name>1` to `<name><count>` (at most 100), one every other tick: see [Benchmark](benchmark.md#on-a-development-server) |
 | `/golem list` | lists the golems online |
 | `/golem remove <name\|all>` | disconnects golems |
 | `/golem <name> chat <message>` | chats as the golem; messages starting with `/` run as commands |

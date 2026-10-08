@@ -110,6 +110,28 @@ final class GolemCommandTest extends TestCase
         $this->assertReceivedMessage($this->admin, '<Admin> hi Bob');
     }
 
+    public function testSpawnsACrowd(): Generator
+    {
+        $this->admin->command('golem spawn Bot 5');
+        yield $this->waitUntil(
+            fn () => in_array('[Golem] 5 golem(s) joined the server', $this->admin->messages(), true),
+            200,
+            'the crowd to join',
+        );
+
+        foreach (['Bot1', 'Bot3', 'Bot5'] as $name) {
+            $this->assertInstanceOf(Player::class, $this->server()->getPlayerExact($name));
+        }
+    }
+
+    public function testRefusesACrowdTooLarge(): void
+    {
+        $this->admin->command('golem spawn Bot 500');
+
+        $this->assertReceivedMessage($this->admin, 'The count must be a number from 1 to 100');
+        $this->assertNull($this->server()->getPlayerExact('Bot1'));
+    }
+
     /**
      * Spawns Bob through the plugin and waits until it says he is in.
      *

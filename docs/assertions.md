@@ -53,6 +53,7 @@ Text comparisons ignore colour codes on both sides and match substrings.
 | `assertAt(Golem $golem, Vector3 $position, float $tolerance = 0.5)` | the golem stands within `$tolerance` blocks of the position |
 | `assertHasPermission(Golem $golem, string $permission)` / `assertNotHasPermission(...)` | permission check |
 | `assertBlockAt(Vector3 $position, Block $block)` | the default world has that block, in the same state, at the position |
+| `assertTpsAbove(float $tps)` | the server ran faster than `$tps` ticks per second, on average over the last second (see [Benchmark](benchmark.md#in-a-test)) |
 
 ## Snapshots
 

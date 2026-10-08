@@ -20,7 +20,7 @@ final class Application
      */
     public function run(array $argv): int
     {
-        $options = Options::parse(array_slice($argv, 1), [...RunCommand::VALUE_OPTIONS, ...Command\FuzzCommand::VALUE_OPTIONS]);
+        $options = Options::parse(array_slice($argv, 1), [...RunCommand::VALUE_OPTIONS, ...Command\FuzzCommand::VALUE_OPTIONS, ...Command\BenchCommand::VALUE_OPTIONS]);
         $output = Output::forStdout(match (true) {
             $options->has('no-ansi') => false,
             $options->has('ansi') => true,
@@ -43,6 +43,7 @@ final class Application
                 'run' => (new RunCommand($output, $this->packageRoot . '/src'))->execute($options),
                 'init' => (new InitCommand($output, $this->packageRoot . '/stubs'))->execute($options),
                 'fuzz' => (new Command\FuzzCommand($output, $this->packageRoot . '/src'))->execute($options),
+                'bench' => (new Command\BenchCommand($output, $this->packageRoot . '/src'))->execute($options),
                 default => throw new UserError("Unknown command \"{$options->command}\". Try `golem --help`."),
             };
         } catch (UserError $e) {
@@ -67,6 +68,8 @@ final class Application
               golem init                Add an example test and a GitHub Actions workflow
               golem fuzz                Let golems do random things to the plugin and report crashes
                                         (--duration=60 --golems=3 --seed=<n>)
+              golem bench               Bring golems in a few at a time and measure TPS, tick usage, memory
+                                        (--players=20 --duration=60 --min-tps=<tps>)
 
             <yellow>Options</>
               --filter=<text>           Only run tests whose Class::method contains <text>
