@@ -7,6 +7,8 @@ breaking changes; they will always be listed here.
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-08
+
 ### Added
 
 - The dashboard has a checkbox per class and per test, to run exactly the tests you pick (or only
@@ -175,6 +177,7 @@ First public release.
 - `golem init` to scaffold a first test and a workflow.
 - A composite GitHub Action, `achedon12/golem@v0`.
 
+[0.6.0]: https://github.com/achedon12/golem/releases/tag/v0.6.0
 [0.5.1]: https://github.com/achedon12/golem/releases/tag/v0.5.1
 [0.5.0]: https://github.com/achedon12/golem/releases/tag/v0.5.0
 [0.4.0]: https://github.com/achedon12/golem/releases/tag/v0.4.0
