@@ -19,6 +19,7 @@ golem init [--no-workflow]
 | `--path=<dir>` | current folder | The plugin folder, containing `plugin.yml` and `src/` |
 | `--tests=<dir>` | `tests` | The tests folder, relative to the plugin |
 | `--pocketmine=<version>` | `latest` | The PocketMine-MP version to run, e.g. `5.44.3`, or a fork: `owner/repository` (its latest release) or `owner/repository@tag` (see [Forks](#pocketmine-mp-forks)) |
+| `--compare=<version>` | | Run the tests on the configured version, then on this one (a version or a fork), and report what changes (see [Forks](#pocketmine-mp-forks)) |
 | `--log-junit=<file>` | | Also write a JUnit XML report (needs `ext-dom`) |
 | `--timeout=<seconds>` | `600` | Stop a run that takes longer than this |
 | `--update-snapshots` | | Rewrite the snapshots of `assertMatchesSnapshot()` instead of comparing them |
@@ -98,6 +99,29 @@ classes change shape (`PlaySoundPacket::create()` takes another argument, `SetSc
 `TYPE_CHANGE` constant), and they sometimes change gameplay too. Golem's own example plugin passes
 on pmmp 5.44.3 but not on Plutonium 5.118.8, for exactly those reasons, and a test caught that
 Plutonium computes fall damage differently (a 10 block fall costs 6 health instead of 7).
+
+### Migration report
+
+`--compare` answers *what breaks if I move to that fork?* in one command: it runs your tests on
+the configured version (latest pmmp by default), then on the fork, and lists the tests whose
+outcome changed, grouped by cause:
+
+```text
+$ vendor/bin/golem --compare=Plutonium-Mcpe/PocketMine-MP
+
+  Migration report 5.44.3 → 5.118.8 (Plutonium-Mcpe/PocketMine-MP)
+
+  ✗ passed → failed  1 test
+    on 5.118.8 (Plutonium-Mcpe/PocketMine-MP): a 10 block fall costs 7 health
+    expected 13 actual 14.0
+    · MovementTest › falling hurts
+
+  Tests: 23 behave the same, 1 break, 0 get fixed, 0 other changes
+```
+
+It exits with 1 when a test that passes on the first server breaks on the second, and on GitHub
+Actions it also writes the table to the job summary. Tests broken by the same error (a packet
+whose signature changed, say) are shown once, with the list of affected tests.
 
 Golem itself is checked against Plutonium in its CI. A fork that rewrites PocketMine's network
 internals may need Golem to adapt: please open an issue.

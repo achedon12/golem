@@ -10,9 +10,12 @@ use Golem\Cli\Environment\Toolchain;
 use Golem\Cli\Options;
 use Golem\Cli\Output;
 use Golem\Cli\Project;
+use Golem\Cli\Report\CompactReporter;
 use Golem\Cli\Report\ConsoleReporter;
 use Golem\Cli\Report\GitHubReporter;
 use Golem\Cli\Report\JUnitReporter;
+use Golem\Cli\Report\MigrationReport;
+use Golem\Cli\Report\Reporter;
 use Golem\Cli\Report\RunReport;
 use Golem\Cli\Report\TestResult;
 use Golem\Cli\Server\ServerProcess;
@@ -24,7 +27,7 @@ use Golem\Cli\UserError;
  */
 final class RunCommand
 {
-    public const VALUE_OPTIONS = ['path', 'tests', 'filter', 'pocketmine', 'php', 'phar', 'log-junit', 'timeout'];
+    public const VALUE_OPTIONS = ['path', 'tests', 'filter', 'pocketmine', 'php', 'phar', 'log-junit', 'timeout', 'compare'];
 
     public function __construct(
         private readonly Output $output,
@@ -92,19 +95,60 @@ final class RunCommand
 
     private function runOnce(Options $options): int
     {
-        $startedAt = microtime(true);
+        if ($options->get('compare') !== null) {
+            return $this->compare($options, (string) $options->get('compare'));
+        }
+
         $project = $this->project($options);
         $junit = $options->get('log-junit');
         if ($junit !== null && !class_exists(\DOMDocument::class)) {
             throw new UserError('--log-junit needs the dom extension in the PHP running Golem.');
         }
 
+        $report = $this->runSuite($options, $project, $project->pocketmineVersion, new ConsoleReporter($this->output, $project->root));
+
+        if ($junit !== null) {
+            (new JUnitReporter())->write($report, $junit);
+        }
+        if (GitHubReporter::isAvailable()) {
+            (new GitHubReporter($project->root))->write($report);
+        }
+
+        return $report->isSuccessful() ? 0 : 1;
+    }
+
+    /**
+     * Runs the tests on two servers and reports what changes between them.
+     */
+    private function compare(Options $options, string $target): int
+    {
+        $project = $this->project($options);
+        $reporter = new CompactReporter($this->output);
+        $from = $this->runSuite($options, $project, $project->pocketmineVersion, $reporter);
+        $to = $this->runSuite($options, $project, $target, $reporter);
+
+        $migration = new MigrationReport($from, $to);
+        $migration->render($this->output);
+
+        $summary = getenv('GITHUB_STEP_SUMMARY');
+        if (is_string($summary) && $summary !== '') {
+            file_put_contents($summary, $migration->markdown(), FILE_APPEND);
+        }
+
+        $completed = !$from->crashed && $from->abortReason === null && !$to->crashed && $to->abortReason === null;
+
+        return $completed && $migration->regressions() === 0 ? 0 : 1;
+    }
+
+    private function runSuite(Options $options, Project $project, string $pocketmine, Reporter $reporter): RunReport
+    {
+        $startedAt = microtime(true);
         $cacheDirectory = Toolchain::defaultCacheDirectory();
         $toolchain = new Toolchain($cacheDirectory, new Downloader(), $this->output);
         $php = $options->get('php') ?? $toolchain->php();
-        [$version, $phar] = $options->get('phar') !== null
+        [$version, $phar] = $options->get('phar') !== null && $options->get('compare') === null
             ? ['custom', (string) $options->get('phar')]
-            : $toolchain->pocketmine($project->pocketmineVersion);
+            : $toolchain->pocketmine($pocketmine);
 
         $this->output->writeln();
         $this->output->writeln(sprintf('  <bold>Golem</> <gray>is starting PocketMine-MP %s…</>', Output::escape($version)));
@@ -115,8 +159,8 @@ final class RunCommand
         }
         $process = new ServerProcess($php, $phar, $workspace, $options->has('verbose'));
         register_shutdown_function($process->stop(...)); // never leave a server behind
-        $reporter = new ConsoleReporter($this->output, $project->root);
         $report = new RunReport();
+        $report->label = $version;
 
         try {
             $finished = $process->run(function (array $event) use ($report, $reporter, $startedAt): void {
@@ -141,13 +185,6 @@ final class RunCommand
             $report->crashed = !$finished;
             $report->totalSeconds = microtime(true) - $startedAt;
             $reporter->finished($report, $report->isSuccessful() ? '' : $process->logTail());
-
-            if ($junit !== null) {
-                (new JUnitReporter())->write($report, $junit);
-            }
-            if (GitHubReporter::isAvailable()) {
-                (new GitHubReporter($project->root))->write($report);
-            }
         } finally {
             if ($options->has('keep')) {
                 $this->output->writeln("  <gray>Server folder kept at {$workspace->path}</>");
@@ -156,6 +193,6 @@ final class RunCommand
             }
         }
 
-        return $report->isSuccessful() ? 0 : 1;
+        return $report;
     }
 }
