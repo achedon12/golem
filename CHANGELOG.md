@@ -7,6 +7,14 @@ breaking changes; they will always be listed here.
 
 ## [Unreleased]
 
+### Fixed
+
+- A dashboard link to a tab (`#scenario`, `#bench`…) opened the Tests tab instead.
+
+### Changed
+
+- The home page, the README, Getting started and `golem init` point to the dashboard.
+
 ## [0.5.0] - 2026-10-08
 
 ### Added

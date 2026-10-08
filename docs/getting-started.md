@@ -47,6 +47,9 @@ vendor/bin/golem
 The first run downloads PocketMine and its PHP build (a few dozen MB, once). After that, a run takes a couple of
 seconds to boot the server plus well under a second per test.
 
+Prefer clicking? `vendor/bin/golem ui` opens a [dashboard](dashboard.md) in your browser to run the
+tests, follow them live, and build new ones without writing PHP.
+
 ## 4. Write a real test
 
 Say your plugin gives new players a compass when they join. Replace the example with:

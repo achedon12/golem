@@ -7,7 +7,7 @@ description: "Golem boots a real PocketMine-MP server, loads your plugin from so
 hero:
   name: golem
   text: Test your plugin the way players use it
-  tagline: One command boots a real PocketMine-MP server, loads your plugin from source and fills it with simulated players. No mocks, no client, no more testing by hand.
+  tagline: One command boots a real PocketMine-MP server, loads your plugin from source and fills it with simulated players. Run it in your terminal, in CI, or from a dashboard in your browser. No mocks, no client, no more testing by hand.
   image:
     src: /logo.svg
     alt: The Golem pixel-art head
@@ -23,6 +23,11 @@ hero:
       link: https://github.com/achedon12/golem
 
 features:
+  - icon: 🧭
+    title: A dashboard in your browser
+    details: "vendor/bin/golem ui: run your tests and watch them live, read failures next to the code, see coverage line by line, build tests without writing PHP."
+    link: /dashboard
+    linkText: Try the live demo
   - icon: 🖥️
     title: A real server
     details: Your plugin runs on the PocketMine-MP version you pick, with every event fired in the real order. If it passes in Golem, it works in production.
@@ -44,6 +49,11 @@ features:
     details: Expected versus actual, the failing line of your test, and the server log when something crashes. Minecraft-aware assertions included.
     link: /assertions
     linkText: All assertions
+  - icon: 🐛
+    title: Finds what you missed
+    details: The fuzzer has golems do random things to your plugin and turns every crash into a test. The benchmark tells you how many players it holds.
+    link: /fuzzing
+    linkText: Fuzzing and benchmarks
   - icon: ✅
     title: Made for CI
     details: JUnit reports, failures annotated on the pull request, and a GitHub Action that fits in one line.
@@ -113,10 +123,11 @@ vendor/bin/golem init
 
 ### Run
 
-<p>Boots a server, runs every test, stops it.</p>
+<p>Boots a server, runs every test, stops it. Or open the dashboard.</p>
 
 ```bash
 vendor/bin/golem
+vendor/bin/golem ui
 ```
 
 </div>
@@ -144,6 +155,19 @@ vendor/bin/golem
 
 </div>
 </div>
+</section>
+
+<section class="home-section">
+
+## Or click through it all
+
+<p class="lead"><code>vendor/bin/golem ui</code> opens a dashboard on your machine: pick tests, watch them pass live, open a failure next to the line that broke, see which lines of your plugin your tests never ran. Fuzz, benchmark, and build tests without writing PHP, from the same page.</p>
+
+<a href="/golem/demo/index.html" target="_self" class="dashboard-demo">
+  <img src="/dashboard.webp" alt="The Golem dashboard: the tests of a plugin, a failure with the expected and actual values and the line that failed" width="1600" height="1000">
+  <span>Open the live demo →</span>
+</a>
+
 </section>
 
 <section class="home-section">

@@ -17,7 +17,8 @@
 **Golem** tests your PocketMine-MP plugin the way your players use it. One command boots a real
 server, loads your plugin from source, spawns simulated players (*golems*) that join, chat, run
 commands, click forms and break blocks, then checks what happened. No mocks, no client, no manual
-testing on a local server ever again.
+testing on a local server ever again. Run it in your terminal, in CI, or from **a dashboard in your
+browser** (`vendor/bin/golem ui`, [live demo](https://achedon12.github.io/golem/demo/)).
 
 ```php
 final class WelcomeTest extends TestCase
@@ -68,6 +69,10 @@ and trying things. Golem automates exactly that:
   a condition tick by tick. Cooldowns, delayed tasks and async work are testable.
 - **Zero setup.** Golem downloads the official PocketMine PHP build and server phar, caches them,
   and creates a fresh world for every run.
+- **A dashboard.** `vendor/bin/golem ui` runs your tests in the browser, shows failures next to the
+  code and coverage line by line, and builds tests without writing PHP.
+- **Finds what you missed.** `golem fuzz` turns random golem actions into crash reports and tests;
+  `golem bench` measures how many players your plugin holds.
 - **Made for CI.** JUnit reports, a one-line GitHub Action, and failures annotated right on the
   pull request diff.
 
