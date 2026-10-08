@@ -56,6 +56,16 @@ The **Benchmark** tab runs [`golem bench`](benchmark.md): the TPS and tick usage
 fill a chart and a table as golems join, then the plugin's slowest listeners and tasks are listed.
 The chart also shows your previous benchmarks, faded, to see whether a change made things slower.
 
+## History
+
+Every run started from the dashboard is kept in the **History** tab, with its settings and
+result: **Run again** starts it once more, with the same settings, and a star pins the runs you
+use often so they are never dropped. Your benchmarks are drawn together, to follow the plugin's
+performance over time.
+
+The history, the drafts of the scenario editor and the benchmarks are kept in your browser only
+(its local storage): clearing the site's data clears them.
+
 ## Options
 
 | Option | Default | Description |

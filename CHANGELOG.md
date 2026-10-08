@@ -14,6 +14,8 @@ breaking changes; they will always be listed here.
 - `--log-events=<file>` writes a run as JSON lines (#71).
 - The dashboard's scenario editor builds a test from golems, actions and checks, writes it and runs
   it (#73).
+- The dashboard keeps the last runs and pinned settings in the browser, to run them again in a
+  click, and draws the benchmarks over time (#74).
 - `$this->item('diamond_sword', 3)` in tests gets an item by name.
 - The dashboard runs `golem fuzz` and `golem bench`, with the benchmark drawn as a chart (#72).
 

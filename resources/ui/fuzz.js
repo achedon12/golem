@@ -60,6 +60,17 @@ export function fuzzView (project) {
     }
   }
 
+  window.addEventListener('golem-rerun', (event) => {
+    const { kind, options = {} } = event.detail
+    if (kind !== 'fuzz' || current) return
+    duration.value = options.duration ?? 60
+    golems.value = options.golems ?? 3
+    seed.value = options.seed ?? ''
+    writeTests.checked = options.writeTests !== false
+    version.value = options.pocketmine ?? ''
+    start()
+  })
+
   return h('section', { class: 'content wide' },
     h('h2', {}, 'Fuzzing'),
     h('p', { class: 'lead' }, 'Golems run your commands with odd arguments, answer forms with invalid values, click, fight and reconnect. Every exception is reported with what led to it.'),

@@ -115,6 +115,16 @@ export function benchView (project) {
     }
   }
 
+  window.addEventListener('golem-rerun', (event) => {
+    const { kind, options = {} } = event.detail
+    if (kind !== 'bench' || current) return
+    players.value = options.players ?? 50
+    duration.value = options.duration ?? 60
+    minTps.value = options.minTps ?? ''
+    version.value = options.pocketmine ?? ''
+    start()
+  })
+
   render([])
   return h('section', { class: 'content wide' },
     h('h2', {}, 'Benchmark'),
