@@ -31,6 +31,16 @@ test, choose the PocketMine-MP version or fork, the number of servers, coverage,
   each file's code with the lines that ran in green and the others in red;
 - the console output of the run is there too, as the command line prints it.
 
+## Fuzzing and benchmarks
+
+The **Fuzz** tab runs [`golem fuzz`](fuzzing.md) with its duration, number of golems and seed,
+and shows the actions and crashes as they come, the seed to replay the run, and the tests written
+for each crash.
+
+The **Benchmark** tab runs [`golem bench`](benchmark.md): the TPS and tick usage of each step
+fill a chart and a table as golems join, then the plugin's slowest listeners and tasks are listed.
+The chart also shows your previous benchmarks, faded, to see whether a change made things slower.
+
 ## Options
 
 | Option | Default | Description |

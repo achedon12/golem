@@ -1,9 +1,13 @@
 import { api, h } from './api.js'
 import { testsView } from './tests.js'
+import { fuzzView } from './fuzz.js'
+import { benchView } from './bench.js'
 
 // Each section of the dashboard: a tab, and a function that builds its view once.
 const sections = [
   { id: 'tests', label: 'Tests', view: testsView },
+  { id: 'fuzz', label: 'Fuzz', view: fuzzView },
+  { id: 'bench', label: 'Benchmark', view: benchView },
 ]
 
 const tabs = document.getElementById('tabs')
