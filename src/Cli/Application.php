@@ -69,7 +69,8 @@ final class Application
               golem fuzz                Let golems do random things to the plugin and report crashes
                                         (--duration=60 --golems=3 --seed=<n> --write-tests)
               golem bench               Bring golems in a few at a time and measure TPS, tick usage, memory
-                                        (--players=20 --duration=60 --min-tps=<tps>)
+                                        (--players=20 --duration=60 --min-tps=<tps>
+                                         --save-baseline=<file> --baseline=<file>)
 
             <yellow>Options</>
               --filter=<text>           Only run tests whose Class::method contains <text>
