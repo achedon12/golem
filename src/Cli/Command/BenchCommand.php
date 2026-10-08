@@ -9,6 +9,7 @@ use Golem\Cli\Environment\Toolchain;
 use Golem\Cli\Options;
 use Golem\Cli\Output;
 use Golem\Cli\Project;
+use Golem\Cli\Report\BenchComparison;
 use Golem\Cli\Server\ServerProcess;
 use Golem\Cli\Server\Workspace;
 use Golem\Cli\UserError;
@@ -18,7 +19,7 @@ use Golem\Cli\UserError;
  */
 final class BenchCommand
 {
-    public const VALUE_OPTIONS = ['players', 'duration', 'min-tps'];
+    public const VALUE_OPTIONS = ['players', 'duration', 'min-tps', 'baseline', 'save-baseline'];
 
     private const MAX_PLAYERS = 200;
 
@@ -39,6 +40,8 @@ final class BenchCommand
         }
         $duration = max(10, (int) ($options->get('duration') ?? 60));
         $minTps = $options->get('min-tps') !== null ? (float) $options->get('min-tps') : null;
+        $baselineFile = $options->get('baseline');
+        $baseline = $baselineFile !== null ? BenchComparison::load($baselineFile) : null;
 
         $count = min(self::STEPS, $players);
         $steps = array_values(array_unique(array_map(static fn (int $i) => (int) round($players * $i / $count), range(1, $count))));
@@ -67,19 +70,26 @@ final class BenchCommand
         $process = new ServerProcess($php, $phar, $workspace, $options->has('verbose'));
         register_shutdown_function($process->stop(...));
 
-        /** @var list<array{players: int, tps: float}> $results */
+        /** @var list<array{players: int, tps: float, usage: float, usageMax: float, memory: int}> $results */
         $results = [];
         /** @var list<array<string, mixed>> $listeners */
         $listeners = [];
         $abort = null;
+        $root = $project->root;
 
         try {
-            $finished = $process->run(function (array $event) use (&$results, &$listeners, &$abort): void {
+            $finished = $process->run(function (array $event) use (&$results, &$listeners, &$abort, $root): void {
                 switch ($event['type'] ?? null) {
                     case 'bench_step':
                         $players = (int) ($event['players'] ?? 0);
                         $tps = (float) ($event['tps'] ?? 0);
-                        $results[] = ['players' => $players, 'tps' => $tps];
+                        $results[] = [
+                            'players' => $players,
+                            'tps' => $tps,
+                            'usage' => (float) ($event['usage'] ?? 0),
+                            'usageMax' => (float) ($event['usageMax'] ?? 0),
+                            'memory' => (int) ($event['memory'] ?? 0),
+                        ];
                         $this->output->writeln(sprintf(
                             '  %7d   %s   %8s / %-8s   %8s',
                             $players,
@@ -90,7 +100,14 @@ final class BenchCommand
                         ));
                         break;
                     case 'bench_listeners':
-                        $listeners = array_values(array_filter((array) ($event['listeners'] ?? []), 'is_array'));
+                        $listeners = [];
+                        foreach ((array) ($event['listeners'] ?? []) as $listener) {
+                            if (is_array($listener)) {
+                                // paths in task names differ between checkouts: keep them relative
+                                $name = is_string($listener['name'] ?? null) ? $listener['name'] : '?';
+                                $listeners[] = ['name' => str_replace($root . '/', '', $name)] + $listener;
+                            }
+                        }
                         break;
                     case 'abort':
                         $abort = is_string($event['message'] ?? null) ? $event['message'] : 'Aborted';
@@ -116,15 +133,34 @@ final class BenchCommand
             return 1;
         }
 
-        $this->slowest($listeners, $project->name, $project->root);
+        $this->slowest(array_slice($listeners, 0, 5), $project->name);
+        $status = $this->verdict($results, $minTps);
 
-        return $this->verdict($results, $minTps);
+        $current = ['plugin' => $project->name, 'pocketmine' => $version, 'steps' => $results, 'listeners' => $listeners];
+        if ($options->get('save-baseline') !== null) {
+            BenchComparison::save($current, (string) $options->get('save-baseline'));
+            $this->output->writeln(sprintf('  <gray>Saved the results to</> <cyan>%s</>', Output::escape((string) $options->get('save-baseline'))));
+            $this->output->writeln();
+        }
+        if ($baseline !== null && $baselineFile !== null) {
+            $comparison = new BenchComparison($baseline, $current);
+            $comparison->render($this->output, $baselineFile);
+            $summary = getenv('GITHUB_STEP_SUMMARY');
+            if (is_string($summary) && $summary !== '') {
+                file_put_contents($summary, $comparison->markdown($baselineFile), FILE_APPEND);
+            }
+            if ($comparison->regressions() > 0) {
+                $status = 1;
+            }
+        }
+
+        return $status;
     }
 
     /**
      * @param list<array<string, mixed>> $listeners
      */
-    private function slowest(array $listeners, string $plugin, string $root): void
+    private function slowest(array $listeners, string $plugin): void
     {
         if ($listeners === []) {
             $this->output->writeln(sprintf('  <gray>No listener or task of %s ran during the benchmark.</>', Output::escape($plugin)));
@@ -137,7 +173,7 @@ final class BenchCommand
         foreach ($listeners as $listener) {
             $this->output->writeln(sprintf(
                 '    %-58s <gray>%7d calls  %8.3f ms avg  %8.1f ms total</>',
-                Output::escape(self::shorten(str_replace($root . '/', '', is_string($listener['name'] ?? null) ? $listener['name'] : '?'))),
+                Output::escape(self::shorten(is_string($listener['name'] ?? null) ? $listener['name'] : '?')),
                 (int) ($listener['count'] ?? 0),
                 (float) ($listener['average'] ?? 0),
                 (float) ($listener['total'] ?? 0),
@@ -147,7 +183,7 @@ final class BenchCommand
     }
 
     /**
-     * @param list<array{players: int, tps: float}> $results
+     * @param list<array{players: int, tps: float, usage: float, usageMax: float, memory: int}> $results
      */
     private function verdict(array $results, ?float $minTps): int
     {

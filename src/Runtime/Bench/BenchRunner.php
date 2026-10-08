@@ -196,7 +196,8 @@ final class BenchRunner
     }
 
     /**
-     * The plugin's listeners and tasks that took the most time, from PocketMine's timings.
+     * The plugin's listeners and tasks that took the most time, from PocketMine's timings,
+     * slowest first.
      *
      * @return list<array{name: string, count: int, total: float, average: float, peak: float}> times in milliseconds
      */
@@ -218,6 +219,6 @@ final class BenchRunner
         }
         usort($records, static fn (array $a, array $b) => $b['total'] <=> $a['total']);
 
-        return array_slice($records, 0, 5);
+        return array_slice($records, 0, 50);
     }
 }

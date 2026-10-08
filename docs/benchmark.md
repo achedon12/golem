@@ -44,6 +44,8 @@ vendor/bin/golem bench --players=100
 | `--players=<count>` | `20` | How many golems in the end, at most `200`. They come in 5 steps |
 | `--duration=<seconds>` | `60` | How long to measure in all, split between the steps |
 | `--min-tps=<tps>` | | Exit with `1` if the TPS falls below this at any step |
+| `--save-baseline=<file>` | | Save the results as JSON, to compare later runs with |
+| `--baseline=<file>` | | Compare with saved results and exit with `1` on a regression (see [Baselines](#baselines)) |
 
 `--path`, `--pocketmine`, `--php`, `--phar` and `--verbose` work as for
 [`golem run`](configuration.md#command-line).
@@ -60,6 +62,56 @@ only fails on a real slowdown:
 
 ```yaml
 - run: vendor/bin/golem bench --players=30 --duration=30 --min-tps=15
+```
+
+## Baselines
+
+Save the results of a run, then compare a later run with them:
+
+```bash
+vendor/bin/golem bench --players=50 --save-baseline=bench.json
+# … change the plugin …
+vendor/bin/golem bench --players=50 --baseline=bench.json
+```
+
+```text
+  Compared with bench.json (LagPlugin, PocketMine-MP 5.44.3)
+  Players     TPS            Tick usage avg       Memory
+       10    20.0 (=)        12.3% (+7.9 pt)       96 MB (=)
+       20    20.0 (=)        22.5% (+11.8 pt)     102 MB (+2 MB)
+  ↑ lag\Main->onMove(PlayerMoveEvent) 0.263 → 1.075 ms avg (×4.1)
+
+  3 performance regression(s).
+```
+
+A step regresses when the TPS drops by one or more, or when the tick usage grows by more than 30%
+and at least 2 points; a listener or task when its average time grows by half and it took at least
+a millisecond in all. Smaller differences are noise between runs. Steps are matched by number of
+players, so use the same `--players` as the baseline.
+
+Benchmarks only compare on the same machine. In a pull request, run both on the same runner:
+first the target branch, then the pull request. The comparison also goes to the job summary.
+
+```yaml
+name: Benchmark
+on: pull_request
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.base_ref }}
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+      - run: composer install --no-interaction
+      - run: vendor/bin/golem bench --players=30 --save-baseline=${{ runner.temp }}/bench.json
+
+      - uses: actions/checkout@v7
+      - run: composer install --no-interaction
+      - run: vendor/bin/golem bench --players=30 --baseline=${{ runner.temp }}/bench.json
 ```
 
 ## In a test
