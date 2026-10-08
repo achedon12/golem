@@ -23,6 +23,11 @@ breaking changes; they will always be listed here.
   summary, also added to the GitHub Actions job summary. The action's `comment` input posts it on
   the pull request and keeps it up to date; `report-html` writes the HTML report (#89).
 
+- `golem compat <plugin...>` runs the tests alone, then with other plugins (phars, folders or
+  Poggit names), and reports the tests that break and new command conflicts; `--with` loads
+  other plugins in a run (#90).
+- Every run warns about commands of the plugin that another plugin takes, or takes from it.
+
 ### Changed
 
 - `golem --watch` no longer reacts to snapshots written by the tests.

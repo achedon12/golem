@@ -27,12 +27,13 @@ PAGES = {
     'fuzzing.md': ('Fuzzing', 'Fuzzing'),
     'benchmark.md': ('Benchmark', 'Benchmark'),
     'mutation.md': ('Mutation-Testing', 'Mutation testing'),
+    'compatibility.md': ('Compatibility', 'Compatibility'),
     'dashboard.md': ('Dashboard', 'Dashboard'),
     'configuration.md': ('Configuration', 'Configuration'),
     'ci.md': ('Continuous-Integration', 'Continuous integration'),
     'how-it-works.md': ('How-It-Works', 'How it works'),
 }
-GUIDE = ['getting-started.md', 'writing-tests.md', 'golems.md', 'assertions.md', 'server-plugin.md', 'fuzzing.md', 'benchmark.md', 'mutation.md', 'dashboard.md']
+GUIDE = ['getting-started.md', 'writing-tests.md', 'golems.md', 'assertions.md', 'server-plugin.md', 'fuzzing.md', 'benchmark.md', 'mutation.md', 'compatibility.md', 'dashboard.md']
 REFERENCE = ['configuration.md', 'ci.md', 'how-it-works.md']
 
 LINK = re.compile(r'\]\(([^)\s]+)\)')

@@ -30,6 +30,9 @@ final class RunReport
     /** @var array{commands: array<string, int>, listeners: array<string, int>, lines: array<string, array<int, int>>|null}|null lines: per file of src/, whether each executable line ran (1) or not (0); null without pcov or Xdebug */
     public ?array $coverage = null;
 
+    /** @var list<array{command: string, owner: string, takenBy: string}> commands two plugins both want: owner lost it to takenBy */
+    public array $conflicts = [];
+
     /** how many times each test ran (--repeat) */
     public int $repeat = 1;
 

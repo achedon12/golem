@@ -46,6 +46,7 @@ final class Application
                 'bench' => (new Command\BenchCommand($output, $this->packageRoot . '/src'))->execute($options),
                 'ui' => (new Command\UiCommand($output, $this->packageRoot))->execute($options),
                 'mutate' => (new Command\MutateCommand($output, $this->packageRoot))->execute($options),
+                'compat' => (new Command\CompatCommand($output, $this->packageRoot . '/src'))->execute($options),
                 default => throw new UserError("Unknown command \"{$options->command}\". Try `golem --help`."),
             };
         } catch (UserError $e) {
@@ -73,6 +74,7 @@ final class Application
               golem ui                  Open a dashboard on localhost to run, fuzz, benchmark and build tests
               golem mutate              Change the code one mutation at a time: do the tests notice?
                                         (--workers=2 --max=200 --min-score=<percent>)
+              golem compat <plugin...>  Run the tests alone, then with other plugins, and compare
               golem bench               Bring golems in a few at a time and measure TPS, tick usage, memory
                                         (--players=20 --duration=60 --min-tps=<tps>
                                          --save-baseline=<file> --baseline=<file>)
@@ -92,6 +94,7 @@ final class Application
               --random-order[=<seed>]   Shuffle the order of the tests
               --log-junit=<file>        Also write a JUnit XML report
               --report-html=<file>      Also write an HTML report
+              --with=<plugin,...>       Load other plugins (phars or folders) next to yours
               --teamcity                Report with TeamCity service messages
               --timeout=<seconds>       Give up after this long (default: 600)
               --update-snapshots        Rewrite the snapshots of assertMatchesSnapshot()

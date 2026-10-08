@@ -34,6 +34,16 @@ final class Project
     ) {
     }
 
+    /**
+     * The same plugin, with more plugins loaded next to it (golem run --with, golem compat).
+     *
+     * @param list<string> $plugins absolute paths of phars or plugin folders
+     */
+    public function withExtraPlugins(array $plugins): self
+    {
+        return new self($this->root, $this->name, $this->namespace, $this->testsDirectory, $this->pocketmineVersion, [...$this->extraPlugins, ...$plugins], $this->virions, $this->poggitManifest);
+    }
+
     public static function load(string $path, ?string $tests, ?string $pocketmine): self
     {
         $root = realpath($path);
