@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Golem dashboard</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="demo-banner">Demo: this dashboard replays runs recorded on Golem's example plugin. Run <code>vendor/bin/golem ui</code> to use it on yours. <a href="../dashboard" target="_top">Read more</a></div>
+  <header class="top">
+    <div class="brand">
+      <img src="favicon.svg" alt="" width="22" height="22">
+      <span class="brand-name">golem</span>
+      <span class="plugin" id="plugin"></span>
+    </div>
+    <nav class="tabs" id="tabs" aria-label="Sections"></nav>
+    <span class="meta" id="meta"></span>
+  </header>
+  <main id="view"></main>
+  <script>window.GOLEM_DEMO = true</script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

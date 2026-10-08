@@ -181,3 +181,26 @@
   margin-left: auto;
   margin-right: auto;
 }
+
+/* the golem ui demo on the Dashboard page */
+.vp-doc a.dashboard-demo {
+  position: relative;
+  display: block;
+  margin-top: 16px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+  overflow: hidden;
+  text-decoration: none;
+}
+.vp-doc a.dashboard-demo img { display: block; width: 100%; height: auto; transition: transform 0.3s; }
+.vp-doc a.dashboard-demo:hover img { transform: scale(1.015); }
+.vp-doc a.dashboard-demo span {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: var(--vp-c-brand-1);
+  color: #04110a;
+  font-weight: 700;
+}

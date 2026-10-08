@@ -9,6 +9,8 @@ if (params.has('token')) {
 const token = sessionStorage.getItem('golem-token') ?? ''
 
 export async function api (path, body) {
+  // the website's demo has no server: it replays recorded runs
+  if (window.GOLEM_DEMO) return (await import('./demo.js')).api(path, body)
   const response = await fetch(`/api/${path}`, {
     method: body === undefined ? 'GET' : 'POST',
     headers: { 'X-Golem-Token': token, 'Content-Type': 'application/json' },

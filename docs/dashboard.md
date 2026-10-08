@@ -19,6 +19,17 @@ vendor/bin/golem ui
 It runs on your machine, on the plugin as it is on disk: nothing is uploaded anywhere, and the
 dashboard uses the same Golem as the command line. Stop it with Ctrl+C.
 
+## Try it
+
+The demo is the dashboard itself, replaying runs recorded on Golem's example plugin: run the
+tests (one fails on purpose), open the failure and the coverage, start the fuzzer (it finds a real
+bug) or a benchmark, build a scenario.
+
+<a href="/golem/demo/index.html" target="_self" class="dashboard-demo">
+  <img src="/dashboard.webp" alt="The Golem dashboard: the tests of a plugin, a failure with the expected and actual values and the line that failed" width="1600" height="1000">
+  <span>Open the live demo →</span>
+</a>
+
 ## Running tests
 
 The side panel lists the tests found in your tests folder. Pick all of them, a class or a single

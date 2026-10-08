@@ -149,7 +149,12 @@ it. See [Server plugin](https://achedon12.github.io/golem/server-plugin) for eve
 ## Dashboard
 
 `vendor/bin/golem ui` opens a dashboard on localhost: run the tests and follow them live, read
-failures and coverage in the code. See [Dashboard](https://achedon12.github.io/golem/dashboard).
+failures and coverage in the code, fuzz, benchmark, and build tests without writing PHP.
+[Try the live demo](https://achedon12.github.io/golem/demo/) or read [Dashboard](https://achedon12.github.io/golem/dashboard).
+
+<p align="center">
+  <a href="https://achedon12.github.io/golem/demo/"><img src=".github/assets/dashboard.webp" alt="The Golem dashboard: tests, a failure with expected and actual values, and the line that failed" width="760"></a>
+</p>
 
 ## Fuzzing
 

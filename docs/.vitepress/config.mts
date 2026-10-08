@@ -31,7 +31,7 @@ export default defineConfig({
   // older docs are kept as they were released, links included
   ignoreDeadLinks: archived,
   appearance: 'dark',
-  srcExclude: ['README.md', 'node_modules/**'],
+  srcExclude: ['README.md', 'node_modules/**', 'demo/**'],
 
   // only the latest docs are listed for search engines; other versions point to them as canonical
   sitemap: isLatest ? { hostname: site } : undefined,
