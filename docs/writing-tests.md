@@ -177,16 +177,35 @@ The default timeout is 200 ticks (10 seconds) per test. You can also skip from i
 `vendor/bin/golem --coverage` tells you which parts of your plugin the tests never reached:
 
 ```text
-  Tests:    2 passed (5 assertions)
-  Coverage: commands 1/3 · listeners 1/6
-            never run: /kits, /menu
-            never called: HelloWorld::onBreak (BlockBreakEvent), HelloWorld::onMove (PlayerMoveEvent), …
+  Tests:    34 passed, 1 skipped (72 assertions)
+  Coverage: commands 3/3 · listeners 6/6 · lines 94.3% (132/140)
+            src/KitMenu.php 86% · not run: 38, 56, 61, 70
+            src/HelloWorld.php 94% · not run: 51, 129, 131, 151
 ```
 
 It counts the commands registered by your plugin (any way they are run: chat, `command()`, the
-console) and the event listeners it registered, called with the event actually handled. It does
-not measure lines of code: xdebug and PocketMine's threads do not get along, and "this listener
-never ran" is usually the more useful question for a plugin.
+console) and the event listeners it registered, called with the event actually handled, then lists
+those the tests never reached.
+
+It also measures which lines of `src/` ran, and lists the files with lines that never did. That
+needs pcov or Xdebug in the server's PHP: PocketMine's PHP build ships Xdebug, disabled, and
+Golem turns it on for the run. Only the main thread is covered, not code running in async tasks.
+Files the tests never load do not appear.
+
+Collecting lines makes the server several times slower. While it runs, test timeouts and the time
+a golem has to join are tripled, and `assertTpsAbove()` skips the test instead of measuring a
+server slowed down by the coverage.
+
+`--coverage-clover=<file>` also writes the lines as a Clover XML report, the format Codecov,
+Coveralls and most CI tools read:
+
+```yaml
+- run: composer install --no-interaction
+- run: vendor/bin/golem --coverage-clover=coverage.xml
+- uses: codecov/codecov-action@v5
+  with:
+    files: coverage.xml
+```
 
 ## Data providers
 

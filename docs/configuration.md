@@ -22,7 +22,8 @@ golem bench [--players=20] [--duration=60] [--min-tps=<tps>] [--save-baseline=<f
 | `--tests=<dir>` | `tests` | The tests folder, relative to the plugin |
 | `--pocketmine=<version>` | `latest` | The PocketMine-MP version to run, e.g. `5.44.3`, or a fork: `owner/repository` (its latest release) or `owner/repository@tag` (see [Forks](#pocketmine-mp-forks)) |
 | `--compare=<version>` | | Run the tests on the configured version, then on this one (a version or a fork), and report what changes (see [Forks](#pocketmine-mp-forks)) |
-| `--coverage` | | After the run, list the plugin's commands the tests never ran and listeners they never called (see [Coverage](writing-tests.md#coverage)) |
+| `--coverage` | | After the run, list the plugin's commands the tests never ran, listeners they never called and lines of `src/` that never ran (see [Coverage](writing-tests.md#coverage)) |
+| `--coverage-clover=<file>` | | Also write line coverage as a Clover XML report (implies `--coverage`) |
 | `--parallel=<n>` | `1` | Split the test files between `n` servers running side by side. Each class runs on one server, so tests of a class still share it; tests of different classes must not depend on each other |
 | `--log-junit=<file>` | | Also write a JUnit XML report (needs `ext-dom`) |
 | `--teamcity` | | Report with [TeamCity service messages](ci.md#teamcity) instead of the usual output |

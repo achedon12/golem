@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Golem\Cli\Command;
 
 use Golem\Cli\ChangeWatcher;
+use Golem\Cli\Environment\CoverageDriver;
 use Golem\Cli\Environment\Downloader;
 use Golem\Cli\Environment\Toolchain;
 use Golem\Cli\Options;
 use Golem\Cli\Output;
 use Golem\Cli\Project;
+use Golem\Cli\Report\CloverReporter;
 use Golem\Cli\Report\CompactReporter;
 use Golem\Cli\Report\ConsoleReporter;
 use Golem\Cli\Report\GitHubReporter;
@@ -28,7 +30,7 @@ use Golem\Cli\UserError;
  */
 final class RunCommand
 {
-    public const VALUE_OPTIONS = ['path', 'tests', 'filter', 'pocketmine', 'php', 'phar', 'log-junit', 'timeout', 'compare', 'parallel'];
+    public const VALUE_OPTIONS = ['path', 'tests', 'filter', 'pocketmine', 'php', 'phar', 'log-junit', 'timeout', 'compare', 'parallel', 'coverage-clover'];
 
     public function __construct(
         private readonly Output $output,
@@ -105,12 +107,23 @@ final class RunCommand
         if ($junit !== null && !class_exists(\DOMDocument::class)) {
             throw new UserError('--log-junit needs the dom extension in the PHP running Golem.');
         }
+        if ($options->get('coverage-clover') !== null && !class_exists(\XMLWriter::class)) {
+            throw new UserError('--coverage-clover needs the xmlwriter extension in the PHP running Golem.');
+        }
 
         $reporter = $options->has('teamcity') ? new TeamCityReporter() : new ConsoleReporter($this->output, $project->root);
         $report = $this->runSuite($options, $project, $project->pocketmineVersion, $reporter);
 
         if ($junit !== null) {
             (new JUnitReporter())->write($report, $junit);
+        }
+        $clover = $options->get('coverage-clover');
+        if ($clover !== null) {
+            if ($report->coverage['lines'] ?? null) {
+                (new CloverReporter())->write($report->coverage['lines'], $project->root . '/src', $clover);
+            } else {
+                $this->output->writeln('  <yellow>No line coverage was collected: no Clover report written.</>');
+            }
         }
         if (GitHubReporter::isAvailable()) {
             (new GitHubReporter($project->root))->write($report);
@@ -156,15 +169,16 @@ final class RunCommand
         [$version, $phar] = $options->get('phar') !== null && $options->get('compare') === null
             ? ['custom', (string) $options->get('phar')]
             : $toolchain->pocketmine($pocketmine);
+        $phpOptions = $this->coverageOptions($options, $php, $project);
 
         $this->output->writeln();
         $this->output->writeln(sprintf('  <bold>Golem</> <gray>is starting PocketMine-MP %s…</>', Output::escape($version)));
 
-        $workspace = Workspace::create($project, $this->golemSource, $options->get('filter'), $cacheDirectory, $options->has('update-snapshots'), $options->has('coverage'));
+        $workspace = Workspace::create($project, $this->golemSource, $options->get('filter'), $cacheDirectory, $options->has('update-snapshots'), self::wantsCoverage($options));
         if (!$options->has('keep')) {
             register_shutdown_function($workspace->delete(...)); // also runs when interrupted
         }
-        $process = new ServerProcess($php, $phar, $workspace, $options->has('verbose'));
+        $process = new ServerProcess($php, $phar, $workspace, $options->has('verbose'), $phpOptions);
         register_shutdown_function($process->stop(...)); // never leave a server behind
         $report = new RunReport();
         $report->label = $version;
@@ -187,6 +201,7 @@ final class RunCommand
                         $report->coverage = [
                             'commands' => self::counts($event['commands'] ?? []),
                             'listeners' => self::counts($event['listeners'] ?? []),
+                            'lines' => self::lines($event['lines'] ?? null),
                         ];
                         break;
                     case 'abort':
@@ -222,6 +237,7 @@ final class RunCommand
         [$version, $phar] = $options->get('phar') !== null && $options->get('compare') === null
             ? ['custom', (string) $options->get('phar')]
             : $toolchain->pocketmine($pocketmine);
+        $phpOptions = $this->coverageOptions($options, $php, $project);
 
         $buckets = self::split(self::testFiles($project->testsDirectory), $workers);
 
@@ -257,12 +273,12 @@ final class RunCommand
         $processes = [];
         $workspaces = [];
         foreach ($buckets as $index => $files) {
-            $workspace = Workspace::create($project, $this->golemSource, $options->get('filter'), $cacheDirectory, $options->has('update-snapshots'), $options->has('coverage'), testFiles: $files);
+            $workspace = Workspace::create($project, $this->golemSource, $options->get('filter'), $cacheDirectory, $options->has('update-snapshots'), self::wantsCoverage($options), testFiles: $files);
             $workspaces[] = $workspace;
             if (!$options->has('keep')) {
                 register_shutdown_function($workspace->delete(...));
             }
-            $process = new ServerProcess($php, $phar, $workspace, $options->has('verbose'));
+            $process = new ServerProcess($php, $phar, $workspace, $options->has('verbose'), $phpOptions);
             register_shutdown_function($process->stop(...));
             $processes[] = $process;
             $current[$index] = [];
@@ -290,6 +306,7 @@ final class RunCommand
                         $report->coverage = self::mergeCoverage($report->coverage, [
                             'commands' => self::counts($event['commands'] ?? []),
                             'listeners' => self::counts($event['listeners'] ?? []),
+                            'lines' => self::lines($event['lines'] ?? null),
                         ]);
                         break;
                     case 'abort':
@@ -329,6 +346,29 @@ final class RunCommand
         }
 
         return $report;
+    }
+
+    private static function wantsCoverage(Options $options): bool
+    {
+        return $options->has('coverage') || $options->get('coverage-clover') !== null;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function coverageOptions(Options $options, string $php, Project $project): array
+    {
+        if (!self::wantsCoverage($options)) {
+            return [];
+        }
+        $phpOptions = CoverageDriver::phpOptions($php, $project->root . '/src');
+        if ($phpOptions === null) {
+            $this->output->writeln('  <yellow>Line coverage needs pcov or Xdebug in the server\'s PHP: only commands and listeners are covered.</>');
+
+            return [];
+        }
+
+        return $phpOptions;
     }
 
     /**
@@ -376,9 +416,9 @@ final class RunCommand
     }
 
     /**
-     * @param array{commands: array<string, int>, listeners: array<string, int>}|null $total
-     * @param array{commands: array<string, int>, listeners: array<string, int>} $more
-     * @return array{commands: array<string, int>, listeners: array<string, int>}
+     * @param array{commands: array<string, int>, listeners: array<string, int>, lines: array<string, array<int, int>>|null}|null $total
+     * @param array{commands: array<string, int>, listeners: array<string, int>, lines: array<string, array<int, int>>|null} $more
+     * @return array{commands: array<string, int>, listeners: array<string, int>, lines: array<string, array<int, int>>|null}
      */
     private static function mergeCoverage(?array $total, array $more): array
     {
@@ -390,8 +430,37 @@ final class RunCommand
                 $total[$kind][$name] = ($total[$kind][$name] ?? 0) + $count;
             }
         }
+        if ($more['lines'] !== null) {
+            $lines = $total['lines'] ?? [];
+            foreach ($more['lines'] as $file => $fileLines) {
+                foreach ($fileLines as $line => $ran) {
+                    $lines[$file][$line] = max($lines[$file][$line] ?? 0, $ran);
+                }
+                ksort($lines[$file]);
+            }
+            ksort($lines);
+            $total['lines'] = $lines;
+        }
 
         return $total;
+    }
+
+    /**
+     * @return array<string, array<int, int>>|null
+     */
+    private static function lines(mixed $value): ?array
+    {
+        if (!is_array($value)) {
+            return null;
+        }
+        $lines = [];
+        foreach ($value as $file => $fileLines) {
+            foreach (is_array($fileLines) ? $fileLines : [] as $line => $ran) {
+                $lines[(string) $file][(int) $line] = $ran === 1 ? 1 : 0;
+            }
+        }
+
+        return $lines;
     }
 
     /**

@@ -38,6 +38,11 @@ final class GolemPlugin extends PluginBase
         /** @var array{events: string, tests: string, subjects: string, subject: string, filter: ?string, files?: list<string>|null, pluginRoot: string, cache: string, virions: list<string>, poggit: ?string, updateSnapshots?: bool, ci?: bool, coverage?: bool, fuzz?: array{seed: int, seconds: int, golems: int}|null, bench?: array{steps: list<int>, seconds: int}|null} $config */
         $config = json_decode((string) file_get_contents($configPath), true, flags: JSON_THROW_ON_ERROR);
         $this->events = new EventLog($config['events']);
+        if (($config['coverage'] ?? false) && LineCoverage::available()) {
+            // before the plugin loads, to cover onLoad() and onEnable() too; the plugin is loaded
+            // through a link in the subjects folder, so its code has paths from both
+            LineCoverage::start([$config['pluginRoot'] . '/src', $config['subjects']]);
+        }
 
         try {
             $this->loadVirions($config);
@@ -50,12 +55,14 @@ final class GolemPlugin extends PluginBase
 
         Runtime::install(new Runtime(
             $this,
-            new GolemFactory($this),
+            // collecting coverage slows joins down a lot
+            new GolemFactory($this, ($config['coverage'] ?? false) ? 600 : 200),
             new Clock($this),
             new Worlds($this, $config['pluginRoot']),
             $config['subject'],
             $config['updateSnapshots'] ?? false,
             $config['ci'] ?? false,
+            $config['coverage'] ?? false,
         ));
 
         // The first tick only happens once every plugin is enabled and the world is ready.
@@ -152,13 +159,52 @@ final class GolemPlugin extends PluginBase
         }
 
         $testsDirectory = str_replace('\\', '/', (string) realpath($config['tests']));
-        (new TestRunner($runtime, $tests, $this->events, $testsDirectory, function () use ($coverage): void {
+        $runner = new TestRunner($runtime, $tests, $this->events, $testsDirectory, function () use ($coverage, $config): void {
             if ($coverage !== null) {
-                $this->events->write('coverage', $coverage->report());
+                $lines = LineCoverage::available() ? LineCoverage::collect($config['pluginRoot'] . '/src') : null;
+                $this->events->write('coverage', $coverage->report() + ['lines' => $lines]);
             }
             $this->events->write('end');
             $this->getServer()->shutdown();
-        }))->start();
+        });
+
+        if ($coverage !== null && LineCoverage::available()) {
+            $this->warmUp($runner->start(...));
+        } else {
+            $runner->start();
+        }
+    }
+
+    /**
+     * Prepares the chunks around the spawn before the first test. Under Xdebug, the async
+     * workers generating them start very slowly, and the first golem would time out joining.
+     */
+    private function warmUp(\Closure $then): void
+    {
+        $world = $this->getServer()->getWorldManager()->getDefaultWorld();
+        if ($world === null) {
+            $then();
+
+            return;
+        }
+        $spawn = $world->getSpawnLocation();
+        $radius = $this->getServer()->getViewDistance();
+        $promises = [];
+        for ($x = -$radius; $x <= $radius; $x++) {
+            for ($z = -$radius; $z <= $radius; $z++) {
+                $promises[] = $world->orderChunkPopulation(($spawn->getFloorX() >> 4) + $x, ($spawn->getFloorZ() >> 4) + $z, null);
+            }
+        }
+        // counted before waiting: chunks already there complete at once
+        $pending = count($promises);
+        $done = function () use (&$pending, $then): void {
+            if (--$pending === 0) {
+                $then();
+            }
+        };
+        foreach ($promises as $promise) {
+            $promise->onCompletion($done, $done);
+        }
     }
 
     private function abort(string $message): void

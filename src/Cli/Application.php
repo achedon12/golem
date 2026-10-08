@@ -79,7 +79,8 @@ final class Application
               --pocketmine=<version>    PocketMine-MP version, e.g. 5.44.3 (default: latest),
                                         or a fork: owner/repository[@tag]
               --compare=<version>       Also run on another version or fork, and report what changes
-              --coverage                Report the plugin's commands and listeners the tests never reached
+              --coverage                Report the plugin's commands, listeners and lines the tests never reached
+              --coverage-clover=<file>  Also write line coverage as a Clover XML report
               --parallel=<n>            Split the tests between n servers running side by side
               --log-junit=<file>        Also write a JUnit XML report
               --teamcity                Report with TeamCity service messages

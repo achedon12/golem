@@ -21,6 +21,7 @@ final class Runtime
         public readonly string $subject,
         public readonly bool $updateSnapshots = false,
         public readonly bool $ci = false,
+        public readonly bool $coverage = false,
     ) {
     }
 

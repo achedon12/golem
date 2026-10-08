@@ -38,8 +38,10 @@ final class GolemFactory
 
     private int $counter = 0;
 
-    public function __construct(private readonly PluginBase $plugin)
-    {
+    public function __construct(
+        private readonly PluginBase $plugin,
+        private readonly int $spawnTimeoutTicks = self::SPAWN_TIMEOUT_TICKS,
+    ) {
     }
 
     /**
@@ -79,13 +81,14 @@ final class GolemFactory
             [],
         ));
 
-        $this->plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(static function () use ($deferred, $name): void {
+        $timeout = $this->spawnTimeoutTicks;
+        $this->plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(static function () use ($deferred, $name, $timeout): void {
             $deferred->reject(new \RuntimeException(sprintf(
                 'Golem "%s" did not finish joining within %d ticks. Was it kicked by a plugin or a full server?',
                 $name,
-                self::SPAWN_TIMEOUT_TICKS,
+                $timeout,
             )));
-        }), self::SPAWN_TIMEOUT_TICKS);
+        }), $timeout);
 
         return $deferred;
     }

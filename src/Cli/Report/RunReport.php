@@ -27,7 +27,7 @@ final class RunReport
 
     public float $totalSeconds = 0.0;
 
-    /** @var array{commands: array<string, int>, listeners: array<string, int>}|null */
+    /** @var array{commands: array<string, int>, listeners: array<string, int>, lines: array<string, array<int, int>>|null}|null lines: per file of src/, whether each executable line ran (1) or not (0); null without pcov or Xdebug */
     public ?array $coverage = null;
 
     public function count(string $status): int
