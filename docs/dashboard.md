@@ -31,6 +31,21 @@ test, choose the PocketMine-MP version or fork, the number of servers, coverage,
   each file's code with the lines that ran in green and the others in red;
 - the console output of the run is there too, as the command line prints it.
 
+## Building a test without writing PHP
+
+The **Scenario editor** builds a test from golems and steps:
+
+- the golems, with their name, operator status and game mode;
+- actions: run a command, chat, click a form button or a window slot, walk, jump, break or
+  right-click a block next to them, be given an item, attack another golem, leave, wait;
+- checks: a message received (or not), a form or window open, an item held, health, game mode,
+  title, action bar, scoreboard, permission, online, offline or kicked, the server's TPS.
+
+The test it writes is shown as you go. **Write the test** saves it in your tests folder, in the
+namespace of your other tests; **Write and run** also runs it and shows the result, with the
+expected and actual values when a check fails. Drafts are kept in your browser, so you can come
+back to them; once written, the test is a regular PHP file to commit and edit like any other.
+
 ## Fuzzing and benchmarks
 
 The **Fuzz** tab runs [`golem fuzz`](fuzzing.md) with its duration, number of golems and seed,

@@ -244,5 +244,6 @@ Unnamed data sets are numbered `#0`, `#1`…
 | `$this->plugin()` | your plugin instance (or `plugin('Other')` for another one) |
 | `$this->world()` | the default world, a superflat world created fresh for each run |
 | `$this->spawn()` | the default world's spawn position |
+| `$this->item('diamond_sword', 3)` | an item by its name, as in `/give` |
 | `$this->freshWorld()` | switches the test to a brand new world (see [Isolation](#isolation)) |
 | `$this->loadWorld($path)` | switches the test to a copy of a world folder (see [Worlds from a template](#worlds-from-a-template)) |

@@ -24,6 +24,7 @@ final class Api
         private readonly string $testsDirectory,
         private readonly string $pocketmine,
         private readonly Runs $runs,
+        private readonly ScenarioWriter $scenarios,
     ) {
     }
 
@@ -40,6 +41,7 @@ final class Api
             $tests,
             $env('GOLEM_UI_POCKETMINE'),
             new Runs($env('GOLEM_UI_STATE') . '/runs', $env('GOLEM_UI_PHP'), $package . '/bin/golem', $env('GOLEM_UI_PROJECT')),
+            new ScenarioWriter($tests),
         );
     }
 
@@ -72,6 +74,8 @@ final class Api
                 $method === 'POST' && $path === '/api/runs' => $this->startRun($body),
                 $method === 'GET' && preg_match('#^/api/runs/([\w-]+)$#', $path, $match) === 1 => $this->poll($match[1]),
                 $method === 'POST' && preg_match('#^/api/runs/([\w-]+)/stop$#', $path, $match) === 1 => $this->send(200, ['stopped' => $this->runs->stop($match[1])]),
+                $method === 'POST' && $path === '/api/scenarios/preview' => $this->send(200, ['code' => $this->scenarios->code($body)]),
+                $method === 'POST' && $path === '/api/scenarios' => $this->send(200, $this->scenarios->write($body)),
                 default => $this->send(404, ['error' => "No $method $path"]),
             };
         } catch (InvalidRequest $e) {

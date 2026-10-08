@@ -12,6 +12,9 @@ breaking changes; they will always be listed here.
 - `golem ui` opens a local dashboard to run the tests and follow them live, with failures and
   coverage shown in the code (#70, #71).
 - `--log-events=<file>` writes a run as JSON lines (#71).
+- The dashboard's scenario editor builds a test from golems, actions and checks, writes it and runs
+  it (#73).
+- `$this->item('diamond_sword', 3)` in tests gets an item by name.
 - The dashboard runs `golem fuzz` and `golem bench`, with the benchmark drawn as a chart (#72).
 
 ## [0.4.0] - 2026-10-08
